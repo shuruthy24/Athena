@@ -1,6 +1,6 @@
 # Athena evaluation report
 
-Generated 2026-10-27T12:56:42.887899+00:00 by `python3 evals/run_evals.py`.
+Generated 2026-10-27T13:42:32.601212+00:00 by `python3 evals/run_evals.py` --live.
 
 All numbers below come from the run that wrote this file. Sets are small; read them as smoke tests, not benchmarks (Meterless says the same of its own 32-example v1 corpus).
 
@@ -17,7 +17,7 @@ Registry v2. Held-out set `heldout_v2.jsonl`: 26 prompts, written and checksumme
 | tool_precision | 1.000 | 0.88 / 0.8 | meets target |
 | clarification_rate | 0.077 | ≤ 0.15 / ≤ 0.25 | meets target |
 
-Clarification edge cases correct: 4/4. Stage-1 self-test worst case: 0.103 ms (budget 16 ms).
+Clarification edge cases correct: 4/4. Stage-1 self-test worst case: 0.143 ms (budget 16 ms).
 
 Misrouted held-out prompts:
 
@@ -48,20 +48,20 @@ History: the first run caught 0% of reversed-direction claims (recall 0.789 over
 
 ## 3. Report moderation (synthetic reports)
 
-14 synthetic reports with expected actions (approve, redact, review, reject). Model: `sample-offline-stub`. Accuracy 1.000.
+14 synthetic reports with expected actions (approve, redact, review, reject). Model: `nvidia/nemotron-3.5-bolt-e4b`. Accuracy 0.857.
 
 | Report | Expected | Got | Reason | Scout intent |
 |---|---|---|---|---|
 | r01 | approve | approve | lighting | report.submit |
 | r02 | approve | approve | lighting | report.submit |
 | r03 | approve | approve | lighting | report.submit |
-| r04 | approve | approve | lighting | report.submit |
+| r04 | approve | approve | positive | report.submit |
 | r05 | approve | approve | lighting | report.submit |
 | r06 | approve | approve | harassment | report.submit |
 | r07 | approve | approve | positive | report.submit |
 | r08 | approve | approve | lighting | report.submit |
-| r09 | redact | redact | personal_info | report.submit |
-| r10 | redact | redact | personal_info | report.submit |
+| r09 | redact | review | implausible | report.submit |
+| r10 | redact | review | implausible | report.submit |
 | r11 | reject | reject | prejudiced | report.submit |
 | r12 | review | review | contradicts_data | report.submit |
 | r13 | review | review | unknown_street | report.submit |

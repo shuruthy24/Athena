@@ -1,0 +1,345 @@
+{
+ "input": {
+  "id": "01_explain_walk_10pm",
+  "message": "Why is the Athena route better tonight?",
+  "trip": {
+   "origin": "unsw",
+   "destination": "townhall",
+   "band": "22",
+   "mode": "walk"
+  }
+ },
+ "output": {
+  "traceId": "959a02a70b0a4ab3",
+  "intent": "route.explain",
+  "scout": {
+   "intent": "route.explain",
+   "confidence": 0.841,
+   "band": "high",
+   "candidates": [
+    {
+     "intent": "route.explain",
+     "score": 0.8405,
+     "lexical": 1.0,
+     "semantic": 0.853,
+     "span": [
+      [
+       1,
+       4
+      ]
+     ]
+    },
+    {
+     "intent": "route.plan",
+     "score": 0.52,
+     "lexical": 0.867,
+     "semantic": 0.135,
+     "span": [
+      [
+       19,
+       24
+      ]
+     ]
+    },
+    {
+     "intent": "safety.emergency",
+     "score": 0.0505,
+     "lexical": 0.0,
+     "semantic": 0.137,
+     "span": []
+    }
+   ],
+   "parameters": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "22",
+    "mode": "walk"
+   },
+   "needsClarification": false,
+   "clarification": null,
+   "risk": {
+    "level": "low",
+    "flags": [],
+    "redactions": [],
+    "layers": {
+     "injection": "pass",
+     "policy": "pass",
+     "scope": "pass",
+     "pii": "pass",
+     "rate": "pass"
+    },
+    "injection": {
+     "detected": false,
+     "kind": null,
+     "evidence": []
+    },
+    "reason": null
+   },
+   "toolPlan": [
+    {
+     "capability": "zetaris.query",
+     "tool": "zetaris.sql",
+     "profile": null
+    },
+    {
+     "capability": "route.compare",
+     "tool": "athena.route_metrics",
+     "profile": null
+    },
+    {
+     "capability": "llm.draft",
+     "tool": "nightshift.chat",
+     "profile": "nemotron-fast"
+    },
+    {
+     "capability": "llm.critique",
+     "tool": "critic.rules",
+     "profile": "local-rules"
+    },
+    {
+     "capability": "llm.critique",
+     "tool": "nightshift.chat",
+     "profile": "nemotron-critic"
+    }
+   ],
+   "modelProfile": {
+    "id": "nemotron-fast",
+    "model": "nvidia/nemotron-3.5-bolt-e4b",
+    "provider": "meterless-nightshift"
+   },
+   "secondary": [],
+   "contract": {
+    "contractId": "01M5YSGT1XDJTHKVEKBHGJ4RDA",
+    "traceId": "959a02a70b0a4ab3",
+    "expiresAt": "2026-10-27T13:46:42.589702+00:00",
+    "capabilities": [
+     "zetaris.query",
+     "route.compare",
+     "llm.draft",
+     "llm.critique"
+    ],
+    "signature": "be698fdbf6c960c9…"
+   },
+   "latencyMs": {
+    "stage1": 0.24,
+    "total": 1.425
+   }
+  },
+  "help": {
+   "emergency": "000",
+   "emergency_note": "Call 000 for police, fire or ambulance.",
+   "staffed_stations": [
+    "Town Hall station",
+    "Central station"
+   ],
+   "note": "Station staffing hours vary; check before relying on a station being staffed."
+  },
+  "data_mode": "zetaris",
+  "answer": "Athena route is lower risk and fully lit for your night trip",
+  "claims": [
+   {
+    "text": "The Athena route takes 0.5 minutes longer but cuts overall risk by 46.2%.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena's route is fully lit (100%), compared to 77.4% lit on the fastest route.",
+    "facts": [
+     "athena.lit_share_pct",
+     "fastest.lit_share_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "The riskiest segment on the fastest route is Moore Park path (risk 0.68, unlit, 1397 m), while Athena's riskiest is Anzac Parade (risk 0.3, lit, 2999 m).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.risk",
+     "fastest.worst.lit",
+     "fastest.worst.distance_m",
+     "athena.worst.name",
+     "athena.worst.risk",
+     "athena.worst.lit",
+     "athena.worst.distance_m"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ],
+  "confidence": "high",
+  "confidence_note": "Route data served by Zetaris.",
+  "trip": {
+   "origin": "unsw",
+   "destination": "townhall",
+   "band": "22",
+   "mode": "walk",
+   "label": "UNSW Library → Town Hall station, 10 pm, walk"
+  },
+  "routes": [
+   {
+    "variant": "fastest",
+    "duration_min": 79.2,
+    "lit_share_pct": 77.4,
+    "unknown_share_pct": 0.0,
+    "risk": 0.515,
+    "worst": {
+     "name": "Moore Park path",
+     "risk": 0.68,
+     "lit": "no",
+     "distance_m": 1397,
+     "tunnel": false,
+     "report_penalty": 0.0
+    },
+    "streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Moore Park path",
+     "Bourke Street cycleway",
+     "George Street"
+    ],
+    "transit_legs": []
+   },
+   {
+    "variant": "athena",
+    "duration_min": 79.7,
+    "lit_share_pct": 100.0,
+    "unknown_share_pct": 0.0,
+    "risk": 0.277,
+    "worst": {
+     "name": "Anzac Parade",
+     "risk": 0.3,
+     "lit": "yes",
+     "distance_m": 2999,
+     "tunnel": false,
+     "report_penalty": 0.0
+    },
+    "streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street",
+     "George Street"
+    ],
+    "transit_legs": []
+   }
+  ],
+  "comparison": {
+   "extra_min": 0.5,
+   "risk_reduction_pct": 46.2,
+   "avoided_streets": [
+    "Moore Park path",
+    "Bourke Street cycleway"
+   ],
+   "added_streets": [
+    "Flinders Street",
+    "Oxford Street",
+    "Liverpool Street"
+   ],
+   "report_penalties": {}
+  },
+  "critic_verdict": "approve",
+  "evidence": [
+   {
+    "sql": "SELECT variant, duration_min, walk_m, transfers, leg, leg_mode, line, step, street, distance_m FROM athena.route_steps WHERE trip = 'unsw|townhall' AND band = '22' AND mode = 'walk'",
+    "executed_by": "Zetaris REST (auth=login)",
+    "rows": 11,
+    "ms": 848.0
+   },
+   {
+    "sql": "SELECT name, highway, lit, tunnel, risk_18, risk_22, risk_01, venues_22 FROM athena.streets",
+    "executed_by": "Zetaris REST (auth=login)",
+    "rows": 12,
+    "ms": 565.1
+   }
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "agent": "scout-intent",
+    "model": null,
+    "ms": 2,
+    "detail": "intent=route.explain band=high confidence=0.84 risk=low"
+   },
+   {
+    "step": 2,
+    "agent": "data",
+    "model": null,
+    "ms": 1413,
+    "detail": "11 route rows + 12 street rows via Zetaris REST (auth=login)",
+    "tool": "zetaris.sql"
+   },
+   {
+    "step": 3,
+    "agent": "route-metrics",
+    "model": null,
+    "ms": null,
+    "detail": "fastest risk=0.515 athena risk=0.277 extra=0.5 min reduction=46.2%"
+   },
+   {
+    "step": 4,
+    "agent": "route-analyst",
+    "model": "nvidia/nemotron-3.5-bolt-e4b",
+    "ms": 7603,
+    "detail": "draft 1: 3 claims"
+   },
+   {
+    "step": 5,
+    "agent": "evidence-critic",
+    "model": "nvidia/nemotron-3.5-bolt-e4b",
+    "ms": 2678,
+    "detail": "approve draft 1 (All claims are fully supported by the cited facts and adhere to the constraints (e.g., using 'lower risk' implicitly via risk_reduction_pct, no absolute safety )",
+    "verdict": "approve"
+   }
+  ],
+  "events": [
+   {
+    "event": "scout.decision",
+    "traceId": "959a02a70b0a4ab3",
+    "intent": "route.explain",
+    "band": "high",
+    "latencyMs": 1.42,
+    "stage2": "used",
+    "risk": "low"
+   },
+   {
+    "event": "contract.issued",
+    "traceId": "959a02a70b0a4ab3",
+    "contractId": "01M5YSGT1XDJTHKVEKBHGJ4RDA",
+    "intent": "route.explain",
+    "risk": "low",
+    "profile": "nemotron-fast"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "959a02a70b0a4ab3",
+    "contractId": "01M5YSGT1XDJTHKVEKBHGJ4RDA",
+    "engine": "zetaris.query"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "959a02a70b0a4ab3",
+    "contractId": "01M5YSGT1XDJTHKVEKBHGJ4RDA",
+    "engine": "route.compare"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "959a02a70b0a4ab3",
+    "contractId": "01M5YSGT1XDJTHKVEKBHGJ4RDA",
+    "engine": "llm.draft"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "959a02a70b0a4ab3",
+    "contractId": "01M5YSGT1XDJTHKVEKBHGJ4RDA",
+    "engine": "llm.critique"
+   }
+  ],
+  "total_ms": 11702
+ }
+}

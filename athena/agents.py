@@ -233,15 +233,32 @@ class Athena:
             out.append({"index": i, "supported": not problems, "problems": problems})
         return out
 
+    def _draft_once(self, decision, payload: dict):
+        """One analyst call. If the model errors or returns nothing, retry once with a trimmed payload
+        (long lists cut short), which is the usual cure for an empty completion on a hosted endpoint."""
+        model = self._model_for(decision, "llm.draft")
+        try:
+            return self.llm.chat(model, ANALYST_SYSTEM, json.dumps(payload))
+        except LLMError as exc:
+            log.warning("analyst draft failed (%s); retrying with a trimmed payload", exc)
+            slim = dict(payload)
+            slim.pop("comparison", None)
+            slim["facts"] = {k: (v[:4] if isinstance(v, list) else v) for k, v in payload["facts"].items()}
+            return self.llm.chat(model, ANALYST_SYSTEM, json.dumps(slim))
+
     def _draft_and_check(self, decision, message, cmp, facts, trace) -> tuple[str, list[dict], str]:
         feedback = None
         attempts = self.s.max_revisions + 1
         self._verify(decision, "llm.draft", trace)
         self._verify(decision, "llm.critique", trace)
         for attempt in range(1, attempts + 1):
-            payload = {"question": message, "facts": facts, "comparison": cmp, "previous_feedback": feedback}
+            # Keep the prompt small: the analyst needs the flat facts, not the whole comparison object.
+            # The offline stub builds its claims from the comparison, so it still receives it.
+            payload = {"question": message, "facts": facts, "previous_feedback": feedback}
+            if getattr(self.llm, "provider", "") == "local":
+                payload["comparison"] = cmp
             try:
-                r = self.llm.chat(self._model_for(decision, "llm.draft"), ANALYST_SYSTEM, json.dumps(payload))
+                r = self._draft_once(decision, payload)
                 draft = parse_json(r.text)
                 claims = [c for c in draft.get("claims", []) if isinstance(c, dict)][:4]
                 headline = str(draft.get("headline", ""))[:200]

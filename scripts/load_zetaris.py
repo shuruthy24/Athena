@@ -36,7 +36,7 @@ DB = "ATHENA_REST"
 
 
 def rest_statements(base_url: str, schema: str) -> list[str]:
-    out = [f'CREATE LIGHTNING DATABASE {DB} DESCRIBE BY "Athena data (JSON over HTTP)"',
+    out = [f'CREATE LIGHTNING DATABASE {DB} DESCRIBE BY "Athena route and street data"',
            f"CREATE SCHEMASTORE CONTAINER {schema}"]
     for t, cols in TABLES.items():
         out.append(f'CREATE LIGHTNING REST TABLE {t}_raw FROM {DB} REQUEST(\n'

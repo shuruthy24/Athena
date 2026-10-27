@@ -74,8 +74,12 @@ class MockHandler(BaseHTTPRequestHandler):
             payload = json.loads(body["messages"][1]["content"])
             task = re.search(r"TASK:\s*(\w+)", system).group(1)
             if task == "analyst":
-                from athena.analysis import fallback_explanation
-                head, claims = fallback_explanation(payload["comparison"])
+                # The analyst receives the flat facts, not the comparison object (same as a live call).
+                f = payload["facts"]
+                head = "Athena's route is lower risk for this trip."
+                claims = [{"text": f"Athena's route takes {f['extra_min']:+} min and has "
+                                   f"{f['risk_reduction_pct']}% lower route risk than the fastest route.",
+                           "facts": ["extra_min", "risk_reduction_pct"]}]
                 if MockHandler.analyst_bad_first and not payload.get("previous_feedback"):
                     claims = claims + [{"text": "This route is completely safe.", "facts": ["risk_reduction_pct"]}]
                 content = json.dumps({"headline": head, "claims": claims})

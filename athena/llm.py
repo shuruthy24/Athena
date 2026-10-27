@@ -68,15 +68,25 @@ class NightshiftLLM:
             raise LLMError(f"model discovery failed: HTTP {r.status_code} {r.headers.get('content-type')}")
         return [m["id"] for m in r.json().get("data", [])]
 
-    def chat(self, model: str, system: str, user: str, temperature: float = 0.2, max_tokens: int = 700) -> LLMReply:
+    def chat(self, model: str, system: str, user: str, temperature: float = 0.2, max_tokens: int = 1600) -> LLMReply:
+        """One chat call. Hosted endpoints occasionally return 5xx or an empty completion under load,
+        so a single retry runs before giving up; the caller's fallback handles a second failure."""
         t0 = time.perf_counter()
-        try:
-            r = self.http.post(f"{self.base_url}/chat/completions", headers=self.headers, timeout=self.timeout_s,
-                               json={"model": model, "temperature": temperature, "max_tokens": max_tokens,
-                                     "messages": [{"role": "system", "content": system},
-                                                  {"role": "user", "content": user}]})
-        except requests.RequestException as exc:
-            raise LLMError(f"Nightshift unreachable: {exc.__class__.__name__}") from exc
+        last = ""
+        for attempt in (1, 2):
+            try:
+                r = self.http.post(f"{self.base_url}/chat/completions", headers=self.headers, timeout=self.timeout_s,
+                                   json={"model": model, "temperature": temperature, "max_tokens": max_tokens,
+                                         "messages": [{"role": "system", "content": system},
+                                                      {"role": "user", "content": user}]})
+            except requests.RequestException as exc:
+                raise LLMError(f"Nightshift unreachable: {exc.__class__.__name__}") from exc
+            if r.status_code in (500, 502, 503, 504) and attempt == 1:
+                last = f"HTTP {r.status_code}"
+                log.warning("nightshift %s; retrying once", last)
+                time.sleep(1.5)
+                continue
+            break
         ms = (time.perf_counter() - t0) * 1000
         if r.status_code != 200:
             raise LLMError(f"Nightshift HTTP {r.status_code}: {r.text[:160]}")
@@ -84,9 +94,13 @@ class NightshiftLLM:
             raise LLMError("Nightshift returned a non-JSON page (is the Runtime port forwarded correctly?)")
         body = r.json()
         try:
-            text = body["choices"][0]["message"]["content"] or ""
+            msg = body["choices"][0]["message"]
+            text = msg.get("content") or msg.get("reasoning_content") or ""
         except (KeyError, IndexError) as exc:
             raise LLMError("Nightshift reply had no choices") from exc
+        if not text.strip():
+            raise LLMError(f"Nightshift returned an empty completion from {body.get('model') or model}"
+                           + (f" (after {last})" if last else ""))
         served_by = body.get("model") or model
         log.info("nightshift model=%s ms=%d", served_by, ms)
         return LLMReply(text=text, model=served_by, ms=ms)

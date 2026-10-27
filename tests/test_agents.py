@@ -65,7 +65,8 @@ def test_critic_rejecting_every_draft_falls_back_to_facts(monkeypatch):
 
 def test_model_outage_degrades_to_fact_only_explanation(monkeypatch):
     monkeypatch.setenv("SAMPLE_MODE", "true")
-    a = Athena(get_settings(), ScriptedLLM(["error"]), LocalSource())
+    # Two errors: the analyst retries once with a trimmed payload before giving up.
+    a = Athena(get_settings(), ScriptedLLM(["error", "error"]), LocalSource())
     r = a.handle("Why is the Athena route better tonight?", trip=TRIP)
     assert r["critic_verdict"] == "fallback-error" and r["confidence"] == "low" and r["claims"]
 

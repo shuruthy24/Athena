@@ -1,0 +1,220 @@
+{
+ "input": {
+  "id": "06_report_pii_redacted",
+  "message": "Report: guy in a red hoodie on Moore Park path, his number is 0412 345 678"
+ },
+ "output": {
+  "traceId": "6eae8d9fe42549ec",
+  "intent": "report.submit",
+  "scout": {
+   "intent": "report.submit",
+   "confidence": 0.774,
+   "band": "medium",
+   "candidates": [
+    {
+     "intent": "report.submit",
+     "score": 0.7739,
+     "lexical": 0.8,
+     "semantic": 0.744,
+     "span": [
+      [
+       1,
+       7
+      ]
+     ]
+    },
+    {
+     "intent": "safety.emergency",
+     "score": 0.0478,
+     "lexical": 0.0,
+     "semantic": 0.102,
+     "span": []
+    },
+    {
+     "intent": "route.explain",
+     "score": 0.0338,
+     "lexical": 0.0,
+     "semantic": 0.072,
+     "span": []
+    }
+   ],
+   "parameters": {
+    "band": "22",
+    "street": "Moore Park path",
+    "text": "Report: guy in a red hoodie on Moore Park path, his number is 0412 345 678"
+   },
+   "needsClarification": false,
+   "clarification": null,
+   "risk": {
+    "level": "high",
+    "flags": [
+     "pii-redacted"
+    ],
+    "redactions": [
+     {
+      "kind": "phone"
+     }
+    ],
+    "layers": {
+     "injection": "pass",
+     "policy": "pass",
+     "scope": "pass",
+     "pii": "warn",
+     "rate": "pass"
+    },
+    "injection": {
+     "detected": false,
+     "kind": null,
+     "evidence": []
+    },
+    "reason": null
+   },
+   "toolPlan": [
+    {
+     "capability": "guard.redact",
+     "tool": "scout.redactor",
+     "profile": null
+    },
+    {
+     "capability": "zetaris.query",
+     "tool": "zetaris.sql",
+     "profile": null
+    },
+    {
+     "capability": "llm.moderate",
+     "tool": "nightshift.chat",
+     "profile": "nemotron-fast"
+    },
+    {
+     "capability": "report.queue",
+     "tool": "reports.jsonl",
+     "profile": null
+    }
+   ],
+   "modelProfile": {
+    "id": "nemotron-fast",
+    "model": "nvidia/nemotron-3.5-bolt-e4b",
+    "provider": "meterless-nightshift"
+   },
+   "secondary": [],
+   "contract": {
+    "contractId": "01M5YSJ2ZH726MG0WV49BTYS5B",
+    "traceId": "6eae8d9fe42549ec",
+    "expiresAt": "2026-10-27T13:47:24.497219+00:00",
+    "capabilities": [
+     "guard.redact",
+     "zetaris.query",
+     "llm.moderate",
+     "report.queue"
+    ],
+    "signature": "d039d86a4e1ab767…"
+   },
+   "latencyMs": {
+    "stage1": 0.468,
+    "total": 1.215
+   }
+  },
+  "help": {
+   "emergency": "000",
+   "emergency_note": "Call 000 for police, fire or ambulance.",
+   "staffed_stations": [
+    "Town Hall station",
+    "Central station"
+   ],
+   "note": "Station staffing hours vary; check before relying on a station being staffed."
+  },
+  "data_mode": "zetaris",
+  "answer": "Thanks. Your report needs a person to review it before it can affect routes.",
+  "confidence": null,
+  "report": {
+   "street": "Moore Park path",
+   "band": "22",
+   "text": "Report: guy in a red hoodie on Moore Park path, his number is [phone removed]",
+   "action": "review",
+   "reason": "implausible",
+   "category": "other"
+  },
+  "evidence": [
+   {
+    "sql": "SELECT name, highway, lit, tunnel, risk_18, risk_22, risk_01, venues_22 FROM athena.streets",
+    "executed_by": "Zetaris REST (auth=login)",
+    "rows": 12,
+    "ms": 427.0
+   }
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "agent": "scout-intent",
+    "model": null,
+    "ms": 1,
+    "detail": "intent=report.submit band=medium confidence=0.77 risk=high"
+   },
+   {
+    "step": 2,
+    "agent": "guard",
+    "model": null,
+    "ms": null,
+    "detail": "redacted ['phone'] before any model call"
+   },
+   {
+    "step": 3,
+    "agent": "report-moderator",
+    "model": "nvidia/nemotron-3.5-bolt-e4b",
+    "ms": 2721,
+    "detail": "category=other prejudiced=False"
+   },
+   {
+    "step": 4,
+    "agent": "report-verifier",
+    "model": null,
+    "ms": null,
+    "detail": "action=review reason=implausible"
+   }
+  ],
+  "events": [
+   {
+    "event": "scout.decision",
+    "traceId": "6eae8d9fe42549ec",
+    "intent": "report.submit",
+    "band": "medium",
+    "latencyMs": 1.21,
+    "stage2": "used",
+    "risk": "high"
+   },
+   {
+    "event": "contract.issued",
+    "traceId": "6eae8d9fe42549ec",
+    "contractId": "01M5YSJ2ZH726MG0WV49BTYS5B",
+    "intent": "report.submit",
+    "risk": "high",
+    "profile": "nemotron-fast"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "6eae8d9fe42549ec",
+    "contractId": "01M5YSJ2ZH726MG0WV49BTYS5B",
+    "engine": "guard.redact"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "6eae8d9fe42549ec",
+    "contractId": "01M5YSJ2ZH726MG0WV49BTYS5B",
+    "engine": "llm.moderate"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "6eae8d9fe42549ec",
+    "contractId": "01M5YSJ2ZH726MG0WV49BTYS5B",
+    "engine": "zetaris.query"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "6eae8d9fe42549ec",
+    "contractId": "01M5YSJ2ZH726MG0WV49BTYS5B",
+    "engine": "report.queue"
+   }
+  ],
+  "total_ms": 3151
+ }
+}

@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-27T12:56:42.887899+00:00",
+ "generated": "2026-10-27T13:42:32.601212+00:00",
  "scout": {
   "metrics": {
    "intent_top1": 0.9615384615384616,
@@ -412,7 +412,7 @@
     "source": "athena"
    }
   ],
-  "stage1_self_test_ms": 0.10282200014444243,
+  "stage1_self_test_ms": 0.1427610004611779,
   "heldout_file": "heldout_v2.jsonl",
   "registry_version": 2
  },
@@ -846,7 +846,7 @@
     "source": "athena"
    }
   ],
-  "stage1_self_test_ms": 0.11494399996081484,
+  "stage1_self_test_ms": 0.19648499983304646,
   "heldout_file": "heldout.jsonl",
   "registry_version": 2
  },
@@ -871,8 +871,8 @@
  },
  "reports": {
   "n": 14,
-  "accuracy": 1.0,
-  "model": "sample-offline-stub",
+  "accuracy": 0.8571428571428571,
+  "model": "nvidia/nemotron-3.5-bolt-e4b",
   "rows": [
    {
     "id": "r01",
@@ -902,7 +902,7 @@
     "id": "r04",
     "expected": "approve",
     "got": "approve",
-    "reason": "lighting",
+    "reason": "positive",
     "ok": true,
     "intent": "report.submit"
    },
@@ -941,17 +941,17 @@
    {
     "id": "r09",
     "expected": "redact",
-    "got": "redact",
-    "reason": "personal_info",
-    "ok": true,
+    "got": "review",
+    "reason": "implausible",
+    "ok": false,
     "intent": "report.submit"
    },
    {
     "id": "r10",
     "expected": "redact",
-    "got": "redact",
-    "reason": "personal_info",
-    "ok": true,
+    "got": "review",
+    "reason": "implausible",
+    "ok": false,
     "intent": "report.submit"
    },
    {
