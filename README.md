@@ -1,6 +1,6 @@
 # Athena: lower-risk night routes, explained with evidence
 
-Open Agent Hackathon 2026 · Team Athena (Kaira Dumasia, Shuruthy Dhushiyandan. Andrii Rohovyi) · Track: **Wildcard [Tinkerer]**
+Open Agent Hackathon 2026 · Team Athena (Kaira Dumasia, Shuruthy Dhushiyandan, Andrii Rohovyi) · Track: **Wildcard [Tinkerer]**
 
 Navigation apps optimise for speed. Athena compares the fastest route with a lower-risk one for night trips in
 Sydney, and explains the difference in plain English. This hackathon adds an **agent layer** to our existing
@@ -65,8 +65,8 @@ Sample mode reads the same tables from `data/*.json` and uses an offline stand-i
 `sample-offline-stub` in every trace, so it's never mistaken for Nemotron output.
 
 ### Option 2: live (Zetaris + Meterless Nightshift + NVIDIA Nemotron)
-Prerequisites: Zetaris running locally (`./verify.sh` passes), Nightshift running with an NVIDIA key in its
-Providers/Keys page and a Nemotron model available.
+Prerequisites: Zetaris running locally (its own install verify script passes), and Nightshift running with an
+NVIDIA key in its Providers/Keys page and a Nemotron model available.
 ```bash
 cp .env.example .env        # fill in Zetaris login and the Nightshift Console URL + runtime token
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
@@ -83,8 +83,10 @@ GW=$(docker network inspect zetaris_default -f '{{(index .IPAM.Config 0).Gateway
 python3 scripts/load_zetaris.py --base-url http://$GW:8000
 ```
 
-**Pin Nemotron for the NVIDIA award.** List the routes Nightshift exposes, then set `FAST_MODEL`/`CRITIC_MODEL`
-to Nemotron-backed ones. `meterless/auto` may route to another model.
+**Nemotron is pinned for the NVIDIA award.** `FAST_MODEL` and `CRITIC_MODEL` default to
+`nvidia/nemotron-3.5-bolt-e4b` in `.env.example` and in `athena/config.py`, so every model call goes to a
+Nemotron route and the trace names it. Never set them to `meterless/auto`, which may route to another model.
+Confirm the exact route names your Nightshift exposes, and change the two values if they differ:
 ```bash
 python3 -c "from athena.config import get_settings as g;from athena.llm import NightshiftLLM as N;s=g();print(N(s.meterless_base_url,s.meterless_token).models())"
 ```

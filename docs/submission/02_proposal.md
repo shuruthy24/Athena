@@ -79,9 +79,10 @@ with its own rule-based score. It is **not** evidence of real-world safety. Real
 post-trip ratings and by comparing route choices with and without explanations (`04`, section 4).
 
 ## 9. Feasibility
-Everything in this submission runs today in sample mode and against mock services (39 tests pass). The live path
+Everything in this submission runs today in sample mode and against mock services (73 tests pass). The live path
 needs the team's laptop: Zetaris, Nightshift in a Windows VM, and NVIDIA keys. The remaining risk is
-operational, not design: loading the tables into Zetaris and pinning a Nemotron route.
+operational, not design: loading the tables into Zetaris, which `docs/evidence/zetaris_load.txt` records.
+Nemotron is pinned by default in `.env.example` and `athena/config.py`.
 
 ## 10. Evaluation
 - **Scout routing:** held-out top-1 0.962, injection precision and recall 1.0, clarification rate 0.077.

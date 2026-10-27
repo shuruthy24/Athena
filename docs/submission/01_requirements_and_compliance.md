@@ -24,10 +24,10 @@ Status key:
 | Zetaris as the data layer | Every route and street query goes to Zetaris over REST (`athena/data/zetaris.py`, `source.py`). The tables are registered by `scripts/load_zetaris.py` | Trace step `data` shows "Zetaris REST (auth=…)" plus the SQL in the UI; `docs/evidence/zetaris_load.txt` | Done ◐ (live run on laptop pending) |
 | At least one Meterless Engine in a working feature, with a test | **Scout Intent** implemented to the Meterless spec: 5-stage pipeline, canonical bands and weights, guard stack, capability graph, model profiles, HMAC-signed contracts with a 5-min TTL, re-planning. Every executor verifies the contract before acting | `tests/test_scout.py` (20 tests), `evals/run_evals.py` against Meterless thresholds, `docs/evidence/evaluation_report.md` | Done ✔ |
 | Meterless Nightshift as the primary AI provider | Every model call goes through `NightshiftLLM` (OpenAI-compatible Runtime, Bearer runtime token, `meterless-app`, `meterless-scope`). There is no other provider | `tests/test_api_and_live_path.py` against a mock Runtime; `scripts/check_stack.py` for the live run | Done ◐ |
-| NVIDIA wherever it contributes (models via Nightshift) | Nemotron fast lane drafts claims and moderates reports; Nemotron critic lane checks claims. The trace records the model that served each call | Trace in UI and `runs/*.jsonl`; `docs/evidence/stack_checks.txt` | Done ◐ (pin a Nemotron route, see README) |
+| NVIDIA wherever it contributes (models via Nightshift) | Nemotron fast lane drafts claims and moderates reports; Nemotron critic lane checks claims. `FAST_MODEL` and `CRITIC_MODEL` are pinned to `nvidia/nemotron-3.5-bolt-e4b` in `.env.example` and `athena/config.py`, not `meterless/auto`. The trace records the model that served each call | Trace in UI and `runs/*.jsonl`; `docs/evidence/stack_checks.txt` (requested and served by `nvidia/nemotron-3.5-bolt-e4b`); `samples/outputs_live/` | Done ✔ |
 | NVIDIA award: show which model handled the request | `model` field per step in the trace; `check_stack.py` flags a non-Nemotron model | UI panel "How Athena decided" | Done ◐ |
 | Mention, copied prompt or unused dependency does not count | The engine sits on the request path of every feature and its tests pass | Tests | Done ✔ |
-| Cursor | Optional. The team must state honestly how it was used (announcement 27 Oct) | `06_sponsor_technology.md` | Team ☐ |
+| Cursor | Optional. Stated in `06_sponsor_technology.md`: Cursor was the AI coding tool for the build; generated code reviewed and tested by us | `06_sponsor_technology.md` | Done ✔ |
 
 ## Submission components
 | Component | Requirement | Artifact | Status |
@@ -35,7 +35,7 @@ Status key:
 | Demo video | 1–4 min: main workflow, how the agent solves the challenge, key features, Zetaris and Meterless integration | Script in `05_demo_and_presentation.md` | Team ☐ record and upload |
 | Slide deck | Problem and users, solution, workflow or architecture, stack, Zetaris and Meterless use, what's unique, product visuals, future work | Outline in `05_demo_and_presentation.md` | Team ☐ (or ask Claude to build it) |
 | GitHub repository | Public, all source, README with setup, usage and dependencies | This repo + `README.md` | Done ✔ content / Team ☐ push and make public |
-| Sponsor technology explanation | Zetaris integration; engines, what each does, and the test; Nightshift connection; where NVIDIA contributes; what's unique; how Cursor was used | `06_sponsor_technology.md` (paste-ready) | Done ✔ text / Team ☐ Cursor paragraph |
+| Sponsor technology explanation | Zetaris integration; engines, what each does, and the test; Nightshift connection; where NVIDIA contributes; what's unique; how Cursor was used | `06_sponsor_technology.md` (paste-ready) | Done ✔ |
 | Pre-existing components | Declared in the submission form | README "Pre-existing components" and `06_sponsor_technology.md` | Done ✔ text / Team ☐ paste into form |
 | Live demo / Drive links | "Where relevant" | — | Team ☐ optional |
 
@@ -61,7 +61,7 @@ Status key:
 | Criterion | Pts | What we show |
 |---|---|---|
 | Impact | 30 | A real, documented problem (Safer Cities 2023: 59% of NSW women feel unsafe in public after dark, compared with 32% of men). The output is a decision aid, not a claim of safety |
-| Technical | 20 | Spec-conformant engine, a critic loop with bounded retries, recovery paths, 39 tests, held-out evaluation |
+| Technical | 20 | Spec-conformant engine, a critic loop with bounded retries, recovery paths, 73 tests, held-out evaluation |
 | Innovation | 15 | The model can't make claims the data doesn't support; unknown lighting is treated as uncertainty, not risk; user reports become fading, verified signals |
 | Demo | 15 | One trip, one question, the visible revise-then-approve trace, the emergency path, the blocked injection |
 | Product & UX | 10 | One screen, 000 always visible, plain language, confidence chip, empty, loading and error states |

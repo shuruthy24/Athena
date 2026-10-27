@@ -56,8 +56,10 @@ def get_settings() -> Settings:
         zetaris_timeout_s=float(e("ZETARIS_TIMEOUT_S", "30")),
         meterless_base_url=e("METERLESS_BASE_URL", "http://127.0.0.1:8088/v1").rstrip("/"),
         meterless_token=e("METERLESS_RUNTIME_TOKEN", "").strip(),
-        fast_model=e("FAST_MODEL", e("METERLESS_MODEL", "meterless/auto")),
-        critic_model=e("CRITIC_MODEL", e("METERLESS_MODEL", "meterless/auto")),
+        # Default to a Nemotron route rather than meterless/auto, so a missing .env still
+        # sends work to NVIDIA Nemotron through Nightshift instead of an arbitrary model.
+        fast_model=e("FAST_MODEL", e("METERLESS_MODEL", "nvidia/nemotron-3.5-bolt-e4b")),
+        critic_model=e("CRITIC_MODEL", e("METERLESS_MODEL", "nvidia/nemotron-3.5-bolt-e4b")),
         llm_timeout_s=float(e("LLM_TIMEOUT_S", "60")),
         scout_secret=e("SCOUT_SECRET", "dev-only-change-me"),
         max_revisions=int(e("MAX_REVISIONS", "2")),
