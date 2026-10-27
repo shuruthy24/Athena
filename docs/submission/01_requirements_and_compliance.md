@@ -26,7 +26,7 @@ inferred beyond those documents. Where they are silent, the item is listed under
 ## Submission components
 | Component | Requirement | Artifact | Status |
 |---|---|---|---|
-| Demo video | 1–4 min: main workflow, how the agent solves the challenge, key features, Zetaris and Meterless integration | — | Done ✔ |
+| Demo video | 1–4 min: main workflow, how the agent solves the challenge, key features, Zetaris and Meterless integration | [Demo](https://youtu.be/lhbIQQIHzzY) | Done ✔ |
 | Slide deck | Problem and users, solution, workflow or architecture, stack, Zetaris and Meterless use, what's unique, product visuals, future work | Built; covers all eight required elements | Done ✔ |
 | GitHub repository | Public, all source, README with setup, usage and dependencies | This repo + `README.md` | Done ✔ |
 | Sponsor technology explanation | Zetaris integration; engines, what each does, and the test; Nightshift connection; where NVIDIA contributes; what's unique; how Cursor was used | `05_sponsor_technology.md` | Done ✔ |
