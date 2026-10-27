@@ -121,7 +121,7 @@ data/              exported tables for Zetaris (streets, route_steps, route_legs
 scripts/           export_data, load_zetaris, check_stack, make_samples, fetch_safety_points
 evals/             held-out routing sets, injection set, evaluation runner
 tests/             pytest suite with mock Zetaris and Nightshift servers
-docs/submission/   proposal, architecture, data and models, demo and slides, sponsor tech, compliance
+docs/submission/   proposal, architecture, data and models, sponsor tech, compliance
 docs/evidence/     evaluation report, test output, stack checks
 ```
 
