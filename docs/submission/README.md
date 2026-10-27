@@ -6,8 +6,7 @@
 | [02_proposal.md](02_proposal.md) | Problem, users, solution, innovation, data, AI strategy, impact, feasibility, self-critique |
 | [03_architecture.md](03_architecture.md) | Diagram, request lifecycle, engineering decisions, failure handling, API, deployment |
 | [04_data_models_evaluation.md](04_data_models_evaluation.md) | Datasets with provenance and limits, models, evaluation results and method, future evaluation |
-| [05_demo_and_presentation.md](05_demo_and_presentation.md) | Pre-flight checklist, user journey, 3:30 video script, 10-slide outline |
-| [06_sponsor_technology.md](06_sponsor_technology.md) | Paste-ready sponsor explanation and pre-existing declaration |
-| [07_status_and_limitations.md](07_status_and_limitations.md) | What is verified vs pending, limitations, prioritised remaining work |
+| [05_sponsor_technology.md](05_sponsor_technology.md) | Paste-ready sponsor explanation and pre-existing declaration |
+| [06_status_and_limitations.md](06_status_and_limitations.md) | What is verified vs pending, limitations, prioritised remaining work |
 | `img/` | Interface screenshots (sample mode) |
 | `../evidence/` | Test output, evaluation reports, secrets scan; stack and Zetaris load logs once run live |
