@@ -1,4 +1,4 @@
-# 07 · Status, verification, limitations and next steps
+# 06 · Status, verification, limitations and next steps
 
 ## Feature status
 | Feature | Status | Verified how |
