@@ -17,7 +17,7 @@ PLACES = ("unsw", "townhall", "central", "quay", "redfern", "kingsx", "newtown")
 BANDS = ("18", "22", "01")
 MODES = ("walk", "bike", "transit")
 STEP_COLS = "variant, duration_min, walk_m, transfers, leg, leg_mode, line, step, street, distance_m"
-STREET_COLS = "name, highway, lit, tunnel, risk_18, risk_22, risk_01, venues_22"
+STREET_COLS = "name, highway, lit, tunnel, risk_18, risk_22, risk_01, venues_18, venues_22, venues_01"
 LEG_COLS = ("journey, variant, itinerary, total_min, walk_m, transfers, start_time, end_time, leg, "
             "leg_mode, line, line_color, headsign, from_name, from_lat, from_lon, to_name, to_lat, "
             "to_lon, distance_m, duration_s, leg_start, leg_end, polyline")
@@ -158,4 +158,7 @@ class ZetarisSource:
                 r["tunnel"] = r["tunnel"].lower() == "true"
             if r.get("lit") in ("", "null", "None"):
                 r["lit"] = None
+            for k in ("venues_18", "venues_22", "venues_01"):
+                if r.get(k) not in (None, ""):
+                    r[k] = int(float(r[k]))
         return rows, ev

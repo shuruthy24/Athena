@@ -16,6 +16,8 @@ as on the map. Unknown lighting is never treated as unlit: it lowers confidence 
 from __future__ import annotations
 
 import logging
+import re
+from datetime import datetime, timedelta
 from dataclasses import dataclass
 
 from .analysis import report_penalties
@@ -26,6 +28,8 @@ log = logging.getLogger("athena.journeys")
 BAND_LOW, BAND_MEDIUM = 0.33, 0.55
 UNKNOWN_LIMIT = 30.0          # % of scored distance with unknown lighting before we stop ranking on risk
 WORST_WEIGHT = 0.45           # risk = 0.55 x distance-weighted mean + 0.45 x worst stretch
+MODES = ("transit", "walk", "bike")
+BAND_TIMES = {"18": "18:00", "22": "22:00", "01": "01:00"}
 SORTS = ("fastest", "lower_risk", "balanced", "fewest_transfers", "least_walking")
 LABELS = {
     "low": "Lower risk indicators",
@@ -34,6 +38,32 @@ LABELS = {
     "unknown": "Insufficient lighting data",
 }
 STREET_MODES = {"WALK", "BICYCLE", "SCOOTER"}
+
+
+def band_for_time(hhmm: str) -> str:
+    """Map any departure time to the closest street-risk profile Athena has (6 pm, 10 pm, 1 am).
+
+    Daytime uses the 6 pm profile, the earliest one scored; 20:00-23:29 uses 10 pm; later uses 1 am.
+    """
+    h, m = parse_hhmm(hhmm)
+    t = h * 60 + m
+    if 5 * 60 <= t < 20 * 60:
+        return "18"
+    if 20 * 60 <= t < 23 * 60 + 30:
+        return "22"
+    return "01"
+
+
+def parse_hhmm(hhmm: str) -> tuple[int, int]:
+    if not isinstance(hhmm, str) or not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", hhmm):
+        raise ValueError("time must be HH:MM (24-hour)")
+    return int(hhmm[:2]), int(hhmm[3:])
+
+
+def shift_iso(iso: str | None, minutes: int) -> str | None:
+    if not iso:
+        return iso
+    return (datetime.fromisoformat(iso) + timedelta(minutes=minutes)).isoformat()
 
 
 def band_label(risk: float | None, unknown_pct: float) -> tuple[str, str]:
@@ -92,6 +122,9 @@ def _pct(v: float) -> str:
     return f"{v:g}" if v != int(v) else str(int(v))
 
 
+MODE_WORDS = {"walk": "walking", "bike": "cycling", "transit": "public transport"}
+
+
 def explain(journey: dict, fastest: dict | None) -> list[str]:
     """Plain sentences a user can check against the numbers on screen. No safety promises."""
     s = journey["safety"]
@@ -114,9 +147,11 @@ def explain(journey: dict, fastest: dict | None) -> list[str]:
         if fr and jr is not None and fr > 0:
             delta = round(100 * (fr - jr) / fr, 1)
             direction = "lower" if delta > 0 else "higher"
-            out.append(f"Compared with the fastest option: {extra:+} min, and {abs(delta)}% {direction} risk indicators.")
+            out.append(f"Compared with the fastest {MODE_WORDS.get(journey['mode'], '')} option: {extra:+} min, "
+                       f"and {abs(delta)}% {direction} risk indicators.".replace("fastest  option", "fastest option"))
         else:
-            out.append(f"Compared with the fastest option: {extra:+} min.")
+            out.append(f"Compared with the fastest {MODE_WORDS.get(journey['mode'], '')} option: {extra:+} min."
+                       .replace("fastest  option", "fastest option"))
     if journey.get("transit_lines"):
         out.append("Uses " + ", ".join(journey["transit_lines"]) + ".")
     return out
@@ -171,29 +206,94 @@ def dedupe(journeys: list[dict]) -> list[dict]:
 
 @dataclass
 class JourneyPlanner:
-    source: object                 # ZetarisSource or LocalSource
+    source: object                 # ZetarisSource, LocalSource or OTPSource
     schema: str = "athena"
 
-    def plan(self, origin: str, destination: str, band: str, mode: str, sort: str = "balanced",
-             use_reports: bool = True) -> dict:
+    def plan(self, origin: str, destination: str, band: str, mode: str | list[str], sort: str = "balanced",
+             use_reports: bool = True, depart: str | None = None) -> dict:
+        """Journey options for one or more modes ("walk", "walk,bike" or a list), ranked together.
+
+        `depart` (HH:MM) is the user's departure time. Live OTP plans for it directly. Precomputed routes
+        were planned for the band's time, so they are moved to the chosen departure: walking and cycling
+        times stay exact (they don't depend on a timetable); transit times are marked as estimates.
+        """
         if sort not in SORTS:
             raise ValueError(f"unknown sort {sort}")
-        legs_rows, ev_legs = self.source.route_legs(origin, destination, band, mode)
-        if not legs_rows:
-            return {"journeys": [], "evidence": [ev_legs], "coverage": False,
-                    "freshness": self.source.freshness, "sort": sort}
-        street_rows, ev_streets = self.source.leg_streets(origin, destination, band, mode)
+        modes = [m.strip() for m in (mode.split(",") if isinstance(mode, str) else mode) if m.strip()]
+        modes = list(dict.fromkeys(modes))
+        if not modes or any(m not in MODES for m in modes):
+            raise ValueError(f"mode must be one or more of {', '.join(MODES)}")
+        if depart is not None:
+            parse_hhmm(depart)
+        live = bool(self.source.freshness.get("live"))
         streets, ev_st = self.source.streets()
         by_name = {s["name"]: s for s in streets}
         penalties = report_penalties(band) if use_reports else {}
 
+        journeys, evidence = [], []
+        for m in modes:
+            kw = {"depart": depart} if (live and depart) else {}
+            legs_rows, ev_legs = self.source.route_legs(origin, destination, band, m, **kw)
+            evidence.append(ev_legs)
+            if not legs_rows:
+                continue
+            street_rows, ev_streets = self.source.leg_streets(origin, destination, band, m, **kw)
+            evidence.append(ev_streets)
+            journeys.extend(dedupe(self._build(legs_rows, street_rows, by_name, band, m, penalties)))
+        evidence.append(ev_st)
+        if not journeys:
+            return {"journeys": [], "evidence": evidence, "coverage": False, "modes": modes,
+                    "freshness": self.source.freshness, "sort": sort, "band": band, "depart": depart}
+
+        shifted = False
+        if depart and not live:
+            h, mi = parse_hhmm(depart)
+            for j in journeys:
+                start = datetime.fromisoformat(j["start_time"])
+                delta = (h * 60 + mi) - (start.hour * 60 + start.minute)
+                delta = (delta + 720) % 1440 - 720          # nearest direction across midnight
+                if delta:
+                    shifted = True
+                    j["start_time"], j["end_time"] = shift_iso(j["start_time"], delta), shift_iso(j["end_time"], delta)
+                    for leg in j["legs"]:
+                        leg["start"], leg["end"] = shift_iso(leg["start"], delta), shift_iso(leg["end"], delta)
+                    j["times_estimated"] = any(l["mode"] not in STREET_MODES for l in j["legs"])
+        for j in journeys:
+            j.setdefault("times_estimated", False)
+
+        fastest = min(journeys, key=lambda j: j["total_min"])
+        fastest_by_mode = {m: min((j for j in journeys if j["mode"] == m), key=lambda j: j["total_min"], default=None)
+                           for m in modes}
+        for j in journeys:
+            j["is_fastest"] = j["id"] == fastest["id"]
+            j["explanation"] = explain(j, fastest_by_mode.get(j["mode"]))
+        # Ties (walking and cycling often share streets) go to the quicker trip, matching the lower_risk sort.
+        lowest = min((j for j in journeys if j["safety"]["risk"] is not None),
+                     key=lambda j: (j["safety"]["risk"], j["total_min"]), default=None)
+        for j in journeys:
+            j["is_lowest_risk"] = bool(lowest and j["id"] == lowest["id"])
+        balanced = rank([dict(j) for j in journeys], "balanced")
+        best = balanced[0]["id"] if balanced and balanced[0]["safety"]["risk"] is not None and len(journeys) > 2 else None
+        for j in journeys:
+            j["is_best_balance"] = j["id"] == best
+        ordered = rank(journeys, sort)
+        timing_note = None
+        if shifted:
+            timing_note = (f"Planned from routes precomputed for {BAND_TIMES[band]}, moved to your {depart} departure. "
+                           "Walking and cycling times are exact; public transport times are estimates, so check live departures.")
+        return {
+            "journeys": ordered, "coverage": True, "sort": sort, "modes": modes, "band": band, "depart": depart,
+            "evidence": evidence, "freshness": self.source.freshness, "timing_note": timing_note,
+            "report_penalties": {k: round(v, 3) for k, v in penalties.items()},
+        }
+
+    def _build(self, legs_rows, street_rows, by_name, band, mode, penalties) -> list[dict]:
         groups: dict[str, list[dict]] = {}
         for r in legs_rows:
             groups.setdefault(r["journey"], []).append(r)
         steps_by_leg: dict[tuple[str, int], list[dict]] = {}
         for r in street_rows:
             steps_by_leg.setdefault((r["journey"], int(r["leg"])), []).append(r)
-
         journeys = []
         for jid, rows in groups.items():
             rows.sort(key=lambda r: int(r["leg"]))
@@ -231,20 +331,4 @@ class JourneyPlanner:
                 "start_time": head.get("start_time"), "end_time": head.get("end_time"),
                 "transit_lines": lines, "legs": legs, "safety": safety,
             })
-
-        journeys = dedupe(journeys)
-        fastest = min(journeys, key=lambda j: j["total_min"])
-        for j in journeys:
-            j["is_fastest"] = j["id"] == fastest["id"]
-            j["explanation"] = explain(j, fastest)
-        ordered = rank(journeys, sort)
-        lowest = min((j for j in journeys if j["safety"]["risk"] is not None),
-                     key=lambda j: j["safety"]["risk"], default=None)
-        for j in journeys:
-            j["is_lowest_risk"] = bool(lowest and j["id"] == lowest["id"])
-        return {
-            "journeys": ordered, "coverage": True, "sort": sort,
-            "evidence": [ev_legs, ev_streets, ev_st],
-            "freshness": self.source.freshness,
-            "report_penalties": {k: round(v, 3) for k, v in penalties.items()},
-        }
+        return journeys

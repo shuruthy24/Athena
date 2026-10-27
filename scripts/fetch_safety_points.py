@@ -4,9 +4,10 @@ Writes data/safety_points.json, which GET /api/safety-points serves. Run on a ma
 
     python3 scripts/fetch_safety_points.py
 
-Categories: police stations (amenity=police), hospitals (amenity=hospital), emergency phones
-(emergency=phone) and railway stations (railway=station). OpenStreetMap does not record staffing hours,
-so stations are labelled as stations, not as staffed. Data © OpenStreetMap contributors, ODbL.
+Categories: police stations (amenity=police), hospitals (amenity=hospital) and railway stations
+(railway=station). Emergency phones are left out: OpenStreetMap lists hundreds of them around the corridor
+(lift and bus-stop intercoms among them), which buried the places people look for. OpenStreetMap does not
+record staffing hours, so stations are labelled as stations, not as staffed. Data © OpenStreetMap contributors, ODbL.
 """
 from __future__ import annotations
 
@@ -33,7 +34,6 @@ def overpass_query(bbox=BBOX) -> str:
     return (f"[out:json][timeout:60];\n(\n"
             f'  nwr["amenity"="police"]({b});\n'
             f'  nwr["amenity"="hospital"]({b});\n'
-            f'  nwr["emergency"="phone"]({b});\n'
             f'  nwr["railway"="station"]({b});\n'
             f");\nout center tags;")
 
@@ -43,8 +43,6 @@ def category(tags: dict) -> str | None:
         return "police"
     if tags.get("amenity") == "hospital":
         return "hospital"
-    if tags.get("emergency") == "phone":
-        return "phone"
     if tags.get("railway") == "station":
         # Skip disused, proposed and tourist/heritage lines; keep train and metro stations.
         if tags.get("disused") == "yes" or tags.get("usage") == "tourism" or tags.get("station") == "light_rail":
@@ -67,7 +65,7 @@ def to_rows(elements: list[dict]) -> list[dict]:
             continue
         name = tags.get("name") or tags.get("official_name")
         # Stations and hospitals are mapped as several objects (building, platform area, node);
-        # keep one per name. Unnamed phones are kept individually.
+        # keep one per name. Unnamed places are kept individually.
         key = (cat, name) if name else (cat, el.get("type"), el.get("id"))
         if key in seen:
             continue
@@ -82,7 +80,7 @@ def to_rows(elements: list[dict]) -> list[dict]:
         if cat == "hospital" and tags.get("emergency"):
             row["emergency_department"] = tags["emergency"] == "yes"
         rows.append(row)
-    order = {"police": 0, "hospital": 1, "phone": 2, "station": 3}
+    order = {"police": 0, "hospital": 1, "station": 2}
     return sorted(rows, key=lambda r: (order[r["category"]], r["name"] or "~", r["id"]))
 
 
@@ -117,7 +115,7 @@ def main() -> int:
             "fetched": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "query": overpass_query()}
     args.out.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n")
-    counts = {c: sum(1 for r in rows if r["category"] == c) for c in ("police", "hospital", "phone", "station")}
+    counts = {c: sum(1 for r in rows if r["category"] == c) for c in ("police", "hospital", "station")}
     print(f"wrote {len(rows)} help locations to {args.out.relative_to(ROOT) if args.out.is_relative_to(ROOT) else args.out}: "
           + ", ".join(f"{k}={v}" for k, v in counts.items()))
     return 0

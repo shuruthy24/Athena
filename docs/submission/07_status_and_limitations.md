@@ -11,15 +11,16 @@
 | Report redaction → moderation → verification → fading penalty | **Verified live** | Unit tests; 14/14 with the offline stub, **12/14 (0.857) with Nemotron** — both misses send redacted reports to human review (see `04`) |
 | Emergency path (000, staffed stations, no model) | Implemented | Unit tests |
 | Ask Athena interface (loading, error, empty and success states; light and dark; phone width) | Implemented | Playwright screenshots in sample mode; no console errors except blocked web fonts in the sandbox |
-| Journey planner (`/`): origin/destination/mode/time/sort, comparable route cards, step-by-step legs, per-street lighting and risk, map with real OTP geometry, street-risk overlay, help locations, hand-off to Ask Athena | Implemented | 22 tests in `tests/test_journeys.py` (bands, ranking, dedupe, coverage, polyline decoding, endpoints, Zetaris path against the mock server, live-OTP row shape); Playwright screenshots at desktop and phone width, light and dark, no console errors |
-| Journey tables in Zetaris (`athena.route_legs` 108 rows, `athena.leg_streets` 204 rows) | Implemented; **load not yet re-run live** | Registered in `scripts/load_zetaris.py` and checked by two new lines in `scripts/check_stack.py`; mock-Zetaris test passes |
-| Help locations from OpenStreetMap | Script implemented; **not yet fetched** | Overpass is blocked from the build sandbox. Run `python3 scripts/fetch_safety_points.py` on the laptop |
+| Journey planner (`/`): any departure time, several modes at once, short route cards with a details view, step-by-step legs, per-street lighting and risk, map with real OTP geometry, optional street-risk overlay, help locations, hand-off to Ask Athena | Implemented | 34 tests in `tests/test_journeys.py` (bands, time-to-profile mapping, time shifting across midnight, multi-mode ranking, dedupe, coverage, polyline decoding, endpoints, Zetaris path against the mock server, live-OTP row shape); Playwright screenshots at desktop and phone width, light and dark, no console errors |
+| Street map (`/map`) and shared navigation on every page | Implemented | Page test checks every page carries the same top bar; Playwright screenshots. The old `/map` pointed at the prototype, whose relative data URLs 404'd there; the prototype now loads from `/web/` and is framed at `/prototype` |
+| Journey tables in Zetaris (`athena.route_legs` 108 rows, `athena.leg_streets` 204 rows) | **Verified live** | Loaded and 10/10 stack checks passed on the laptop |
+| Help locations from OpenStreetMap | **Fetched on the laptop** | Police stations, hospitals and train stations; emergency phones dropped |
 | Live OpenTripPlanner (`OTP_URL`) | Implemented, **untested against a real OTP** | Mocked GraphQL test; OTP needs ~10 GB RAM and can't run beside Zetaris and the VM |
 | Sample mode | Implemented | All tests and samples run with no credentials |
 | H-MEM memory, City of Sydney poles | Not built | — |
 
 ## Evidence index
-- `docs/evidence/test_results.txt`: pytest output (61 passed)
+- `docs/evidence/test_results.txt`: pytest output (73 passed)
 - `docs/evidence/evaluation_report.md`: all evaluation tables (generated)
 - `docs/evidence/evaluation_report_v1_baseline.md`: first routing evaluation, before the v2 changes
 - `docs/evidence/secrets_scan.txt`: scan for keys and tokens in tracked files
@@ -36,7 +37,7 @@
 5. **Nightshift runs in a VM.** It needs about 4 GB of RAM and must be opened after each VM start. Eligibility confirmation pending.
 6. **Zetaris authentication uses login** because API tokens are refused locally. The credentials sit in `.env`.
 7. **No user study yet.** Impact on real decisions is unmeasured.
-8. **Journey planner times are scheduled, not live,** and come from routes precomputed for one weekday evening. The planner says so above every result list.
+8. **Journey planner times are scheduled, not live,** and come from routes precomputed for 6 pm, 10 pm and 1 am on one weekday. Any other departure time moves those routes: walking and cycling times stay exact, public transport times are estimates marked "≈". Street risk uses the closest of the three profiles; daytime uses the 6 pm one. The planner says all of this on screen.
 9. **Help locations are OpenStreetMap data.** OSM does not record staffing hours, so stations are shown as stations, not as staffed, and coverage depends on what volunteers have mapped.
 
 ## Unverified dependencies (must be checked on the laptop)

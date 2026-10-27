@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Athena Prototype Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/web/athena.css">
+<style>
+body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;padding:8px 16px;background:var(--soft);border-bottom:1px solid var(--line);font-size:.84rem;color:var(--muted)}
+iframe{flex:1;border:0;width:100%;background:var(--bg)}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tb-brand" href="/" aria-label="Athena home"><span class="mark" aria-hidden="true">A</span><span class="name">Athena</span></a>
+  <nav class="tb-tabs" aria-label="Sections">
+    <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a4 4 0 0 0 0-8H8a4 4 0 0 1 0-8h8"/></svg>Plan a trip</a>
+    <a href="/map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z M9 4v14M15 6v14"/></svg>Street map</a>
+    <a href="/ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Ask Athena</a>
+  </nav>
+  <a class="tb-sos" href="tel:000" aria-label="Call 000 in an emergency"><span>In danger?</span><b>000</b><span class="extra">police · fire · ambulance</span></a>
+</header>
+<div class="banner"><span><b style="color:var(--ink)">Prototype map, built before the hackathon.</b> Declared pre-existing work, shown here unchanged for comparison.</span><a href="/">Back to the journey planner</a></div>
+<!-- Served from /web/ so the prototype's relative routes.json and streets.geojson requests resolve. -->
+<iframe src="/web/index.html" title="Athena prototype route map"></iframe>
+</body>
+</html>

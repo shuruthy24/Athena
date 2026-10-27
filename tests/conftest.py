@@ -16,7 +16,7 @@ API_KEY = "test-api-key-not-real"
 RUNTIME_TOKEN = "test-runtime-token"
 MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b"
 STEP_COLS = ["variant", "duration_min", "walk_m", "transfers", "leg", "leg_mode", "line", "step", "street", "distance_m"]
-STREET_COLS = ["name", "highway", "lit", "tunnel", "risk_18", "risk_22", "risk_01", "venues_22"]
+STREET_COLS = ["name", "highway", "lit", "tunnel", "risk_18", "risk_22", "risk_01", "venues_18", "venues_22", "venues_01"]
 
 
 class MockHandler(BaseHTTPRequestHandler):

@@ -96,16 +96,31 @@ def list_places() -> dict:
     return {"places": list(places().values())}
 
 
+def resolve_band(band: str | None, time: str | None) -> str:
+    from .journeys import band_for_time
+    if time:
+        try:
+            return band_for_time(time)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+    if band not in ("18", "22", "01"):
+        raise HTTPException(422, "band must be 18, 22 or 01")
+    return band
+
+
 @app.get("/api/journeys")
 def journeys(origin: str, destination: str, band: str = "22", mode: str = "transit",
-             sort: str = "balanced") -> dict:
-    """Journey options with safety indicators. Ranking happens after the router returns candidates."""
+             sort: str = "balanced", time: str | None = None) -> dict:
+    """Journey options with safety indicators. `mode` may list several modes (walk,bike,transit), which are
+    ranked together. `time` (HH:MM) is any departure time; it selects the closest street-risk profile."""
     from .journeys import SORTS, JourneyPlanner
     if sort not in SORTS:
         raise HTTPException(422, f"sort must be one of {', '.join(SORTS)}")
+    band = resolve_band(band, time)
     src = planner_source()
+    args = (origin, destination, band, mode, sort)
     try:
-        result = JourneyPlanner(src, get_settings().zetaris_schema).plan(origin, destination, band, mode, sort)
+        result = JourneyPlanner(src, get_settings().zetaris_schema).plan(*args, depart=time)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     except Exception as exc:  # noqa: BLE001 - fall back to precomputed rather than failing the request
@@ -114,13 +129,14 @@ def journeys(origin: str, destination: str, band: str = "22", mode: str = "trans
         if fallback is src:
             raise HTTPException(502, f"Journey planning is unavailable ({exc.__class__.__name__}).") from exc
         try:
-            result = JourneyPlanner(fallback, get_settings().zetaris_schema).plan(origin, destination, band, mode, sort)
+            result = JourneyPlanner(fallback, get_settings().zetaris_schema).plan(*args, depart=time)
             result["degraded"] = f"Live routing unavailable ({exc.__class__.__name__}); showing precomputed alternatives."
         except Exception as exc2:  # noqa: BLE001
             raise HTTPException(502, f"Journey planning is unavailable ({exc2.__class__.__name__}).") from exc2
     o, d = places().get(origin), places().get(destination)
     result["origin"] = o
     result["destination"] = d
+    result["profile"] = {"band": band, "label": {"18": "6 pm", "22": "10 pm", "01": "1 am"}[band]}
     if not result.get("coverage"):
         result["message"] = (
             f"No routes for {o['name'] if o else origin} to {d['name'] if d else destination} yet. "
@@ -130,10 +146,9 @@ def journeys(origin: str, destination: str, band: str = "22", mode: str = "trans
 
 
 @app.get("/api/street-safety")
-def street_safety(band: str = "22") -> dict:
+def street_safety(band: str = "22", time: str | None = None) -> dict:
     """GeoJSON for the safety overlay: street geometry joined to the risk values Zetaris serves."""
-    if band not in ("18", "22", "01"):
-        raise HTTPException(422, "band must be 18, 22 or 01")
+    band = resolve_band(band, time)
     geo = json.loads((ROOT / "web" / "streets.geojson").read_text())
     try:
         rows, ev = planner_source().streets()
@@ -150,10 +165,14 @@ def street_safety(band: str = "22") -> dict:
         risk = a.get(f"risk_{band}")
         features.append({"type": "Feature", "geometry": f["geometry"], "properties": {
             "name": name, "risk": None if risk is None else float(risk), "lit": a.get("lit"),
-            "highway": a.get("highway"), "tunnel": bool(a.get("tunnel"))}})
+            "highway": a.get("highway"), "tunnel": bool(a.get("tunnel")),
+            "venues": a.get(f"venues_{band}")}})
     return {"type": "FeatureCollection", "features": features, "band": band,
             "source": ev.get("executed_by"),
             "note": "Risk is Athena's rule-based street score (lighting, path type, activity), not an incident count."}
+
+
+HELP_CATEGORIES = ("police", "hospital", "station")
 
 
 @app.get("/api/safety-points")
@@ -165,7 +184,10 @@ def safety_points() -> dict:
         return {"points": [], "available": False,
                 "note": "Run scripts/fetch_safety_points.py to load help locations from OpenStreetMap."}
     body = json.loads(path.read_text())
-    return {"points": body.get("rows", []), "available": True,
+    # Emergency phones are excluded: OpenStreetMap lists hundreds of them (lift and bus-stop intercoms
+    # among them), which buried the police stations, hospitals and stations people actually look for.
+    points = [p for p in body.get("rows", []) if p.get("category") in HELP_CATEGORIES]
+    return {"points": points, "available": bool(points),
             "attribution": body.get("attribution"), "fetched": body.get("fetched")}
 
 
@@ -189,21 +211,31 @@ def health() -> dict:
     return out
 
 
+def _page(name: str):
+    return FileResponse(ROOT / "web" / name)
+
+
 @app.get("/")
 def plan_page():
-    """The journey planner. Falls back to the Ask Athena page until web/plan.html exists."""
-    page = ROOT / "web" / "plan.html"
-    return FileResponse(page if page.exists() else ROOT / "web" / "ask.html")
+    """The journey planner."""
+    return _page("plan.html")
 
 
 @app.get("/ask")
 def ask_page():
-    return FileResponse(ROOT / "web" / "ask.html")
+    return _page("ask.html")
 
 
 @app.get("/map")
 def map_page():
-    return FileResponse(ROOT / "web" / "index.html")
+    """Street map: every scored street coloured by its risk indicators for a chosen time."""
+    return _page("streets.html")
+
+
+@app.get("/prototype")
+def prototype_page():
+    """The pre-existing route map (built before the hackathon), framed with the app's navigation."""
+    return _page("prototype.html")
 
 
 app.mount("/web", StaticFiles(directory=ROOT / "web"), name="web")

@@ -44,12 +44,14 @@ flowchart TB
 ## Request lifecycle (journey planner)
 | # | Component | What happens |
 |---|---|---|
-| 1 | `web/plan.html` | The user picks origin, destination, mode (transport, walk, cycle), departure band (6 pm, 10 pm, 1 am) and sort order. The choice is kept in the URL so a link reproduces the view |
+| 1 | `web/plan.html` | The user picks origin, destination, a departure time ("Now" or any time), one or more modes (public transport, walk, cycle) and a sort order. The choice is kept in the URL so a link reproduces the view |
 | 2 | `GET /api/journeys` | `planner_source()` picks live OpenTripPlanner when `OTP_URL` is set and answers a ping; otherwise the precomputed alternatives in Zetaris (`athena.route_legs`, `athena.leg_streets`), or local JSON in sample mode. If live routing fails mid-request the server falls back to precomputed and sets `degraded` |
-| 3 | `JourneyPlanner.plan` | Groups leg rows into itineraries, scores every walking or cycling leg on Zetaris street attributes with the same formula as the agent (0.55 × distance-weighted mean + 0.45 × worst stretch, plus approved-report penalties), labels each with the validated bands (lower < 0.33 ≤ moderate < 0.55 ≤ higher; more than 30% unknown lighting → "insufficient lighting data"), merges duplicate itineraries returned by both the fastest and the Athena search, then ranks |
+| 2a | Time | `band_for_time` maps the departure time to the closest street-risk profile Athena has: 05:00–19:59 → 6 pm, 20:00–23:29 → 10 pm, otherwise 1 am. The planner says which profile it used. Live OTP plans for the exact time. Precomputed routes are moved to the chosen departure: walking and cycling times stay exact (they don't depend on a timetable), public transport times are marked "≈" and the UI says they are estimates |
+| 3 | `JourneyPlanner.plan` | For each selected mode, groups leg rows into itineraries, scores every walking or cycling leg on Zetaris street attributes with the same formula as the agent (0.55 × distance-weighted mean + 0.45 × worst stretch, plus approved-report penalties), labels each with the validated bands (lower < 0.33 ≤ moderate < 0.55 ≤ higher; more than 30% unknown lighting → "insufficient lighting data"), merges duplicate itineraries returned by both the fastest and the Athena search, then ranks all modes together. Each explanation compares the route with the fastest option of its own mode |
 | 4 | Ranking | `fastest`, `lower_risk`, `balanced` (duration and risk normalised across the candidates, weighted evenly), `fewest_transfers`, `least_walking`. Ranking only reorders what the router returned; it never creates a route |
-| 5 | Map | Each leg's OTP encoded polyline is decoded in the browser and drawn as-is (no straight-line fakes). The selected route is drawn in line colours, the others dimmed; tapping a line or a card selects it. The street-risk overlay is the street geometry joined to the risk values Zetaris serves for that band. Help locations come from OpenStreetMap via `scripts/fetch_safety_points.py`, and each route lists those within 400 m |
+| 5 | Map | Each leg's OTP encoded polyline is decoded in the browser and drawn as-is (no straight-line fakes). The selected route is drawn in line colours, the others dimmed; tapping a line or a card selects it. The street-risk overlay is the street geometry joined to the risk values Zetaris serves for that band. Help locations (police stations, hospitals, train stations) come from OpenStreetMap via `scripts/fetch_safety_points.py`; each route's details list the nearest of each within 600 m. Route cards stay short; **Details** opens the full breakdown in the same panel |
 | 6 | Hand-off | "Ask Athena about this route" opens `/ask` with the same trip and question, where the evidence-checked agent explains it |
+| 7 | Street map (`/map`, `web/streets.html`) | Every scored street from `/api/street-safety` for the chosen time, coloured by band, with counts, a filterable list (higher risk, unlit) and help locations. All pages share one top bar (`web/athena.css`) so navigation never disappears; the pre-existing map is framed under it at `/prototype` |
 
 The map starts on a plain background style and adds the OpenFreeMap basemap afterwards, so routes, risk overlay and
 help markers still render when tiles are blocked or the laptop is offline. MapLibre is vendored under `web/vendor/`.
@@ -91,9 +93,12 @@ help markers still render when tiles are blocked or the laptop is offline. MapLi
   returns journey options with legs, encoded polylines, per-leg and per-journey safety, explanations, `freshness`,
   `coverage` and the SQL evidence. Uncovered trips return `coverage: false` with a message.
 - `GET /api/street-safety?band=` returns GeoJSON street geometry joined to the Zetaris risk values for the overlay.
-- `GET /api/safety-points` returns OpenStreetMap help locations (police, hospitals, emergency phones, stations), or
+- `GET /api/safety-points` returns OpenStreetMap help locations (police stations, hospitals, train stations; emergency
+  phones are filtered out because hundreds of lift and bus-stop intercoms buried the useful places), or
   `available: false` until `scripts/fetch_safety_points.py` has been run.
-- `GET /docs` serves OpenAPI. `/` is the journey planner, `/ask` is Ask Athena, `/map` is the pre-existing route map.
+- `/api/journeys` and `/api/street-safety` also take `time=HH:MM`, and `mode` may list several modes (`walk,bike,transit`).
+- `GET /docs` serves OpenAPI. `/` is the journey planner, `/map` the street map, `/ask` Ask Athena, `/prototype` the
+  pre-existing route map.
 
 ## Deployment
 Local only, for judging and the demo: `./run.sh` (Python venv). Sample mode needs nothing else. The live mode

@@ -75,20 +75,20 @@ class OTPSource:
         except requests.RequestException:
             return False
 
-    def _plan(self, origin: str, destination: str, band: str, mode: str):
+    def _plan(self, origin: str, destination: str, band: str, mode: str, depart: str | None = None):
         """Returns (leg rows, street-step rows) in the precomputed table shape. Cached for 60 s."""
-        key = (origin, destination, band, mode)
+        key = (origin, destination, band, mode, depart)
         hit = self._cache.get(key)
         if hit and time.time() - hit[0] < 60:
             return hit[1], hit[2]
         o, d = self.places.get(origin), self.places.get(destination)
         if not o or not d:
             raise OTPError(f"unknown place: {origin if not o else destination}")
-        hour = {"18": "18:00", "22": "22:00", "01": "01:00"}[band]
+        hour = depart or {"18": "18:00", "22": "22:00", "01": "01:00"}[band]
         variables = {
             "from": {"location": {"coordinate": {"latitude": o["lat"], "longitude": o["lon"]}}, "label": o["name"]},
             "to": {"location": {"coordinate": {"latitude": d["lat"], "longitude": d["lon"]}}, "label": d["name"]},
-            "dateTime": {"earliestDeparture": f"{_next_date(band)}T{hour}:00+11:00"},
+            "dateTime": {"earliestDeparture": f"{_next_date(band, hour)}T{hour}:00+11:00"},
             "modes": MODES[mode], "first": 4,
         }
         t0 = time.perf_counter()
@@ -142,23 +142,24 @@ class OTPSource:
         self._ms = ms
         return legs, steps
 
-    def route_legs(self, origin, destination, band, mode):
-        legs, _ = self._plan(origin, destination, band, mode)
+    def route_legs(self, origin, destination, band, mode, depart=None):
+        legs, _ = self._plan(origin, destination, band, mode, depart)
         return legs, {"sql": f"OTP planConnection {origin}->{destination} {band} {mode}",
                       "executed_by": f"OpenTripPlanner live ({self.url})", "rows": len(legs),
                       "ms": getattr(self, "_ms", 0)}
 
-    def leg_streets(self, origin, destination, band, mode):
-        _, steps = self._plan(origin, destination, band, mode)
+    def leg_streets(self, origin, destination, band, mode, depart=None):
+        _, steps = self._plan(origin, destination, band, mode, depart)
         return steps, {"sql": f"OTP planConnection steps {origin}->{destination} {band} {mode}",
                        "executed_by": f"OpenTripPlanner live ({self.url})", "rows": len(steps), "ms": 0}
 
 
-def _next_date(band: str) -> str:
-    """The sample corridor was planned for a weekday evening; live queries use the next such date."""
+def _next_date(band: str, hhmm: str | None = None) -> str:
+    """The sample corridor was planned for a weekday evening; live queries use the next such date.
+    Times before 05:00 are treated as the early hours of the following day."""
     from datetime import date, timedelta
     d = date.today()
-    if band == "01":
+    if (hhmm and hhmm < "05:00") or (not hhmm and band == "01"):
         d += timedelta(days=1)
     while d.weekday() >= 5:
         d += timedelta(days=1)

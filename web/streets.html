@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Athena Street Map</title>
+<meta name="description" content="Every street Athena scores, coloured by its risk indicators at the time you choose, with nearby police, hospitals and stations.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/web/vendor/maplibre-gl.css">
+<link rel="stylesheet" href="/web/athena.css">
+<style>
+body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.app{flex:1;display:grid;grid-template-columns:380px minmax(0,1fr);min-height:0}
+.panel{overflow-y:auto;border-right:1px solid var(--line);background:var(--bg);min-height:0;display:flex;flex-direction:column}
+.mapwrap{position:relative;min-height:0}
+#map{position:absolute;inset:0;background:var(--map-bg)}
+@media (max-width:860px){
+  body{height:auto;min-height:100dvh;overflow:visible;display:block}
+  .app{display:flex;flex-direction:column}
+  .mapwrap{order:1;height:46vh;min-height:280px;position:sticky;top:var(--tb-mobile,96px);z-index:1}
+  .panel{order:2;overflow:visible;border-right:0}
+}
+.intro{background:var(--panel);border-bottom:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:12px}
+.intro h1{font-size:1.3rem}
+.intro p{margin:0;font-size:.88rem;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tile{background:var(--soft);border-radius:10px;padding:8px 9px;display:flex;flex-direction:column}
+.tile b{font:700 1.2rem var(--f-display)}
+.tile span{font-size:.72rem;color:var(--muted)}
+.tile.high b{color:var(--bad)} .tile.unlit b{color:var(--warn)} .tile.lit b{color:var(--ok)}
+.listsec{padding:14px 16px 20px;display:flex;flex-direction:column;gap:10px}
+.listhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.listhead h2{font-size:1rem}
+.filters .chip{padding:4px 11px;font-size:.8rem}
+.slist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.srow{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:2px 10px;align-items:center;cursor:pointer;width:100%;text-align:left}
+.srow:hover{border-color:var(--route-dim)}
+.srow[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.srow .sw{width:12px;height:12px;border-radius:50%;grid-row:1 / span 2}
+.srow .nm{font-weight:600;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srow .sc{font:500 .78rem var(--f-mono);color:var(--muted);text-align:right}
+.srow .mt{font-size:.76rem;color:var(--muted);grid-column:2 / span 2}
+.empty{color:var(--muted);font-size:.86rem;padding:10px 2px}
+.foot{padding:0 16px 20px;font-size:.75rem;color:var(--muted);margin:0;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tb-brand" href="/" aria-label="Athena home"><span class="mark" aria-hidden="true">A</span><span class="name">Athena</span></a>
+  <nav class="tb-tabs" aria-label="Sections">
+    <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a4 4 0 0 0 0-8H8a4 4 0 0 1 0-8h8"/></svg>Plan a trip</a>
+    <a href="/map" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z M9 4v14M15 6v14"/></svg>Street map</a>
+    <a href="/ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Ask Athena</a>
+  </nav>
+  <a class="tb-sos" href="tel:000" aria-label="Call 000 in an emergency"><span>In danger?</span><b>000</b><span class="extra">police · fire · ambulance</span></a>
+</header>
+
+<div class="app">
+  <aside class="panel" aria-label="Street list">
+    <section class="intro">
+      <h1>Street map</h1>
+      <p>Every street Athena scores between UNSW and the CBD, coloured by its risk indicators at the time you choose.</p>
+      <div class="field" style="display:flex;flex-direction:column;gap:6px">
+        <span class="lab" id="when-l">Time</span>
+        <div class="timefield" role="group" aria-labelledby="when-l">
+          <button class="chip" id="now" type="button" aria-pressed="true">Now</button>
+          <button class="chip" type="button" data-t="18:00" aria-pressed="false">6 pm</button>
+          <button class="chip" type="button" data-t="22:00" aria-pressed="false">10 pm</button>
+          <button class="chip" type="button" data-t="01:00" aria-pressed="false">1 am</button>
+          <input type="time" id="time" step="300" aria-label="Time of day">
+        </div>
+        <p class="hint" id="profile-hint"></p>
+      </div>
+      <div class="tiles" id="tiles" aria-live="polite"></div>
+    </section>
+    <section class="listsec">
+      <div class="listhead"><h2>Streets</h2>
+        <div class="chips filters" id="filters" role="group" aria-label="Filter streets">
+          <button class="chip" type="button" data-f="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-f="high" aria-pressed="false">Higher risk</button>
+          <button class="chip" type="button" data-f="unlit" aria-pressed="false">Unlit</button>
+        </div>
+      </div>
+      <ul class="slist" id="slist"></ul>
+    </section>
+    <div class="foot">
+      <p style="margin:0">Risk is Athena's rule-based street score from lighting, path type and late-night activity. It is not an incident count, and Athena never calls a street safe. Streets with no lighting data are shown as unknown, never as dark.</p>
+      <p style="margin:0">Looking for the original route map built before the hackathon? <a href="/prototype">Open the prototype</a>.</p>
+    </div>
+  </aside>
+
+  <section class="mapwrap" aria-label="Map">
+    <div id="map" role="region" aria-label="Street risk map"></div>
+    <div class="mapchips">
+      <button class="mchip" id="t-help" type="button" aria-pressed="true"><span class="sw" style="background:#1d4ed8"></span>Help locations</button>
+    </div>
+    <div class="basemap-note" id="basemap-note" hidden></div>
+    <details class="legend" id="legendbox"><summary>Map key</summary><div class="rows" id="legend"></div></details>
+  </section>
+</div>
+
+<script src="/web/vendor/maplibre-gl.js"></script>
+<script src="/web/athena.js"></script>
+<script>
+"use strict";
+const q = new URLSearchParams(location.search);
+const state = {now: !q.get("time"), time: q.get("time") || sydneyNow(), filter: "all", selected: null,
+               geo: null, help: {points: [], available: false}, showHelp: q.get("help") !== "0"};
+const {map, ready: mapReady} = createMap("map", {zoom: 13, noteEl: $("basemap-note")});
+let helpPins = [], popup = null;
+
+function setTime(t, now){
+  state.time = t; state.now = now;
+  $("time").value = t;
+  $("now").setAttribute("aria-pressed", now);
+  document.querySelectorAll("[data-t]").forEach(b => b.setAttribute("aria-pressed", !now && b.dataset.t === t));
+  const band = bandForTime(t);
+  $("profile-hint").textContent = band === "18" && t < "17:00"
+    ? "Showing Athena's 6 pm profile, the earliest time it scores."
+    : `Showing Athena's ${BAND_LABEL[band]} profile for ${hhmmText(t)}.`;
+  const p = new URLSearchParams(); if(!now) p.set("time", t); if(!state.showHelp) p.set("help", "0");
+  history.replaceState(null, "", p.toString() ? "?" + p : location.pathname);
+  load();
+}
+$("now").onclick = () => setTime(sydneyNow(), true);
+document.querySelectorAll("[data-t]").forEach(b => b.onclick = () => setTime(b.dataset.t, false));
+$("time").onchange = e => { if(e.target.value) setTime(e.target.value, false); };
+$("filters").onclick = e => {
+  const b = e.target.closest("button"); if(!b) return;
+  state.filter = b.dataset.f;
+  $("filters").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderList();
+};
+
+let seq = 0, firstFit = true;
+async function load(){
+  const my = ++seq;
+  $("slist").innerHTML = `<li class="empty">Loading streets…</li>`;
+  try {
+    const g = await getJSON("/api/street-safety?time=" + encodeURIComponent(state.time));
+    if(my !== seq) return;
+    state.geo = g;
+    renderTiles(); renderList();
+    await mapReady;
+    map.getSource("safety").setData(g);
+    highlight();
+    if(firstFit){ firstFit = false; fitPoints(map, g.features.flatMap(f => coords(f.geometry)), innerWidth <= 860 ? {top: 100, bottom: 40, left: 30, right: 56} : {top: 70, bottom: 50, left: 50, right: 70}); }
+  } catch(err){
+    if(my !== seq) return;
+    $("slist").innerHTML = `<li class="empty">Couldn't load street data (${esc(err.message)}). <button class="btn" type="button" onclick="load()">Try again</button></li>`;
+  }
+}
+const coords = g => g.type === "LineString" ? g.coordinates : g.type === "MultiLineString" ? g.coordinates.flat() : [];
+function lengthM(g){
+  const c = coords(g); let m = 0;
+  for(let i = 1; i < c.length; i++) m += haversine(c[i - 1], c[i]);
+  return m;
+}
+
+function renderTiles(){
+  const f = state.geo.features.map(x => x.properties);
+  const high = f.filter(p => riskBand(p.risk) === "high").length;
+  const unlit = f.filter(p => p.lit === "no").length;
+  const lit = f.filter(p => p.lit === "yes").length;
+  $("tiles").innerHTML = `
+    <div class="tile high"><b>${high}</b><span>higher-risk streets</span></div>
+    <div class="tile unlit"><b>${unlit}</b><span>unlit</span></div>
+    <div class="tile lit"><b>${lit} of ${f.length}</b><span>lit</span></div>`;
+}
+function renderList(){
+  let feats = state.geo.features.slice().sort((a, b) => (b.properties.risk ?? -1) - (a.properties.risk ?? -1));
+  if(state.filter === "high") feats = feats.filter(f => riskBand(f.properties.risk) === "high");
+  if(state.filter === "unlit") feats = feats.filter(f => f.properties.lit === "no");
+  if(!feats.length){ $("slist").innerHTML = `<li class="empty">No streets match this filter at ${hhmmText(state.time)}.</li>`; return; }
+  $("slist").innerHTML = feats.map(f => {
+    const p = f.properties, b = riskBand(p.risk);
+    const meta = [litText(p.lit), p.highway ? String(p.highway).replace(/_/g, " ") : "", p.tunnel ? "tunnel" : "",
+                  p.venues == null ? "" : p.venues ? `${p.venues} open venue${p.venues === 1 ? "" : "s"} nearby` : "no open venues nearby", km(lengthM(f.geometry))].filter(Boolean).join(" · ");
+    return `<li><button class="srow" type="button" data-name="${esc(p.name)}" aria-pressed="${p.name === state.selected}">
+      <span class="sw" style="background:${riskColor(p.risk)}" aria-hidden="true"></span>
+      <span class="nm">${esc(p.name)}</span><span class="sc"><span class="pill ${b}" style="font-size:.72rem"><span class="sw" aria-hidden="true"></span>${RISK_SHORT[b]}</span></span>
+      <span class="mt">${esc(meta)}${p.risk != null ? ` · score ${Number(p.risk).toFixed(2)}` : ""}</span></button></li>`;
+  }).join("");
+}
+$("slist").onclick = e => { const b = e.target.closest(".srow"); if(b) focusStreet(b.dataset.name, true); };
+
+function focusStreet(name, fly){
+  state.selected = name;
+  document.querySelectorAll(".srow").forEach(b => b.setAttribute("aria-pressed", b.dataset.name === name));
+  highlight();
+  const f = state.geo?.features.find(x => x.properties.name === name); if(!f) return;
+  const c = coords(f.geometry);
+  if(fly) fitPoints(map, c, innerWidth <= 860 ? 50 : {top: 90, bottom: 90, left: 90, right: 110});
+  popup?.remove();
+  popup = new maplibregl.Popup({closeOnClick: true}).setLngLat(c[Math.floor(c.length / 2)]).setHTML(streetPopupHTML(f.properties)).addTo(map);
+}
+function highlight(){
+  if(map.getLayer("safety-sel")) map.setFilter("safety-sel", ["==", ["get", "name"], state.selected || ""]);
+}
+
+mapReady.then(() => {
+  addSafetyLayer(map);
+  map.setPaintProperty("safety-line", "line-opacity", .9);
+  map.setPaintProperty("safety-line", "line-width", ["interpolate", ["linear"], ["zoom"], 12, 4, 16, 11]);
+  map.addLayer({id: "safety-sel", type: "line", source: "safety", filter: ["==", ["get", "name"], ""],
+    layout: {"line-cap": "round", "line-join": "round"},
+    paint: {"line-color": css("--ink"), "line-width": ["interpolate", ["linear"], ["zoom"], 12, 8, 16, 16], "line-opacity": .35}}, "safety-line");
+  map.on("click", "safety-line", e => {
+    const name = e.features[0]?.properties.name; if(!name) return;
+    focusStreet(name, false);
+    document.querySelector(`.srow[data-name="${CSS.escape(name)}"]`)?.scrollIntoView({block: "nearest", behavior: reduceMotion ? "auto" : "smooth"});
+  });
+  map.on("mouseenter", "safety-line", () => map.getCanvas().style.cursor = "pointer");
+  map.on("mouseleave", "safety-line", () => map.getCanvas().style.cursor = "");
+});
+
+async function initHelp(){
+  state.help = await loadHelp();
+  await mapReady;
+  helpPins = helpMarkers(state.help.points);
+  applyHelp(); renderLegend();
+}
+function applyHelp(){
+  $("t-help").setAttribute("aria-pressed", state.showHelp && state.help.available);
+  $("t-help").disabled = !state.help.available;
+  $("t-help").title = state.help.available ? "Police stations, hospitals and train stations (OpenStreetMap)" : "Help locations have not been loaded yet";
+  helpPins.forEach(m => state.showHelp ? m.addTo(map) : m.remove());
+}
+$("t-help").onclick = () => { state.showHelp = !state.showHelp; applyHelp(); renderLegend(); };
+function renderLegend(){
+  const rows = [
+    `<div class="r"><span class="ln" style="background:${css("--ok")}"></span>Lower risk indicators (under 0.33)</div>`,
+    `<div class="r"><span class="ln" style="background:${css("--warn")}"></span>Moderate (0.33 to 0.55)</div>`,
+    `<div class="r"><span class="ln" style="background:${css("--bad")}"></span>Higher (0.55 and above)</div>`,
+    `<div class="r"><span class="ln" style="background:${css("--route-dim")}"></span>No lighting data</div>`,
+  ];
+  if(state.help.available && state.showHelp) rows.push(`<div class="r">${Object.keys(HELP).map(k => `<span class="pin sm ${k}" aria-hidden="true">${ICON[k]}</span>`).join("")} Police · hospital · train station</div>`);
+  else if(!state.help.available) rows.push(`<div class="r" style="color:${css("--muted")}">Help locations not loaded</div>`);
+  $("legend").innerHTML = rows.join("");
+}
+
+if(innerWidth > 860) $("legendbox").open = true;
+document.documentElement.style.setProperty("--tb-mobile", document.querySelector(".topbar").offsetHeight + "px");
+renderLegend();
+setTime(state.time, state.now);
+initHelp();
+</script>
+</body>
+</html>

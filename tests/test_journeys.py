@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from athena.data.otp import OTPSource
 from athena.data.source import LocalSource
-from athena.journeys import LABELS, SORTS, JourneyPlanner, band_label, dedupe, rank, score_streets
+from athena.journeys import LABELS, SORTS, JourneyPlanner, band_for_time, band_label, dedupe, rank, score_streets
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -165,17 +165,25 @@ def test_safety_points_absent_then_present(client, tmp_path, monkeypatch):
     (tmp_path / "data").mkdir()
     assert c.get("/api/safety-points").json()["available"] is False
     (tmp_path / "data" / "safety_points.json").write_text(json.dumps(
-        {"rows": [{"id": "osm:node/1", "name": "P", "category": "police", "lat": -33.9, "lon": 151.2}],
+        {"rows": [{"id": "osm:node/1", "name": "P", "category": "police", "lat": -33.9, "lon": 151.2},
+                  {"id": "osm:node/2", "name": None, "category": "phone", "lat": -33.9, "lon": 151.2}],
          "attribution": "© OpenStreetMap contributors, ODbL", "fetched": "2026-10-28T00:00:00+00:00"}))
     body = c.get("/api/safety-points").json()
-    assert body["available"] and body["points"][0]["category"] == "police" and "ODbL" in body["attribution"]
+    assert body["available"] and "ODbL" in body["attribution"]
+    assert [p["category"] for p in body["points"]] == ["police"]       # phones filtered out of older files
 
 
-def test_planner_page_served(client):
+def test_pages_share_navigation(client):
     c, _ = client
-    html = c.get("/").text
-    assert "Athena Journey Planner" in html and "/web/vendor/maplibre-gl.js" in html and "000" in html
-    assert c.get("/web/vendor/maplibre-gl.js").status_code == 200
+    pages = {"/": "Athena Journey Planner", "/map": "Athena Street Map", "/ask": "Ask Athena", "/prototype": "Athena Prototype Map"}
+    for path, title in pages.items():
+        html = c.get(path).text
+        assert f"<title>{title}</title>" in html
+        assert 'class="tb-tabs"' in html and 'href="/map"' in html and 'href="/ask"' in html and "000" in html
+    assert 'src="/web/index.html"' in c.get("/prototype").text        # relative data URLs resolve under /web/
+    assert c.get("/web/routes.json").status_code == 200
+    for asset in ("/web/vendor/maplibre-gl.js", "/web/athena.js", "/web/athena.css"):
+        assert c.get(asset).status_code == 200
 
 
 def test_fetch_safety_points_parses_overpass():
@@ -188,10 +196,11 @@ def test_fetch_safety_points_parses_overpass():
         {"type": "node", "id": 5, "lat": -33.88, "lon": 151.20, "tags": {"railway": "station", "name": "Old", "disused": "yes"}},
         {"type": "node", "id": 6, "tags": {"amenity": "police"}},   # no coordinates
     ])
-    assert [r["category"] for r in rows] == ["police", "hospital", "phone"]
+    assert [r["category"] for r in rows] == ["police", "hospital"]      # emergency phones are not kept
     assert rows[1]["emergency_department"] is True
     q = overpass_query()
     assert '"amenity"="police"' in q and "-33.93,151.17,-33.85,151.26" in q and "out center" in q
+    assert "emergency" not in q
 
 
 class FakeResp:
@@ -246,3 +255,49 @@ def test_journeys_over_live_zetaris(monkeypatch, mock_server):
     sample = plan("transit", "fastest")
     assert [(j["total_min"], j["safety"]["risk"]) for j in r["journeys"]] == \
            [(j["total_min"], j["safety"]["risk"]) for j in sample["journeys"]]
+
+
+@pytest.mark.parametrize("t,band", [("08:00", "18"), ("18:00", "18"), ("19:59", "18"), ("20:00", "22"),
+                                    ("23:29", "22"), ("23:30", "01"), ("01:00", "01"), ("04:59", "01")])
+def test_any_time_maps_to_closest_profile(t, band):
+    assert band_for_time(t) == band
+
+
+def test_multiple_modes_are_ranked_together():
+    r = plan("walk,bike,transit", "fastest")
+    assert r["modes"] == ["walk", "bike", "transit"] and {j["mode"] for j in r["journeys"]} == {"walk", "bike", "transit"}
+    assert len(r["journeys"]) == 6
+    assert r["journeys"][0]["mode"] == "bike" and r["journeys"][0]["is_fastest"]
+    assert sum(j["is_lowest_risk"] for j in r["journeys"]) == 1
+    walk_alt = next(j for j in r["journeys"] if j["mode"] == "walk" and not j["is_fastest"] and j["total_min"] > 79.5)
+    assert any("fastest walking option" in x for x in walk_alt["explanation"])   # compared within its own mode
+    with pytest.raises(ValueError):
+        plan("walk,teleport")
+
+
+def test_departure_time_moves_times_and_marks_transit_as_estimate():
+    r = JourneyPlanner(LocalSource()).plan("unsw", "townhall", "22", "walk,transit", "fastest", use_reports=False, depart="22:40")
+    assert r["timing_note"] and "estimates" in r["timing_note"]
+    for j in r["journeys"]:
+        assert j["start_time"].startswith("2026-10-20T22:40")
+        assert j["legs"][0]["start"].startswith("2026-10-20T22:40")
+        assert j["times_estimated"] == (j["mode"] == "transit")
+    # across midnight: 00:30 departure on the 1 am profile moves times 30 minutes earlier
+    r = JourneyPlanner(LocalSource()).plan("unsw", "townhall", "01", "walk", use_reports=False, depart="00:30")
+    assert all("T00:30" in j["start_time"] for j in r["journeys"])
+    same = JourneyPlanner(LocalSource()).plan("unsw", "townhall", "22", "walk", use_reports=False, depart="22:00")
+    assert same["timing_note"] is None and not any(j["times_estimated"] for j in same["journeys"])
+
+
+def test_journeys_endpoint_accepts_time_and_modes(client):
+    c, _ = client
+    r = c.get("/api/journeys", params={"origin": "unsw", "destination": "townhall", "mode": "walk,bike", "time": "23:45"}).json()
+    assert r["band"] == "01" and r["profile"]["label"] == "1 am" and {j["mode"] for j in r["journeys"]} == {"walk", "bike"}
+    assert c.get("/api/journeys", params={"origin": "unsw", "destination": "townhall", "time": "25:00"}).status_code == 422
+    g = c.get("/api/street-safety", params={"time": "14:00"}).json()
+    assert g["band"] == "18" and all("venues" in f["properties"] for f in g["features"])
+
+
+def test_lowest_risk_tag_matches_lower_risk_sort_on_ties():
+    r = JourneyPlanner(LocalSource()).plan("townhall", "unsw", "01", "walk,bike", "lower_risk", use_reports=False)
+    assert r["journeys"][0]["is_lowest_risk"]

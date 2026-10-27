@@ -12,13 +12,18 @@ safety indicators and the evidence behind them.
 
 ![Athena journey planner](docs/submission/img/plan_desktop.png)
 
+![Route details](docs/submission/img/plan_detail.png)
+
+![Street map](docs/submission/img/streets_desktop.png)
+
 ![Ask Athena](docs/submission/img/ask_desktop.png)
 
 ## What it does
 
 | You do | Athena does |
 |---|---|
-| Open the planner, choose UNSW Library → Town Hall, public transport, 10 pm | Lists every option the router returned, deduplicated and ranked (balanced, lower risk, fastest, fewest changes, least walking). Each card shows times, legs, a risk-indicator band, lit share and confidence; opening one shows every leg and every street with its lighting and score. The map draws the real OpenTripPlanner geometry, a street-risk overlay and nearby police, hospitals, emergency phones and stations. |
+| Open the planner, choose UNSW Library → Town Hall, leave now or at any time, and tick any mix of public transport, walking and cycling | Lists every option the router returned for those modes, deduplicated and ranked together (best balance, lower risk, fastest, fewest changes, least walking). Each card is one glance: times, legs, a risk-indicator band and two or three facts. **Details** opens the full breakdown: why it got that rating, every leg and street with its lighting and score, nearby help, and the Zetaris SQL. The map draws the real OpenTripPlanner geometry and nearby police stations, hospitals and train stations. |
+| Open **Street map** | Every street Athena scores, coloured by its risk indicators for the time you pick, with counts of higher-risk and unlit streets, a filterable list, and help locations. |
 | Pick a trip and ask "Why is the Athena route better tonight?" | Queries Zetaris for both routes and every street on them. Computes time, route risk, lit share and the worst stretch. Nemotron drafts claims, and the Evidence Critic sends unsupported ones back for revision. Shows the answer with the SQL behind every number. |
 | Type "Someone is following me" | Scout routes to the emergency card at once (000, staffed stations). No model call, no clarification. |
 | Report "two lights out on Moore Park path" | Removes personal details before any model sees the text. Nemotron moderates, a verifier checks the street against Zetaris data, and an approved report adds a temporary risk penalty that halves every 7 days. |
@@ -54,7 +59,7 @@ Full write-up: [docs/submission/03_architecture.md](docs/submission/03_architect
 ```bash
 git clone https://github.com/shuruthy24/Athena.git && cd Athena
 SAMPLE_MODE=true ./run.sh
-# open http://localhost:8001 (journey planner) or http://localhost:8001/ask (Ask Athena)
+# open http://localhost:8001: journey planner (/), street map (/map), Ask Athena (/ask)
 ```
 Sample mode reads the same tables from `data/*.json` and uses an offline stand-in labelled
 `sample-offline-stub` in every trace, so it's never mistaken for Nemotron output.
@@ -86,7 +91,7 @@ python3 -c "from athena.config import get_settings as g;from athena.llm import N
 
 ## Tests and evaluation
 ```bash
-python3 -m pytest -q                 # 61 tests: Scout spec, agents, journey planner, API, live path against mock Zetaris + Nightshift
+python3 -m pytest -q                 # 73 tests: Scout spec, agents, journey planner, API, live path against mock Zetaris + Nightshift
 python3 evals/run_evals.py           # writes docs/evidence/evaluation_report.md
 python3 evals/run_evals.py --live    # also moderates the synthetic reports with Nemotron via Nightshift
 python3 scripts/make_samples.py      # sample inputs -> samples/outputs_sample_mode/
@@ -104,6 +109,9 @@ athena/            agent layer (new in the build window)
   llm.py           Meterless Nightshift client (OpenAI-compatible Runtime) and offline stub
   server.py        FastAPI: /api/ask, /api/journeys, /api/street-safety, /api/safety-points, /api/places, /api/health, pages
 web/plan.html      journey planner with map (new)
+web/streets.html   street map: every scored street by risk indicators for a chosen time (new)
+web/prototype.html frames the pre-existing map under the app's navigation at /prototype (new)
+web/athena.css, web/athena.js   shared top bar, palette, formatting and map helpers (new)
 web/ask.html       Ask Athena interface (new)
 web/vendor/        MapLibre GL JS 4.7.1, vendored so the map works offline (BSD-3-Clause)
 web/index.html, web/routes.json, web/streets.geojson   PRE-EXISTING route map and sample data (declared)
@@ -119,10 +127,10 @@ docs/evidence/     evaluation report, test output, stack checks
 Built for UNSW COMP3110 before the build window opened on 22 October 2026:
 - the OpenTripPlanner `athena-sydney` street-tag mapper and its build pipeline (`tag_streets.py`, `plan_trips.py`),
   which aren't in this repository
-- `web/index.html` (MapLibre route map and its route scoring)
+- `web/index.html` (MapLibre route map and its route scoring), shown unchanged at `/prototype`
 - `web/routes.json` and `web/streets.geojson` (hand-made **sample** routes, `"source": "sample"`)
 
-Everything under `athena/`, `web/plan.html`, `web/ask.html`, `web/vendor/`, `data/`, `scripts/`, `evals/`, `tests/` and `docs/` was built during the
+Everything under `athena/`, `web/plan.html`, `web/streets.html`, `web/prototype.html`, `web/athena.*`, `web/ask.html`, `web/vendor/`, `data/`, `scripts/`, `evals/`, `tests/` and `docs/` was built during the
 build window.
 
 ## Data, licences and attribution
