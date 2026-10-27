@@ -71,7 +71,7 @@ NVIDIA key in its Providers/Keys page and a Nemotron model available.
 cp .env.example .env        # fill in Zetaris login and the Nightshift Console URL + runtime token
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 python3 scripts/export_data.py                          # rebuild data/*.json from web/routes.json
-python3 scripts/load_zetaris.py --base-url https://raw.githubusercontent.com/<you>/athena-agent/main/data
+python3 scripts/load_zetaris.py --base-url https://raw.githubusercontent.com/shuruthy24/Athena/main/data
 python3 scripts/fetch_safety_points.py                  # help locations from OpenStreetMap -> data/safety_points.json
 python3 scripts/check_stack.py                          # PASS lines -> docs/evidence/stack_checks.txt
 ./run.sh                                                # http://localhost:8001
