@@ -1,4 +1,4 @@
-# 06 · Sponsor technology explanation
+# 05 · Sponsor technology explanation
 
 **Track:** Wildcard [Tinkerer]: we extended our existing Athena route map with a new agent layer.
 
