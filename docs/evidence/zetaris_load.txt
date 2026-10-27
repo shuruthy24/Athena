@@ -1,17 +1,23 @@
-# Zetaris load 2026-10-27T13:27:29.740719+00:00
+# Zetaris load 2026-10-27T14:22:09.003496+00:00
 mode: rest
-OK    CREATE LIGHTNING DATABASE ATHENA_REST DESCRIBE BY "Athena route and street data"
+EXISTS CREATE LIGHTNING DATABASE ATHENA_REST DESCRIBE BY "Athena route and street data"  [Zetaris HTTP 400: {"msg":"A database named \"ATHENA_REST\" already exists."}]
 EXISTS CREATE SCHEMASTORE CONTAINER athena  [Zetaris HTTP 400: {"msg":"A container named \"athena\" already exists."}]
-OK    CREATE LIGHTNING REST TABLE streets_raw FROM ATHENA_REST REQUEST(
-OK    CREATE SCHEMASTORE VIEW streets WITH CONTAINER athena AS
-OK    CREATE LIGHTNING REST TABLE route_steps_raw FROM ATHENA_REST REQUEST(
-OK    CREATE SCHEMASTORE VIEW route_steps WITH CONTAINER athena AS
-OK    CREATE LIGHTNING REST TABLE places_raw FROM ATHENA_REST REQUEST(
-OK    CREATE SCHEMASTORE VIEW places WITH CONTAINER athena AS
-OK    CREATE LIGHTNING REST TABLE reports_raw FROM ATHENA_REST REQUEST(
-OK    CREATE SCHEMASTORE VIEW reports WITH CONTAINER athena AS
+EXISTS CREATE LIGHTNING REST TABLE streets_raw FROM ATHENA_REST REQUEST(  [Zetaris HTTP 400: {"msg":"A table named \"streets_raw\" already exists in database \"ATHENA_REST\"."}]
+EXISTS CREATE SCHEMASTORE VIEW streets WITH CONTAINER athena AS  [Zetaris HTTP 400: {"msg":"A view named \"streets\" already exists in container \"athena\"."}]
+EXISTS CREATE LIGHTNING REST TABLE route_steps_raw FROM ATHENA_REST REQUEST(  [Zetaris HTTP 400: {"msg":"A table named \"route_steps_raw\" already exists in database \"ATHENA_REST\"."}]
+EXISTS CREATE SCHEMASTORE VIEW route_steps WITH CONTAINER athena AS  [Zetaris HTTP 400: {"msg":"A view named \"route_steps\" already exists in container \"athena\"."}]
+EXISTS CREATE LIGHTNING REST TABLE places_raw FROM ATHENA_REST REQUEST(  [Zetaris HTTP 400: {"msg":"A table named \"places_raw\" already exists in database \"ATHENA_REST\"."}]
+EXISTS CREATE SCHEMASTORE VIEW places WITH CONTAINER athena AS  [Zetaris HTTP 400: {"msg":"A view named \"places\" already exists in container \"athena\"."}]
+EXISTS CREATE LIGHTNING REST TABLE reports_raw FROM ATHENA_REST REQUEST(  [Zetaris HTTP 400: {"msg":"A table named \"reports_raw\" already exists in database \"ATHENA_REST\"."}]
+EXISTS CREATE SCHEMASTORE VIEW reports WITH CONTAINER athena AS  [Zetaris HTTP 400: {"msg":"A view named \"reports\" already exists in container \"athena\"."}]
+OK    CREATE LIGHTNING REST TABLE route_legs_raw FROM ATHENA_REST REQUEST(
+OK    CREATE SCHEMASTORE VIEW route_legs WITH CONTAINER athena AS
+OK    CREATE LIGHTNING REST TABLE leg_streets_raw FROM ATHENA_REST REQUEST(
+OK    CREATE SCHEMASTORE VIEW leg_streets WITH CONTAINER athena AS
 COUNT athena.streets: 12 (expected 12) PASS
 COUNT athena.route_steps: 186 (expected 186) PASS
 COUNT athena.places: 7 (expected 7) PASS
 COUNT athena.reports: 14 (expected 14) PASS
+COUNT athena.route_legs: 108 (expected 108) PASS
+COUNT athena.leg_streets: 204 (expected 204) PASS
 auth method: login

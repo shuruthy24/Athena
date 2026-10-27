@@ -1,9 +1,11 @@
-# Stack checks 2026-10-27T13:41:34.753402+00:00
+# Stack checks 2026-10-27T14:22:26.713454+00:00
 PASS Zetaris web interface 
 PASS Zetaris SELECT 1 over REST (auth=login)
 PASS Zetaris athena.streets (12 rows)
 PASS Zetaris athena.route_steps (186 rows)
+PASS Zetaris athena.route_legs (journey planner) (108 rows)
+PASS Zetaris athena.leg_streets (journey planner) (204 rows)
 PASS Nightshift connection (/healthz) {"status":"ok","engine":"meterless"}
 PASS Nightshift auth + model discovery (/v1/models) (108 models: ['meterless/auto', 'meterless/fast', 'meterless/deep', 'meterless/cheap', 'meterless/local'])
-PASS Nightshift text request, fast model (requested nvidia/nemotron-3.5-bolt-e4b; served by nvidia/nemotron-3.5-bolt-e4b; 2813 ms)
-PASS Nightshift text request, critic model (requested nvidia/nemotron-3.5-bolt-e4b; served by nvidia/nemotron-3.5-bolt-e4b; 2149 ms)
+PASS Nightshift text request, fast model (requested nvidia/nemotron-3.5-bolt-e4b; served by nvidia/nemotron-3.5-bolt-e4b; 2412 ms)
+PASS Nightshift text request, critic model (requested nvidia/nemotron-3.5-bolt-e4b; served by nvidia/nemotron-3.5-bolt-e4b; 2091 ms)
