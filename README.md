@@ -150,6 +150,6 @@ details are redacted before any model call. Prompt injection is blocked at the S
 HMAC-signed and executors refuse tampered, expired or out-of-scope contracts.
 
 ## Limitations
-See [docs/submission/07_status_and_limitations.md](docs/submission/07_status_and_limitations.md). In short: the data is a
+See [docs/submission/06_status_and_limitations.md](docs/submission/06_status_and_limitations.md). In short: the data is a
 two-trip sample (UNSW Library ↔ Town Hall), risk is a rule-based score rather than a validated safety measure,
 the evaluation sets are small and written by us, and Athena never describes a route as safe.
