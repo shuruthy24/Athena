@@ -87,7 +87,7 @@ Details and limitations: `04_data_models_evaluation.md`.
   `nemotron-3.5-lightning-30b-a3b` failed with a provider error every time; `nemotron-3-ultra-550b-a55b` worked
   but took 37.8 s and emitted reasoning prose before any JSON; `meterless/auto` routed to ultra;
   `nemotron-3.5-bolt-e4b` returned clean JSON in 7.4 s. We pinned bolt-e4b for both lanes, which also makes the
-  trace evidence unambiguous. See `07_status_and_limitations.md`.
+  trace evidence unambiguous. See `06_status_and_limitations.md`.
 
 ## 8. Impact (what we can and cannot claim)
 On the sample data, across all 18 trip/time/mode cases, the Athena route has a **median 36.3% lower route risk**
