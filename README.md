@@ -1,6 +1,6 @@
 # Athena: lower-risk night routes, explained with evidence
 
-Open Agent Hackathon 2026 · Team Athena (Kaira Dumasia, Shuruthy Dhushiyandan) · Track: **Wildcard [Tinkerer]**
+Open Agent Hackathon 2026 · Team Athena (Kaira Dumasia, Shuruthy Dhushiyandan. Andrii Rohovyi) · Track: **Wildcard [Tinkerer]**
 
 Navigation apps optimise for speed. Athena compares the fastest route with a lower-risk one for night trips in
 Sydney, and explains the difference in plain English. This hackathon adds an **agent layer** to our existing
