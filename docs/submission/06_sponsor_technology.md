@@ -63,7 +63,7 @@ Every step in the "How Athena decided" trace shows the model that actually serve
 - Zetaris is where both the route evidence and the report verification come from, and the SQL is shown to the
   user.
 
-**How Cursor was used.** Cursor was our AI coding tool for this build. We used it to write and iterate on the agent layer, to debug against the live Zetaris and Nightshift services, and to keep the tests and documentation moving alongside the code. A substantial part of the codebase was AI-generated; we reviewed it, tested it and are accountable for the result. Generated code is permitted by the rules (Welcome Guide §8).
+**How Cursor was used.**Cursor was used during the initial testing and exploration phase to evaluate the project and its integrations. However, it was not selected as the tool for implementing the final solution. The final implementation was developed using our chosen development workflow, with responsibility for the resulting codebase, testing and documentation remaining with our team. AI-generated code is permitted under the hackathon rules (Welcome Guide §8).
 
 **Pre-existing components (declare in the form).**
 Built for UNSW COMP3110 before 22 Oct 2026:
