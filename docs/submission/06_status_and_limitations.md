@@ -40,20 +40,13 @@
 8. **Journey planner times are scheduled, not live,** and come from routes precomputed for 6 pm, 10 pm and 1 am on one weekday. Any other departure time moves those routes: walking and cycling times stay exact, public transport times are estimates marked "≈". Street risk uses the closest of the three profiles; daytime uses the 6 pm one. The planner says all of this on screen.
 9. **Help locations are OpenStreetMap data.** OSM does not record staffing hours, so stations are shown as stations, not as staffed, and coverage depends on what volunteers have mapped.
 
-## Unverified dependencies (must be checked on the laptop)
+## Unverified dependencies (must be checked on the wokrspace)
 - Zetaris accepts `CREATE LIGHTNING REST TABLE` from a raw GitHub URL (fallbacks: local HTTP via the Docker gateway, or `--inline`).
 - DDL statements run over the REST `/sql-editor/sqls/run` endpoint as they do in the SQL Editor.
 - Zetaris returns the view's column names as the `headers` the client maps on.
 - The Nemotron route names in the team's Nightshift catalog (set `FAST_MODEL`, `CRITIC_MODEL`).
 
-## Prioritised remaining work (highest value first)
-1. ~~Run live on the laptop~~ **Done 28 Oct**: tables loaded, 8/8 stack checks, 10 live sample runs, live evaluation. Evidence committed.
-2. **Record the demo video and finish the slide deck** (required components).
-3. **Paste the sponsor text, declare pre-existing parts, submit before 23:45 UTC.**
-4. Confirm the VM eligibility question with the organisers (Help desk).
-5. If time remains: add H-MEM to remember a user's home and preferred mode across sessions (a second engine).
-
-## Model selection on the live stack (28 Oct, measured)
+## Model selection on the live stack
 We sent the real analyst prompt (1,973 characters) to four Nemotron routes through our Nightshift Runtime:
 
 | Route | Result |
