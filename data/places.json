@@ -1,0 +1,53 @@
+{
+ "rows": [
+  {
+   "id": "unsw",
+   "name": "UNSW Library",
+   "area": "Kensington",
+   "lat": -33.9175,
+   "lon": 151.2333
+  },
+  {
+   "id": "townhall",
+   "name": "Town Hall station",
+   "area": "Sydney CBD",
+   "lat": -33.8731,
+   "lon": 151.2068
+  },
+  {
+   "id": "central",
+   "name": "Central station",
+   "area": "Haymarket",
+   "lat": -33.8832,
+   "lon": 151.2066
+  },
+  {
+   "id": "quay",
+   "name": "Circular Quay",
+   "area": "Sydney CBD",
+   "lat": -33.8612,
+   "lon": 151.2108
+  },
+  {
+   "id": "redfern",
+   "name": "Redfern station",
+   "area": "Redfern",
+   "lat": -33.8917,
+   "lon": 151.1985
+  },
+  {
+   "id": "kingsx",
+   "name": "Kings Cross station",
+   "area": "Potts Point",
+   "lat": -33.8752,
+   "lon": 151.2224
+  },
+  {
+   "id": "newtown",
+   "name": "Newtown station",
+   "area": "Newtown",
+   "lat": -33.8981,
+   "lon": 151.1793
+  }
+ ]
+}

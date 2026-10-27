@@ -1,0 +1,331 @@
+{
+ "input": {
+  "id": "02_plan_transit_1am",
+  "message": "Plan a route from Town Hall to UNSW at 1am by bus"
+ },
+ "output": {
+  "traceId": "2800e904c7a04a6e",
+  "intent": "route.plan",
+  "scout": {
+   "intent": "route.plan",
+   "confidence": 0.889,
+   "band": "high",
+   "candidates": [
+    {
+     "intent": "route.plan",
+     "score": 0.8895,
+     "lexical": 1.0,
+     "semantic": 0.763,
+     "span": [
+      [
+       8,
+       13
+      ]
+     ]
+    },
+    {
+     "intent": "report.submit",
+     "score": 0.0536,
+     "lexical": 0.0,
+     "semantic": 0.115,
+     "span": []
+    },
+    {
+     "intent": "route.explain",
+     "score": 0.0496,
+     "lexical": 0.0,
+     "semantic": 0.106,
+     "span": []
+    }
+   ],
+   "parameters": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "01",
+    "mode": "transit"
+   },
+   "needsClarification": false,
+   "clarification": null,
+   "risk": {
+    "level": "low",
+    "flags": [],
+    "redactions": [],
+    "layers": {
+     "injection": "pass",
+     "policy": "pass",
+     "scope": "pass",
+     "pii": "pass",
+     "rate": "pass"
+    },
+    "injection": {
+     "detected": false,
+     "kind": null,
+     "evidence": []
+    },
+    "reason": null
+   },
+   "toolPlan": [
+    {
+     "capability": "zetaris.query",
+     "tool": "sample.json",
+     "profile": null
+    },
+    {
+     "capability": "route.compare",
+     "tool": "athena.route_metrics",
+     "profile": null
+    },
+    {
+     "capability": "llm.draft",
+     "tool": "sample.llm",
+     "profile": "sample-offline"
+    },
+    {
+     "capability": "llm.critique",
+     "tool": "critic.rules",
+     "profile": "local-rules"
+    },
+    {
+     "capability": "llm.critique",
+     "tool": "sample.llm",
+     "profile": "sample-offline"
+    }
+   ],
+   "modelProfile": {
+    "id": "sample-offline",
+    "model": "sample-offline-stub",
+    "provider": "local"
+   },
+   "secondary": [],
+   "contract": {
+    "contractId": "01M5YQ3GQ65ZFYDA8EMTCWW29K",
+    "traceId": "2800e904c7a04a6e",
+    "expiresAt": "2026-10-27T13:04:29.894034+00:00",
+    "capabilities": [
+     "zetaris.query",
+     "route.compare",
+     "llm.draft",
+     "llm.critique"
+    ],
+    "signature": "28843081499e42b0…"
+   },
+   "latencyMs": {
+    "stage1": 0.116,
+    "total": 0.377
+   }
+  },
+  "help": {
+   "emergency": "000",
+   "emergency_note": "Call 000 for police, fire or ambulance.",
+   "staffed_stations": [
+    "Town Hall station",
+    "Central station"
+   ],
+   "note": "Station staffing hours vary; check before relying on a station being staffed."
+  },
+  "data_mode": "sample",
+  "answer": "Athena's route is lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +2.9 min and has 25.9% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.72).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit",
+     "fastest.worst.risk"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ],
+  "confidence": "high",
+  "confidence_note": "Sample data (pre-existing hand-made routes); not live OTP results.",
+  "trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "01",
+   "mode": "transit",
+   "label": "Town Hall station → UNSW Library, 1 am, transit"
+  },
+  "routes": [
+   {
+    "variant": "fastest",
+    "duration_min": 43.5,
+    "lit_share_pct": 100.0,
+    "unknown_share_pct": 0.0,
+    "risk": 0.606,
+    "worst": {
+     "name": "Devonshire St tunnel",
+     "risk": 0.72,
+     "lit": "yes",
+     "distance_m": 237,
+     "tunnel": true,
+     "report_penalty": 0.0
+    },
+    "streets": [
+     "Central concourse",
+     "Devonshire St tunnel",
+     "Chalmers Street",
+     "UNSW campus"
+    ],
+    "transit_legs": [
+     {
+      "mode": "RAIL",
+      "line": "T2",
+      "distance_m": 1107.3
+     },
+     {
+      "mode": "BUS",
+      "line": "Bus",
+      "distance_m": 4145.8
+     }
+    ]
+   },
+   {
+    "variant": "athena",
+    "duration_min": 46.4,
+    "lit_share_pct": 100.0,
+    "unknown_share_pct": 0.0,
+    "risk": 0.449,
+    "worst": {
+     "name": "UNSW campus",
+     "risk": 0.46,
+     "lit": "yes",
+     "distance_m": 648,
+     "tunnel": false,
+     "report_penalty": 0.0
+    },
+    "streets": [
+     "George Street",
+     "UNSW campus"
+    ],
+    "transit_legs": [
+     {
+      "mode": "TRAM",
+      "line": "L3",
+      "distance_m": 5501.8
+     }
+    ]
+   }
+  ],
+  "comparison": {
+   "extra_min": 2.9,
+   "risk_reduction_pct": 25.9,
+   "avoided_streets": [
+    "Central concourse",
+    "Devonshire St tunnel",
+    "Chalmers Street"
+   ],
+   "added_streets": [
+    "George Street"
+   ],
+   "report_penalties": {}
+  },
+  "critic_verdict": "approve",
+  "evidence": [
+   {
+    "sql": "SELECT variant, duration_min, walk_m, transfers, leg, leg_mode, line, step, street, distance_m FROM athena.route_steps WHERE trip = 'townhall|unsw' AND band = '01' AND mode = 'transit'",
+    "executed_by": "sample mode (local JSON, same table shape)",
+    "rows": 9,
+    "ms": 0.47
+   },
+   {
+    "sql": "SELECT name, highway, lit, tunnel, risk_18, risk_22, risk_01, venues_22 FROM athena.streets",
+    "executed_by": "sample mode (local JSON, same table shape)",
+    "rows": 12,
+    "ms": 0.06
+   }
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "agent": "scout-intent",
+    "model": null,
+    "ms": 0,
+    "detail": "intent=route.plan band=high confidence=0.89 risk=low"
+   },
+   {
+    "step": 2,
+    "agent": "data",
+    "model": null,
+    "ms": 1,
+    "detail": "9 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+    "tool": "sample.json"
+   },
+   {
+    "step": 3,
+    "agent": "route-metrics",
+    "model": null,
+    "ms": null,
+    "detail": "fastest risk=0.606 athena risk=0.449 extra=2.9 min reduction=25.9%"
+   },
+   {
+    "step": 4,
+    "agent": "route-analyst",
+    "model": "sample-offline-stub",
+    "ms": 0,
+    "detail": "draft 1: 2 claims"
+   },
+   {
+    "step": 5,
+    "agent": "evidence-critic",
+    "model": "sample-offline-stub",
+    "ms": 0,
+    "detail": "approve draft 1 (offline stub: deterministic rules only)",
+    "verdict": "approve"
+   }
+  ],
+  "events": [
+   {
+    "event": "scout.decision",
+    "traceId": "2800e904c7a04a6e",
+    "intent": "route.plan",
+    "band": "high",
+    "latencyMs": 0.38,
+    "stage2": "used",
+    "risk": "low"
+   },
+   {
+    "event": "contract.issued",
+    "traceId": "2800e904c7a04a6e",
+    "contractId": "01M5YQ3GQ65ZFYDA8EMTCWW29K",
+    "intent": "route.plan",
+    "risk": "low",
+    "profile": "sample-offline"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "2800e904c7a04a6e",
+    "contractId": "01M5YQ3GQ65ZFYDA8EMTCWW29K",
+    "engine": "zetaris.query"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "2800e904c7a04a6e",
+    "contractId": "01M5YQ3GQ65ZFYDA8EMTCWW29K",
+    "engine": "route.compare"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "2800e904c7a04a6e",
+    "contractId": "01M5YQ3GQ65ZFYDA8EMTCWW29K",
+    "engine": "llm.draft"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "2800e904c7a04a6e",
+    "contractId": "01M5YQ3GQ65ZFYDA8EMTCWW29K",
+    "engine": "llm.critique"
+   }
+  ],
+  "total_ms": 2
+ }
+}

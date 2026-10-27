@@ -1,0 +1,207 @@
+{
+ "input": {
+  "id": "05_report_lighting",
+  "message": "Report: two street lights out near the oval on Moore Park path"
+ },
+ "output": {
+  "traceId": "b389f76481ae44f5",
+  "intent": "report.submit",
+  "scout": {
+   "intent": "report.submit",
+   "confidence": 0.992,
+   "band": "high",
+   "candidates": [
+    {
+     "intent": "report.submit",
+     "score": 0.9918,
+     "lexical": 1.0,
+     "semantic": 0.982,
+     "span": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "intent": "route.explain",
+     "score": 0.0844,
+     "lexical": 0.0,
+     "semantic": 0.181,
+     "span": []
+    },
+    {
+     "intent": "safety.emergency",
+     "score": 0.0582,
+     "lexical": 0.0,
+     "semantic": 0.125,
+     "span": []
+    }
+   ],
+   "parameters": {
+    "band": "22",
+    "street": "Moore Park path",
+    "text": "Report: two street lights out near the oval on Moore Park path"
+   },
+   "needsClarification": false,
+   "clarification": null,
+   "risk": {
+    "level": "medium",
+    "flags": [],
+    "redactions": [],
+    "layers": {
+     "injection": "pass",
+     "policy": "pass",
+     "scope": "pass",
+     "pii": "pass",
+     "rate": "pass"
+    },
+    "injection": {
+     "detected": false,
+     "kind": null,
+     "evidence": []
+    },
+    "reason": null
+   },
+   "toolPlan": [
+    {
+     "capability": "guard.redact",
+     "tool": "scout.redactor",
+     "profile": null
+    },
+    {
+     "capability": "zetaris.query",
+     "tool": "sample.json",
+     "profile": null
+    },
+    {
+     "capability": "llm.moderate",
+     "tool": "sample.llm",
+     "profile": "sample-offline"
+    },
+    {
+     "capability": "report.queue",
+     "tool": "reports.jsonl",
+     "profile": null
+    }
+   ],
+   "modelProfile": {
+    "id": "sample-offline",
+    "model": "sample-offline-stub",
+    "provider": "local"
+   },
+   "secondary": [],
+   "contract": {
+    "contractId": "01M5YQ3GQBCZ7EXH4WN2SZ2P18",
+    "traceId": "b389f76481ae44f5",
+    "expiresAt": "2026-10-27T13:04:29.899284+00:00",
+    "capabilities": [
+     "guard.redact",
+     "zetaris.query",
+     "llm.moderate",
+     "report.queue"
+    ],
+    "signature": "357b05d4651338a5…"
+   },
+   "latencyMs": {
+    "stage1": 0.129,
+    "total": 0.329
+   }
+  },
+  "help": {
+   "emergency": "000",
+   "emergency_note": "Call 000 for police, fire or ambulance.",
+   "staffed_stations": [
+    "Town Hall station",
+    "Central station"
+   ],
+   "note": "Station staffing hours vary; check before relying on a station being staffed."
+  },
+  "data_mode": "sample",
+  "answer": "Thanks. Your report was accepted and adds a temporary risk penalty to that street that fades over two weeks.",
+  "confidence": null,
+  "report": {
+   "street": "Moore Park path",
+   "band": "22",
+   "text": "Report: two street lights out near the oval on Moore Park path",
+   "action": "approve",
+   "reason": "lighting",
+   "category": "lighting"
+  },
+  "evidence": [
+   {
+    "sql": "SELECT name, highway, lit, tunnel, risk_18, risk_22, risk_01, venues_22 FROM athena.streets",
+    "executed_by": "sample mode (local JSON, same table shape)",
+    "rows": 12,
+    "ms": 0.07
+   }
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "agent": "scout-intent",
+    "model": null,
+    "ms": 0,
+    "detail": "intent=report.submit band=high confidence=0.99 risk=medium"
+   },
+   {
+    "step": 2,
+    "agent": "report-moderator",
+    "model": "sample-offline-stub",
+    "ms": 0,
+    "detail": "category=lighting prejudiced=False"
+   },
+   {
+    "step": 3,
+    "agent": "report-verifier",
+    "model": null,
+    "ms": null,
+    "detail": "action=approve reason=lighting"
+   }
+  ],
+  "events": [
+   {
+    "event": "scout.decision",
+    "traceId": "b389f76481ae44f5",
+    "intent": "report.submit",
+    "band": "high",
+    "latencyMs": 0.33,
+    "stage2": "used",
+    "risk": "medium"
+   },
+   {
+    "event": "contract.issued",
+    "traceId": "b389f76481ae44f5",
+    "contractId": "01M5YQ3GQBCZ7EXH4WN2SZ2P18",
+    "intent": "report.submit",
+    "risk": "medium",
+    "profile": "sample-offline"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "b389f76481ae44f5",
+    "contractId": "01M5YQ3GQBCZ7EXH4WN2SZ2P18",
+    "engine": "guard.redact"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "b389f76481ae44f5",
+    "contractId": "01M5YQ3GQBCZ7EXH4WN2SZ2P18",
+    "engine": "llm.moderate"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "b389f76481ae44f5",
+    "contractId": "01M5YQ3GQBCZ7EXH4WN2SZ2P18",
+    "engine": "zetaris.query"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "b389f76481ae44f5",
+    "contractId": "01M5YQ3GQBCZ7EXH4WN2SZ2P18",
+    "engine": "report.queue"
+   }
+  ],
+  "total_ms": 1
+ }
+}

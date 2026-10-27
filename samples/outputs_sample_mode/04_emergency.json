@@ -1,0 +1,145 @@
+{
+ "input": {
+  "id": "04_emergency",
+  "message": "Someone is following me"
+ },
+ "output": {
+  "traceId": "c175874ba0d94887",
+  "intent": "safety.emergency",
+  "scout": {
+   "intent": "safety.emergency",
+   "confidence": 1.0,
+   "band": "high",
+   "candidates": [
+    {
+     "intent": "safety.emergency",
+     "score": 1.0,
+     "lexical": 1.0,
+     "semantic": 1.0,
+     "span": [
+      [
+       12,
+       21
+      ]
+     ]
+    },
+    {
+     "intent": "route.explain",
+     "score": 0.0527,
+     "lexical": 0.0,
+     "semantic": 0.113,
+     "span": []
+    },
+    {
+     "intent": "GENERAL",
+     "score": 0.0517,
+     "lexical": 0.0,
+     "semantic": 0.111,
+     "span": []
+    }
+   ],
+   "parameters": {},
+   "needsClarification": false,
+   "clarification": null,
+   "risk": {
+    "level": "low",
+    "flags": [],
+    "redactions": [],
+    "layers": {
+     "injection": "pass",
+     "policy": "pass",
+     "scope": "pass",
+     "pii": "pass",
+     "rate": "pass"
+    },
+    "injection": {
+     "detected": false,
+     "kind": null,
+     "evidence": []
+    },
+    "reason": null
+   },
+   "toolPlan": [
+    {
+     "capability": "emergency.card",
+     "tool": "emergency.card",
+     "profile": null
+    }
+   ],
+   "modelProfile": {
+    "id": "local-rules",
+    "model": null,
+    "provider": "local"
+   },
+   "secondary": [],
+   "contract": {
+    "contractId": "01M5YQ3GQARWZR97GMSBD4HWSM",
+    "traceId": "c175874ba0d94887",
+    "expiresAt": "2026-10-27T13:04:29.898431+00:00",
+    "capabilities": [
+     "emergency.card"
+    ],
+    "signature": "6d93671d9d5a0749…"
+   },
+   "latencyMs": {
+    "stage1": 0.08,
+    "total": 0.291
+   }
+  },
+  "help": {
+   "emergency": "000",
+   "emergency_note": "Call 000 for police, fire or ambulance.",
+   "staffed_stations": [
+    "Town Hall station",
+    "Central station"
+   ],
+   "note": "Station staffing hours vary; check before relying on a station being staffed."
+  },
+  "data_mode": "sample",
+  "confidence": null,
+  "emergency": true,
+  "answer": "If you are in danger, call 000 now. Move towards people and light. Staffed stations nearby: Town Hall station, Central station.",
+  "trace": [
+   {
+    "step": 1,
+    "agent": "scout-intent",
+    "model": null,
+    "ms": 0,
+    "detail": "intent=safety.emergency band=high confidence=1.00 risk=low"
+   },
+   {
+    "step": 2,
+    "agent": "emergency",
+    "model": null,
+    "ms": null,
+    "detail": "emergency card shown immediately; no model call"
+   }
+  ],
+  "events": [
+   {
+    "event": "scout.decision",
+    "traceId": "c175874ba0d94887",
+    "intent": "safety.emergency",
+    "band": "high",
+    "latencyMs": 0.29,
+    "stage2": "used",
+    "risk": "low"
+   },
+   {
+    "event": "contract.issued",
+    "traceId": "c175874ba0d94887",
+    "contractId": "01M5YQ3GQARWZR97GMSBD4HWSM",
+    "intent": "safety.emergency",
+    "risk": "low",
+    "profile": "local-rules"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "c175874ba0d94887",
+    "contractId": "01M5YQ3GQARWZR97GMSBD4HWSM",
+    "engine": "emergency.card"
+   }
+  ],
+  "total_ms": 1
+ }
+}

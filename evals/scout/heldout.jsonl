@@ -1,0 +1,28 @@
+{"id":"h-plan-01","prompt":"I finish my shift at Town Hall at 1am, how should I get back to UNSW?","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"h-plan-02","prompt":"what's the lowest risk way to cycle from the library to town hall this evening","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"h-plan-03","prompt":"Need to walk from UNSW to the CBD at 10pm","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"h-plan-04","prompt":"show me routes home to Kensington from Town Hall","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"h-plan-05","prompt":"bus or tram from Town Hall to UNSW late tonight?","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"h-plan-06","prompt":"Can you plan my trip to uni from Town Hall at 6pm","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"h-plan-07","prompt":"directions from UNSW Library to Town Hall station by bike","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"h-exp-01","prompt":"Why did you pick Flinders Street instead of Moore Park?","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"h-exp-02","prompt":"why should I take the longer walk","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"h-exp-03","prompt":"explain the difference between the two options","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"h-exp-04","prompt":"what's the reason the tram option is recommended","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"h-exp-05","prompt":"is it really worth an extra 3 minutes?","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"h-exp-06","prompt":"how is the Athena route less risky than the fast one","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"h-rep-01","prompt":"Report: street light broken outside the bottle shop on Oxford Street","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"h-rep-02","prompt":"The Devonshire St tunnel lights are out again","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"h-rep-03","prompt":"Moore Park path is pitch black tonight","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"h-rep-04","prompt":"guys catcalling outside the pub on George Street","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"h-rep-05","prompt":"footpath on Anzac Parade is blocked by construction fencing","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"h-rep-06","prompt":"Chalmers Street is poorly lit near the corner","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"h-emg-01","prompt":"there's a man following me, what do I do","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"h-emg-02","prompt":"I'm scared, someone keeps walking behind me","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"h-emg-03","prompt":"HELP","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"h-emg-04","prompt":"someone grabbed my bag and I'm alone at the station","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"h-emg-05","prompt":"I feel in danger right now","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"h-gen-01","prompt":"hi Athena","expected":{"intent":"GENERAL","tools":[]},"tags":["general"]}
+{"id":"h-gen-02","prompt":"what can you do?","expected":{"intent":"GENERAL","tools":[]},"tags":["general"]}
+{"id":"h-gen-03","prompt":"what's the capital of France","expected":{"intent":"GENERAL","tools":[]},"tags":["general"]}
+{"id":"h-gen-04","prompt":"thanks that's helpful","expected":{"intent":"GENERAL","tools":[]},"tags":["general"]}

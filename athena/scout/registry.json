@@ -1,0 +1,413 @@
+{
+  "registryVersion": 2,
+  "note": "Athena intent registry for the Scout Intent engine (Meterless spec: engines/scout-intent/docs/intent-registry.md). Small domain registry; GENERAL is the safe fallback for scores below the Reject band.",
+  "intents": [
+    {
+      "id": "GENERAL",
+      "category": "general",
+      "description": "Safe fallback when no registered intent clears the Reject band. Responds conversationally, never routes to data or model tools, never guesses a higher-risk intent.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "capabilities": [],
+      "riskClass": "low",
+      "surfaces": [
+        "web",
+        "api"
+      ],
+      "roles": [
+        "*"
+      ],
+      "triggers": {
+        "hello": 0.6,
+        "hi": 0.4,
+        "what can you do": 1.0,
+        "who are you": 1.0,
+        "thanks": 0.6,
+        "thank you": 0.6,
+        "hey": 0.5,
+        "good morning": 0.8,
+        "good evening": 0.8,
+        "cheers": 0.6,
+        "how does this work": 1.0,
+        "what can you help": 1.5,
+        "how does": 0.5,
+        "what is this": 0.8
+      },
+      "examples": [
+        "hello",
+        "what can you help me with",
+        "who are you",
+        "thanks",
+        "good evening",
+        "how does this work"
+      ],
+      "version": 2
+    },
+    {
+      "id": "route.plan",
+      "category": "route",
+      "description": "Plan a night-time trip and compare the fastest route with Athena's lower-risk route for a walk, bike or public transport journey.",
+      "parameters": {
+        "type": "object",
+        "required": [
+          "origin",
+          "destination"
+        ],
+        "properties": {
+          "origin": {
+            "enum": [
+              "unsw",
+              "townhall",
+              "central",
+              "quay",
+              "redfern",
+              "kingsx",
+              "newtown"
+            ]
+          },
+          "destination": {
+            "enum": [
+              "unsw",
+              "townhall",
+              "central",
+              "quay",
+              "redfern",
+              "kingsx",
+              "newtown"
+            ]
+          },
+          "band": {
+            "enum": [
+              "18",
+              "22",
+              "01"
+            ],
+            "default": "22"
+          },
+          "mode": {
+            "enum": [
+              "walk",
+              "bike",
+              "transit"
+            ],
+            "default": "walk"
+          }
+        }
+      },
+      "capabilities": [
+        "zetaris.query",
+        "route.compare",
+        "llm.draft",
+        "llm.critique"
+      ],
+      "riskClass": "low",
+      "surfaces": [
+        "web",
+        "api"
+      ],
+      "roles": [
+        "traveller",
+        "*"
+      ],
+      "triggers": {
+        "route": 1.0,
+        "get to": 1.0,
+        "get home": 1.0,
+        "how do i get": 1.2,
+        "way to": 0.8,
+        "walk to": 1.0,
+        "walking to": 1.0,
+        "ride to": 1.0,
+        "cycle to": 1.0,
+        "bike to": 1.0,
+        "heading to": 1.0,
+        "going to": 0.8,
+        "take me": 1.0,
+        "directions": 1.0,
+        "plan": 0.8,
+        "trip": 0.6,
+        "leaving": 0.6,
+        "best way": 1.0,
+        "travel": 0.6,
+        "from": 0.4,
+        "tonight": 0.3,
+        "get back": 1.0,
+        "back to": 0.8,
+        "how should i": 1.0,
+        "best option": 1.0,
+        "reach": 0.8,
+        "on foot": 1.0,
+        "get me from": 1.2,
+        "get me to": 1.2,
+        "recommend a route": 1.5,
+        "which way": 1.0,
+        "to unsw": 0.6,
+        "to town hall": 0.6,
+        "to campus": 0.6,
+        "to uni": 0.6,
+        "home": 0.4,
+        "routes": 1.0,
+        "bus or": 0.6,
+        "tram": 0.4
+      },
+      "examples": [
+        "plan a route from UNSW to Town Hall at 10pm",
+        "how do I get from Town Hall to UNSW tonight",
+        "best way to walk to the library at 1am",
+        "take me home to Kensington by bus",
+        "I'm leaving Town Hall at 6pm, which way should I cycle"
+      ],
+      "version": 2
+    },
+    {
+      "id": "route.explain",
+      "category": "route",
+      "description": "Explain why Athena's route is lower risk than the fastest one, with the evidence behind each claim.",
+      "parameters": {
+        "type": "object",
+        "required": [
+          "origin",
+          "destination"
+        ],
+        "properties": {
+          "origin": {
+            "enum": [
+              "unsw",
+              "townhall",
+              "central",
+              "quay",
+              "redfern",
+              "kingsx",
+              "newtown"
+            ]
+          },
+          "destination": {
+            "enum": [
+              "unsw",
+              "townhall",
+              "central",
+              "quay",
+              "redfern",
+              "kingsx",
+              "newtown"
+            ]
+          },
+          "band": {
+            "enum": [
+              "18",
+              "22",
+              "01"
+            ],
+            "default": "22"
+          },
+          "mode": {
+            "enum": [
+              "walk",
+              "bike",
+              "transit"
+            ],
+            "default": "walk"
+          }
+        }
+      },
+      "capabilities": [
+        "zetaris.query",
+        "route.compare",
+        "llm.draft",
+        "llm.critique"
+      ],
+      "riskClass": "low",
+      "surfaces": [
+        "web",
+        "api"
+      ],
+      "roles": [
+        "traveller",
+        "*"
+      ],
+      "triggers": {
+        "why": 1.2,
+        "explain": 1.2,
+        "reason": 1.0,
+        "what makes": 1.0,
+        "how is": 0.6,
+        "lower risk": 0.8,
+        "better": 0.6,
+        "compare": 0.8,
+        "difference": 0.8,
+        "worth it": 0.8,
+        "is it worth": 1.0,
+        "extra minutes": 0.8,
+        "why not": 1.0,
+        "risky": 0.6,
+        "riskier": 0.8,
+        "why did": 1.2,
+        "chosen": 1.0,
+        "pick*": 0.6,
+        "instead of": 1.0,
+        "worth": 0.8,
+        "quickest": 0.6,
+        "fastest": 0.6,
+        "less risk*": 1.0,
+        "lower": 0.4,
+        "justify": 1.2,
+        "what's wrong": 1.0,
+        "what is wrong": 1.0,
+        "recommended": 0.8,
+        "detour": 0.8
+      },
+      "examples": [
+        "why is the Athena walk better tonight",
+        "explain why this route is lower risk",
+        "is the extra five minutes worth it",
+        "what makes the fastest route riskier",
+        "compare the two routes for me"
+      ],
+      "version": 2
+    },
+    {
+      "id": "report.submit",
+      "category": "report",
+      "description": "Submit a safety report about a specific street, such as broken lights, isolation, harassment or blocked footpaths.",
+      "parameters": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "band": {
+            "enum": [
+              "18",
+              "22",
+              "01"
+            ],
+            "default": "22"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "capabilities": [
+        "guard.redact",
+        "zetaris.query",
+        "llm.moderate",
+        "report.queue"
+      ],
+      "riskClass": "medium",
+      "surfaces": [
+        "web",
+        "api"
+      ],
+      "roles": [
+        "traveller",
+        "*"
+      ],
+      "triggers": {
+        "lights out": 1.2,
+        "light is out": 1.2,
+        "light out": 1.2,
+        "broken light": 1.2,
+        "lights are out": 1.2,
+        "street light": 0.8,
+        "flickering": 1.0,
+        "pitch black": 1.0,
+        "too dark": 0.8,
+        "is dark": 0.6,
+        "construction": 0.6,
+        "footpath": 0.6,
+        "shouting": 0.8,
+        "catcall": 1.0,
+        "graffiti": 0.6,
+        "no lights": 1.0,
+        "poorly lit": 1.2,
+        "blocked": 0.6,
+        "broken*": 1.0,
+        "not working": 1.0,
+        "isn't working": 1.0,
+        "smash*": 1.0,
+        "lamp*": 0.8,
+        "harass*": 1.2,
+        "catcall*": 1.2,
+        "dark*": 0.6,
+        "lighting": 0.6,
+        "no light*": 1.0,
+        "unlit": 1.0,
+        "report*": 1.2
+      },
+      "examples": [
+        "report: two street lights out on Moore Park path",
+        "the tunnel lights are flickering",
+        "Anzac Parade bus stop light is broken",
+        "group shouting at people on Chalmers Street",
+        "footpath blocked by construction on Flinders Street",
+        "the street lamp is not working on Liverpool Street",
+        "people harassing women outside the station"
+      ],
+      "version": 2
+    },
+    {
+      "id": "safety.emergency",
+      "category": "safety",
+      "description": "The user signals immediate danger. Show 000, staffed stations and help points immediately; no model call.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "capabilities": [
+        "emergency.card"
+      ],
+      "riskClass": "low",
+      "surfaces": [
+        "web",
+        "api"
+      ],
+      "roles": [
+        "*"
+      ],
+      "triggers": {
+        "help me": 1.5,
+        "emergency": 1.5,
+        "scared": 1.0,
+        "danger": 1.2,
+        "call police": 1.5,
+        "call the police": 1.5,
+        "unsafe right now": 1.5,
+        "someone grabbed": 1.5,
+        "need help": 1.5,
+        "panic": 1.0,
+        "threatening me": 1.5,
+        "000": 1.5,
+        "help": 1.5,
+        "follow*": 1.5,
+        "stalk*": 1.5,
+        "chas*": 1.2,
+        "threat*": 1.5,
+        "attack*": 1.5,
+        "assault*": 1.5,
+        "grab*": 1.2,
+        "terrified": 1.5,
+        "in danger": 1.5,
+        "won't leave me alone": 1.5,
+        "leave me alone": 1.2,
+        "keeps walking behind": 1.5
+      },
+      "examples": [
+        "someone is following me",
+        "help me I'm scared",
+        "I need help right now",
+        "a man is threatening me at the station",
+        "call the police",
+        "a stranger is chasing me",
+        "I'm being stalked on the way home"
+      ],
+      "version": 2
+    }
+  ]
+}

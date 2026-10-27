@@ -1,0 +1,26 @@
+{"id":"v2-plan-01","prompt":"leaving the library around midnight, what's my best option to reach Town Hall","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"v2-plan-02","prompt":"I want to bike home to UNSW after dinner in the city","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"v2-plan-03","prompt":"Town Hall to UNSW on foot, 10pm","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"v2-plan-04","prompt":"get me from uni to Town Hall station tonight","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"v2-plan-05","prompt":"which way should I go back to campus at 1am","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"v2-plan-06","prompt":"recommend a route for public transport from the CBD to Kensington","expected":{"intent":"route.plan","tools":["zetaris.sql"]},"tags":["plan"]}
+{"id":"v2-exp-01","prompt":"why not just go the quickest way?","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"v2-exp-02","prompt":"tell me why this route was chosen","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"v2-exp-03","prompt":"what's wrong with the Moore Park path","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"v2-exp-04","prompt":"how much lower is the risk on your route","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"v2-exp-05","prompt":"justify the detour please","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"v2-exp-06","prompt":"why is the tram option recommended over the bus","expected":{"intent":"route.explain","tools":["zetaris.sql"]},"tags":["explain"]}
+{"id":"v2-rep-01","prompt":"lamp post near the oval on Moore Park path isn't working","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"v2-rep-02","prompt":"I want to report a dark stretch on Flinders Street","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"v2-rep-03","prompt":"drunk men harassing people outside Central concourse","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"v2-rep-04","prompt":"no lighting at all under the Devonshire St tunnel tonight","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"v2-rep-05","prompt":"broken glass and a smashed light on Liverpool Street","expected":{"intent":"report.submit","tools":["nightshift.chat"]},"tags":["report"]}
+{"id":"v2-emg-01","prompt":"please help someone is chasing me","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"v2-emg-02","prompt":"a car keeps slowing down next to me and I'm terrified","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"v2-emg-03","prompt":"I think I'm being stalked","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"v2-emg-04","prompt":"get me help now","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"v2-emg-05","prompt":"a stranger won't leave me alone at the bus stop","expected":{"intent":"safety.emergency","tools":["emergency.card"]},"tags":["emergency"]}
+{"id":"v2-gen-01","prompt":"good evening","expected":{"intent":"GENERAL","tools":[]},"tags":["general"]}
+{"id":"v2-gen-02","prompt":"how does this app work","expected":{"intent":"GENERAL","tools":[]},"tags":["general"]}
+{"id":"v2-gen-03","prompt":"tell me a joke","expected":{"intent":"GENERAL","tools":[]},"tags":["general"]}
+{"id":"v2-gen-04","prompt":"cheers","expected":{"intent":"GENERAL","tools":[]},"tags":["general"]}

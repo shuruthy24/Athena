@@ -1,0 +1,335 @@
+{
+ "input": {
+  "id": "03_worth_it_bike_6pm",
+  "message": "Is the extra time worth it?",
+  "trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "18",
+   "mode": "bike"
+  }
+ },
+ "output": {
+  "traceId": "b2153427ae4d422e",
+  "intent": "route.explain",
+  "scout": {
+   "intent": "route.explain",
+   "confidence": 0.822,
+   "band": "high",
+   "candidates": [
+    {
+     "intent": "route.explain",
+     "score": 0.8221,
+     "lexical": 1.0,
+     "semantic": 0.803,
+     "span": [
+      [
+       19,
+       27
+      ]
+     ]
+    },
+    {
+     "intent": "route.plan",
+     "score": 0.1244,
+     "lexical": 0.0,
+     "semantic": 0.052,
+     "span": []
+    },
+    {
+     "intent": "safety.emergency",
+     "score": 0.0585,
+     "lexical": 0.0,
+     "semantic": 0.159,
+     "span": []
+    }
+   ],
+   "parameters": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "18",
+    "mode": "bike"
+   },
+   "needsClarification": false,
+   "clarification": null,
+   "risk": {
+    "level": "low",
+    "flags": [],
+    "redactions": [],
+    "layers": {
+     "injection": "pass",
+     "policy": "pass",
+     "scope": "pass",
+     "pii": "pass",
+     "rate": "pass"
+    },
+    "injection": {
+     "detected": false,
+     "kind": null,
+     "evidence": []
+    },
+    "reason": null
+   },
+   "toolPlan": [
+    {
+     "capability": "zetaris.query",
+     "tool": "sample.json",
+     "profile": null
+    },
+    {
+     "capability": "route.compare",
+     "tool": "athena.route_metrics",
+     "profile": null
+    },
+    {
+     "capability": "llm.draft",
+     "tool": "sample.llm",
+     "profile": "sample-offline"
+    },
+    {
+     "capability": "llm.critique",
+     "tool": "critic.rules",
+     "profile": "local-rules"
+    },
+    {
+     "capability": "llm.critique",
+     "tool": "sample.llm",
+     "profile": "sample-offline"
+    }
+   ],
+   "modelProfile": {
+    "id": "sample-offline",
+    "model": "sample-offline-stub",
+    "provider": "local"
+   },
+   "secondary": [],
+   "contract": {
+    "contractId": "01M5YQ3GQ8RT48WWBX1YDJKMGQ",
+    "traceId": "b2153427ae4d422e",
+    "expiresAt": "2026-10-27T13:04:29.896271+00:00",
+    "capabilities": [
+     "zetaris.query",
+     "route.compare",
+     "llm.draft",
+     "llm.critique"
+    ],
+    "signature": "5d136ca5f16759fd…"
+   },
+   "latencyMs": {
+    "stage1": 0.068,
+    "total": 0.257
+   }
+  },
+  "help": {
+   "emergency": "000",
+   "emergency_note": "Call 000 for police, fire or ambulance.",
+   "staffed_stations": [
+    "Town Hall station",
+    "Central station"
+   ],
+   "note": "Station staffing hours vary; check before relying on a station being staffed."
+  },
+  "data_mode": "sample",
+  "answer": "Athena's route is lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +0.8 min and has 31.4% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.32).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit",
+     "fastest.worst.risk"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+    "facts": [
+     "athena.lit_share_pct",
+     "fastest.lit_share_pct"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ],
+  "confidence": "high",
+  "confidence_note": "Sample data (pre-existing hand-made routes); not live OTP results.",
+  "trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "18",
+   "mode": "bike",
+   "label": "Town Hall station → UNSW Library, 6 pm, bike"
+  },
+  "routes": [
+   {
+    "variant": "fastest",
+    "duration_min": 22.4,
+    "lit_share_pct": 77.4,
+    "unknown_share_pct": 0.0,
+    "risk": 0.264,
+    "worst": {
+     "name": "Moore Park path",
+     "risk": 0.32,
+     "lit": "no",
+     "distance_m": 1397,
+     "tunnel": false,
+     "report_penalty": 0.0
+    },
+    "streets": [
+     "George Street",
+     "Bourke Street cycleway",
+     "Moore Park path",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "transit_legs": []
+   },
+   {
+    "variant": "athena",
+    "duration_min": 23.2,
+    "lit_share_pct": 100.0,
+    "unknown_share_pct": 0.0,
+    "risk": 0.181,
+    "worst": {
+     "name": "Anzac Parade",
+     "risk": 0.2,
+     "lit": "yes",
+     "distance_m": 2999,
+     "tunnel": false,
+     "report_penalty": 0.0
+    },
+    "streets": [
+     "George Street",
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "transit_legs": []
+   }
+  ],
+  "comparison": {
+   "extra_min": 0.8,
+   "risk_reduction_pct": 31.4,
+   "avoided_streets": [
+    "Bourke Street cycleway",
+    "Moore Park path"
+   ],
+   "added_streets": [
+    "Liverpool Street",
+    "Oxford Street",
+    "Flinders Street"
+   ],
+   "report_penalties": {}
+  },
+  "critic_verdict": "approve",
+  "evidence": [
+   {
+    "sql": "SELECT variant, duration_min, walk_m, transfers, leg, leg_mode, line, step, street, distance_m FROM athena.route_steps WHERE trip = 'townhall|unsw' AND band = '18' AND mode = 'bike'",
+    "executed_by": "sample mode (local JSON, same table shape)",
+    "rows": 11,
+    "ms": 0.44
+   },
+   {
+    "sql": "SELECT name, highway, lit, tunnel, risk_18, risk_22, risk_01, venues_22 FROM athena.streets",
+    "executed_by": "sample mode (local JSON, same table shape)",
+    "rows": 12,
+    "ms": 0.05
+   }
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "agent": "scout-intent",
+    "model": null,
+    "ms": 0,
+    "detail": "intent=route.explain band=high confidence=0.82 risk=low"
+   },
+   {
+    "step": 2,
+    "agent": "data",
+    "model": null,
+    "ms": 0,
+    "detail": "11 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+    "tool": "sample.json"
+   },
+   {
+    "step": 3,
+    "agent": "route-metrics",
+    "model": null,
+    "ms": null,
+    "detail": "fastest risk=0.264 athena risk=0.181 extra=0.8 min reduction=31.4%"
+   },
+   {
+    "step": 4,
+    "agent": "route-analyst",
+    "model": "sample-offline-stub",
+    "ms": 0,
+    "detail": "draft 1: 3 claims"
+   },
+   {
+    "step": 5,
+    "agent": "evidence-critic",
+    "model": "sample-offline-stub",
+    "ms": 0,
+    "detail": "approve draft 1 (offline stub: deterministic rules only)",
+    "verdict": "approve"
+   }
+  ],
+  "events": [
+   {
+    "event": "scout.decision",
+    "traceId": "b2153427ae4d422e",
+    "intent": "route.explain",
+    "band": "high",
+    "latencyMs": 0.26,
+    "stage2": "used",
+    "risk": "low"
+   },
+   {
+    "event": "contract.issued",
+    "traceId": "b2153427ae4d422e",
+    "contractId": "01M5YQ3GQ8RT48WWBX1YDJKMGQ",
+    "intent": "route.explain",
+    "risk": "low",
+    "profile": "sample-offline"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "b2153427ae4d422e",
+    "contractId": "01M5YQ3GQ8RT48WWBX1YDJKMGQ",
+    "engine": "zetaris.query"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "b2153427ae4d422e",
+    "contractId": "01M5YQ3GQ8RT48WWBX1YDJKMGQ",
+    "engine": "route.compare"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "b2153427ae4d422e",
+    "contractId": "01M5YQ3GQ8RT48WWBX1YDJKMGQ",
+    "engine": "llm.draft"
+   },
+   {
+    "event": "contract.verified",
+    "traceId": "b2153427ae4d422e",
+    "contractId": "01M5YQ3GQ8RT48WWBX1YDJKMGQ",
+    "engine": "llm.critique"
+   }
+  ],
+  "total_ms": 2
+ }
+}

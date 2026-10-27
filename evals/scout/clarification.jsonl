@@ -1,0 +1,4 @@
+{"id":"c-01","prompt":"how do I get home","expected":{"clarification":true},"context":{}}
+{"id":"c-02","prompt":"plan a route","expected":{"clarification":true},"context":{}}
+{"id":"c-03","prompt":"why is it better","expected":{"clarification":false},"context":{"trip":{"origin":"unsw","destination":"townhall"}}}
+{"id":"c-04","prompt":"plan a route from UNSW to Town Hall","expected":{"clarification":false},"context":{}}

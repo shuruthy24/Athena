@@ -1,0 +1,11 @@
+Athena agent layer
+Copyright 2026 Team Athena (Kaira Dumasia, Shuruthy Dhushiyandan)
+
+This project implements the Scout Intent specification published by Meterless
+(https://github.com/Meterless/Meterless/tree/main/engines/scout-intent), licensed under the
+Apache License 2.0. Confidence bands, formula weights, the execution-contract shape, eval metric
+definitions and thresholds follow that specification. The 10 prompts tagged "meterless-v1" in
+evals/scout/injection.jsonl are taken from its evals/regression-set/v1/injection/adversarial.jsonl.
+
+Map data in the pre-existing web/index.html: OpenStreetMap contributors (ODbL) via OpenFreeMap tiles.
+Street names in data/ come from OpenStreetMap (ODbL). Route and risk values in data/ are a hand-made sample.

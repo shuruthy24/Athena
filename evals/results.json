@@ -1,0 +1,1199 @@
+{
+ "generated": "2026-10-27T12:56:42.887899+00:00",
+ "scout": {
+  "metrics": {
+   "intent_top1": 0.9615384615384616,
+   "intent_top3_recall": 0.9615384615384616,
+   "injection_precision": 1.0,
+   "injection_recall": 1.0,
+   "tool_precision": 1.0,
+   "clarification_rate": 0.07692307692307693
+  },
+  "n_heldout": 26,
+  "n_injection": 18,
+  "confusion_injection": {
+   "tp": 11,
+   "fp": 0,
+   "fn": 0,
+   "tn": 7
+  },
+  "clarification_cases": "4/4",
+  "rows": [
+   {
+    "id": "v2-plan-01",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7281,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-plan-02",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.5545,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-plan-03",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.784,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-plan-04",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7871,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-plan-05",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7304,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-plan-06",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.6661,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-exp-01",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.6325,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-exp-02",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.7416,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-exp-03",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "low",
+    "score": 0.4089,
+    "clarify": true,
+    "ok": true
+   },
+   {
+    "id": "v2-exp-04",
+    "expected": "route.explain",
+    "predicted": "route.plan",
+    "band": "low",
+    "score": 0.4374,
+    "clarify": true,
+    "ok": false
+   },
+   {
+    "id": "v2-exp-05",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.6172,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-exp-06",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.6865,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-rep-01",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "medium",
+    "score": 0.6202,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-rep-02",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "medium",
+    "score": 0.6148,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-rep-03",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "medium",
+    "score": 0.6162,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-rep-04",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "medium",
+    "score": 0.6265,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-rep-05",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "medium",
+    "score": 0.6086,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-emg-01",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.6317,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-emg-02",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.6064,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-emg-03",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.6929,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-emg-04",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.6041,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-emg-05",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.5768,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-gen-01",
+    "expected": "GENERAL",
+    "predicted": "GENERAL",
+    "band": "medium",
+    "score": 0.593,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-gen-02",
+    "expected": "GENERAL",
+    "predicted": "GENERAL",
+    "band": "low",
+    "score": 0.5088,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-gen-03",
+    "expected": "GENERAL",
+    "predicted": "GENERAL",
+    "band": "reject",
+    "score": 0.215,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "v2-gen-04",
+    "expected": "GENERAL",
+    "predicted": "GENERAL",
+    "band": "reject",
+    "score": 0.1684,
+    "clarify": false,
+    "ok": true
+   }
+  ],
+  "injection_rows": [
+   {
+    "id": "inj-m-001",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-002",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override",
+     "role-drift"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-003",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "embedded-control",
+     "tool-ref"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-004",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "role-drift",
+     "embedded-control",
+     "secret-exfiltration"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-005",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "tool-ref"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-006",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override",
+     "secret-exfiltration"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-007",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "tool-ref",
+     "embedded-control-unicode"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "clean-m-001",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "clean-m-002",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "clean-m-003",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-a-001",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override",
+     "risk-tampering"
+    ],
+    "source": "athena"
+   },
+   {
+    "id": "inj-a-002",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "role-drift",
+     "risk-tampering"
+    ],
+    "source": "athena"
+   },
+   {
+    "id": "inj-a-003",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "embedded-control"
+    ],
+    "source": "athena"
+   },
+   {
+    "id": "inj-a-004",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override"
+    ],
+    "source": "athena"
+   },
+   {
+    "id": "clean-a-001",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "athena"
+   },
+   {
+    "id": "clean-a-002",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "athena"
+   },
+   {
+    "id": "clean-a-003",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "athena"
+   },
+   {
+    "id": "clean-a-004",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "athena"
+   }
+  ],
+  "stage1_self_test_ms": 0.10282200014444243,
+  "heldout_file": "heldout_v2.jsonl",
+  "registry_version": 2
+ },
+ "scout_v1_set_after_changes": {
+  "metrics": {
+   "intent_top1": 1.0,
+   "intent_top3_recall": 0.9642857142857143,
+   "injection_precision": 1.0,
+   "injection_recall": 1.0,
+   "tool_precision": 1.0,
+   "clarification_rate": 0.14285714285714285
+  },
+  "n_heldout": 28,
+  "n_injection": 18,
+  "confusion_injection": {
+   "tp": 11,
+   "fp": 0,
+   "fn": 0,
+   "tn": 7
+  },
+  "clarification_cases": "4/4",
+  "rows": [
+   {
+    "id": "h-plan-01",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7397,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-plan-02",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7086,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-plan-03",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "low",
+    "score": 0.4391,
+    "clarify": true,
+    "ok": true
+   },
+   {
+    "id": "h-plan-04",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7076,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-plan-05",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7895,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-plan-06",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7529,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-plan-07",
+    "expected": "route.plan",
+    "predicted": "route.plan",
+    "band": "medium",
+    "score": 0.7284,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-exp-01",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.5839,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-exp-02",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.598,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-exp-03",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.6638,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-exp-04",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.6496,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-exp-05",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.654,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-exp-06",
+    "expected": "route.explain",
+    "predicted": "route.explain",
+    "band": "medium",
+    "score": 0.6846,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-rep-01",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "medium",
+    "score": 0.5922,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-rep-02",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "medium",
+    "score": 0.6065,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-rep-03",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "low",
+    "score": 0.4784,
+    "clarify": true,
+    "ok": true
+   },
+   {
+    "id": "h-rep-04",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "low",
+    "score": 0.5083,
+    "clarify": true,
+    "ok": true
+   },
+   {
+    "id": "h-rep-05",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "medium",
+    "score": 0.6744,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-rep-06",
+    "expected": "report.submit",
+    "predicted": "report.submit",
+    "band": "low",
+    "score": 0.5053,
+    "clarify": true,
+    "ok": true
+   },
+   {
+    "id": "h-emg-01",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "low",
+    "score": 0.5366,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-emg-02",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.6553,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-emg-03",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.6029,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-emg-04",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.5755,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-emg-05",
+    "expected": "safety.emergency",
+    "predicted": "safety.emergency",
+    "band": "medium",
+    "score": 0.6933,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-gen-01",
+    "expected": "GENERAL",
+    "predicted": "GENERAL",
+    "band": "reject",
+    "score": 0.2698,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-gen-02",
+    "expected": "GENERAL",
+    "predicted": "GENERAL",
+    "band": "low",
+    "score": 0.5142,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-gen-03",
+    "expected": "GENERAL",
+    "predicted": "GENERAL",
+    "band": "reject",
+    "score": 0.1961,
+    "clarify": false,
+    "ok": true
+   },
+   {
+    "id": "h-gen-04",
+    "expected": "GENERAL",
+    "predicted": "GENERAL",
+    "band": "low",
+    "score": 0.5368,
+    "clarify": false,
+    "ok": true
+   }
+  ],
+  "injection_rows": [
+   {
+    "id": "inj-m-001",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-002",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override",
+     "role-drift"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-003",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "embedded-control",
+     "tool-ref"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-004",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "role-drift",
+     "embedded-control",
+     "secret-exfiltration"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-005",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "tool-ref"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-006",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override",
+     "secret-exfiltration"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-m-007",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "tool-ref",
+     "embedded-control-unicode"
+    ],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "clean-m-001",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "clean-m-002",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "clean-m-003",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "meterless-v1"
+   },
+   {
+    "id": "inj-a-001",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override",
+     "risk-tampering"
+    ],
+    "source": "athena"
+   },
+   {
+    "id": "inj-a-002",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "role-drift",
+     "risk-tampering"
+    ],
+    "source": "athena"
+   },
+   {
+    "id": "inj-a-003",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "embedded-control"
+    ],
+    "source": "athena"
+   },
+   {
+    "id": "inj-a-004",
+    "expected": true,
+    "detected": true,
+    "evidence": [
+     "instruction-override"
+    ],
+    "source": "athena"
+   },
+   {
+    "id": "clean-a-001",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "athena"
+   },
+   {
+    "id": "clean-a-002",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "athena"
+   },
+   {
+    "id": "clean-a-003",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "athena"
+   },
+   {
+    "id": "clean-a-004",
+    "expected": false,
+    "detected": false,
+    "evidence": [],
+    "source": "athena"
+   }
+  ],
+  "stage1_self_test_ms": 0.11494399996081484,
+  "heldout_file": "heldout.jsonl",
+  "registry_version": 2
+ },
+ "critic": {
+  "cases": 276,
+  "precision": 1.0,
+  "recall": 1.0,
+  "confusion": {
+   "tp": 228,
+   "fp": 0,
+   "fn": 0,
+   "tn": 48
+  },
+  "accuracy_by_kind": {
+   "clean": 1.0,
+   "number": 1.0,
+   "safe": 1.0,
+   "street": 1.0,
+   "nofacts": 1.0,
+   "direction": 1.0
+  }
+ },
+ "reports": {
+  "n": 14,
+  "accuracy": 1.0,
+  "model": "sample-offline-stub",
+  "rows": [
+   {
+    "id": "r01",
+    "expected": "approve",
+    "got": "approve",
+    "reason": "lighting",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r02",
+    "expected": "approve",
+    "got": "approve",
+    "reason": "lighting",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r03",
+    "expected": "approve",
+    "got": "approve",
+    "reason": "lighting",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r04",
+    "expected": "approve",
+    "got": "approve",
+    "reason": "lighting",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r05",
+    "expected": "approve",
+    "got": "approve",
+    "reason": "lighting",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r06",
+    "expected": "approve",
+    "got": "approve",
+    "reason": "harassment",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r07",
+    "expected": "approve",
+    "got": "approve",
+    "reason": "positive",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r08",
+    "expected": "approve",
+    "got": "approve",
+    "reason": "lighting",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r09",
+    "expected": "redact",
+    "got": "redact",
+    "reason": "personal_info",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r10",
+    "expected": "redact",
+    "got": "redact",
+    "reason": "personal_info",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r11",
+    "expected": "reject",
+    "got": "reject",
+    "reason": "prejudiced",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r12",
+    "expected": "review",
+    "got": "review",
+    "reason": "contradicts_data",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r13",
+    "expected": "review",
+    "got": "review",
+    "reason": "unknown_street",
+    "ok": true,
+    "intent": "report.submit"
+   },
+   {
+    "id": "r14",
+    "expected": "reject",
+    "got": "reject",
+    "reason": "injection",
+    "ok": true,
+    "intent": "report.submit"
+   }
+  ]
+ },
+ "routes": {
+  "n": 18,
+  "median_risk_reduction_pct": 36.3,
+  "min_risk_reduction_pct": 20.2,
+  "max_risk_reduction_pct": 46.2,
+  "median_extra_min": 0.8,
+  "max_extra_min": 2.9,
+  "rows": [
+   {
+    "trip": "unsw|townhall",
+    "band": "18",
+    "mode": "walk",
+    "extra_min": 0.5,
+    "risk_reduction_pct": 31.4,
+    "fastest_risk": 0.264,
+    "athena_risk": 0.181,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "unsw|townhall",
+    "band": "18",
+    "mode": "bike",
+    "extra_min": 0.8,
+    "risk_reduction_pct": 31.4,
+    "fastest_risk": 0.264,
+    "athena_risk": 0.181,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "unsw|townhall",
+    "band": "18",
+    "mode": "transit",
+    "extra_min": 1.9,
+    "risk_reduction_pct": 20.2,
+    "fastest_risk": 0.218,
+    "athena_risk": 0.174,
+    "fastest_lit": 100.0,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "unsw|townhall",
+    "band": "22",
+    "mode": "walk",
+    "extra_min": 0.5,
+    "risk_reduction_pct": 46.2,
+    "fastest_risk": 0.515,
+    "athena_risk": 0.277,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "unsw|townhall",
+    "band": "22",
+    "mode": "bike",
+    "extra_min": 0.8,
+    "risk_reduction_pct": 46.2,
+    "fastest_risk": 0.515,
+    "athena_risk": 0.277,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "unsw|townhall",
+    "band": "22",
+    "mode": "transit",
+    "extra_min": 2.9,
+    "risk_reduction_pct": 39.7,
+    "fastest_risk": 0.451,
+    "athena_risk": 0.272,
+    "fastest_lit": 100.0,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "unsw|townhall",
+    "band": "01",
+    "mode": "walk",
+    "extra_min": 0.5,
+    "risk_reduction_pct": 36.3,
+    "fastest_risk": 0.658,
+    "athena_risk": 0.419,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "unsw|townhall",
+    "band": "01",
+    "mode": "bike",
+    "extra_min": 0.8,
+    "risk_reduction_pct": 36.3,
+    "fastest_risk": 0.658,
+    "athena_risk": 0.419,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "unsw|townhall",
+    "band": "01",
+    "mode": "transit",
+    "extra_min": 2.9,
+    "risk_reduction_pct": 25.9,
+    "fastest_risk": 0.606,
+    "athena_risk": 0.449,
+    "fastest_lit": 100.0,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "18",
+    "mode": "walk",
+    "extra_min": 0.5,
+    "risk_reduction_pct": 31.4,
+    "fastest_risk": 0.264,
+    "athena_risk": 0.181,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "18",
+    "mode": "bike",
+    "extra_min": 0.8,
+    "risk_reduction_pct": 31.4,
+    "fastest_risk": 0.264,
+    "athena_risk": 0.181,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "18",
+    "mode": "transit",
+    "extra_min": 1.9,
+    "risk_reduction_pct": 20.2,
+    "fastest_risk": 0.218,
+    "athena_risk": 0.174,
+    "fastest_lit": 100.0,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "22",
+    "mode": "walk",
+    "extra_min": 0.5,
+    "risk_reduction_pct": 46.2,
+    "fastest_risk": 0.515,
+    "athena_risk": 0.277,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "22",
+    "mode": "bike",
+    "extra_min": 0.8,
+    "risk_reduction_pct": 46.2,
+    "fastest_risk": 0.515,
+    "athena_risk": 0.277,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "22",
+    "mode": "transit",
+    "extra_min": 2.9,
+    "risk_reduction_pct": 39.7,
+    "fastest_risk": 0.451,
+    "athena_risk": 0.272,
+    "fastest_lit": 100.0,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "01",
+    "mode": "walk",
+    "extra_min": 0.5,
+    "risk_reduction_pct": 36.3,
+    "fastest_risk": 0.658,
+    "athena_risk": 0.419,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "01",
+    "mode": "bike",
+    "extra_min": 0.8,
+    "risk_reduction_pct": 36.3,
+    "fastest_risk": 0.658,
+    "athena_risk": 0.419,
+    "fastest_lit": 77.4,
+    "athena_lit": 100.0
+   },
+   {
+    "trip": "townhall|unsw",
+    "band": "01",
+    "mode": "transit",
+    "extra_min": 2.9,
+    "risk_reduction_pct": 25.9,
+    "fastest_risk": 0.606,
+    "athena_risk": 0.449,
+    "fastest_lit": 100.0,
+    "athena_lit": 100.0
+   }
+  ]
+ }
+}
