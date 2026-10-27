@@ -1,0 +1,1902 @@
+{
+ "rows": [
+  {
+   "id": "osm:way/1489081415",
+   "name": "Australian Federal Police",
+   "category": "police",
+   "lat": -33.878207,
+   "lon": 151.210377
+  },
+  {
+   "id": "osm:node/829674412",
+   "name": "Balmain Police Station",
+   "category": "police",
+   "lat": -33.85647,
+   "lon": 151.177208,
+   "phone": "+61 2 9556 0624"
+  },
+  {
+   "id": "osm:node/18249045",
+   "name": "Day Street Police Station",
+   "category": "police",
+   "lat": -33.875397,
+   "lon": 151.2039,
+   "phone": "+61 2 9265 6499"
+  },
+  {
+   "id": "osm:way/853583358",
+   "name": "Glebe Police Station",
+   "category": "police",
+   "lat": -33.880234,
+   "lon": 151.188487,
+   "phone": "+61 2 9552 8099"
+  },
+  {
+   "id": "osm:way/271380482",
+   "name": "Kings Cross Police",
+   "category": "police",
+   "lat": -33.873126,
+   "lon": 151.225537,
+   "opening_hours": "24/7"
+  },
+  {
+   "id": "osm:node/829670612",
+   "name": "Mascot Police Station",
+   "category": "police",
+   "lat": -33.924552,
+   "lon": 151.195949,
+   "phone": "+61 2 8338 7399"
+  },
+  {
+   "id": "osm:way/1510948444",
+   "name": "Mounted Police",
+   "category": "police",
+   "lat": -33.892579,
+   "lon": 151.212874
+  },
+  {
+   "id": "osm:way/286344163",
+   "name": "NSW Police Force",
+   "category": "police",
+   "lat": -33.861019,
+   "lon": 151.214536
+  },
+  {
+   "id": "osm:way/176324890",
+   "name": "Newtown Police Station",
+   "category": "police",
+   "lat": -33.896608,
+   "lon": 151.178606,
+   "phone": "+61 2 9550 8199",
+   "opening_hours": "24/7"
+  },
+  {
+   "id": "osm:way/680021228",
+   "name": "Paddington Police Station",
+   "category": "police",
+   "lat": -33.88802,
+   "lon": 151.232555,
+   "phone": "+61 2 8356 8299"
+  },
+  {
+   "id": "osm:way/1544376305",
+   "name": "Police Rescue & Bomb Disposal Unit",
+   "category": "police",
+   "lat": -33.903986,
+   "lon": 151.197069
+  },
+  {
+   "id": "osm:node/18554024",
+   "name": "Randwick Police Station",
+   "category": "police",
+   "lat": -33.912858,
+   "lon": 151.241063,
+   "phone": "+61 2 9697 1099"
+  },
+  {
+   "id": "osm:way/335295824",
+   "name": "Redfern Police Station",
+   "category": "police",
+   "lat": -33.892023,
+   "lon": 151.199935,
+   "phone": "+61 2 8303 5199",
+   "opening_hours": "24/7"
+  },
+  {
+   "id": "osm:node/829675101",
+   "name": "Rose Bay Police Station",
+   "category": "police",
+   "lat": -33.869823,
+   "lon": 151.252685,
+   "phone": "+61 2 9362 6399"
+  },
+  {
+   "id": "osm:node/9403829627",
+   "name": "Surry Hills Police Centre",
+   "category": "police",
+   "lat": -33.879724,
+   "lon": 151.213575,
+   "phone": "+61 2 9265 4144"
+  },
+  {
+   "id": "osm:way/48878171",
+   "name": "Sydney Police Centre",
+   "category": "police",
+   "lat": -33.879911,
+   "lon": 151.213051,
+   "phone": "+61 2 9265 4144"
+  },
+  {
+   "id": "osm:relation/2947531",
+   "name": "Sydney Water Police",
+   "category": "police",
+   "lat": -33.859142,
+   "lon": 151.191496,
+   "phone": "+61 2 9320 7499"
+  },
+  {
+   "id": "osm:way/51068645",
+   "name": "The Rocks Police Station",
+   "category": "police",
+   "lat": -33.859465,
+   "lon": 151.208949
+  },
+  {
+   "id": "osm:way/1115397749",
+   "name": "Waverley Police Station",
+   "category": "police",
+   "lat": -33.897946,
+   "lon": 151.251731
+  },
+  {
+   "id": "osm:node/829674369",
+   "name": "Woolloomooloo Police Station",
+   "category": "police",
+   "lat": -33.872585,
+   "lon": 151.218814,
+   "phone": "+61 2 8356 0132"
+  },
+  {
+   "id": "osm:way/891830800",
+   "name": "Alexandria Specialist Day Hospital",
+   "category": "hospital",
+   "lat": -33.904891,
+   "lon": 151.19617,
+   "opening_hours": "Mo-Fr 06:00-17:00; Sa 08:00-13:00",
+   "emergency_department": false
+  },
+  {
+   "id": "osm:way/1025736352",
+   "name": "Balmain Hospital",
+   "category": "hospital",
+   "lat": -33.859559,
+   "lon": 151.181615,
+   "emergency_department": false
+  },
+  {
+   "id": "osm:node/4225187047",
+   "name": "Bondi Junction Private Hospital",
+   "category": "hospital",
+   "lat": -33.892392,
+   "lon": 151.245728,
+   "emergency_department": false
+  },
+  {
+   "id": "osm:way/1302199200",
+   "name": "Chris O'Brien Lifehouse",
+   "category": "hospital",
+   "lat": -33.890714,
+   "lon": 151.182125
+  },
+  {
+   "id": "osm:node/9480319109",
+   "name": "Double Bay Day Hospital",
+   "category": "hospital",
+   "lat": -33.8776,
+   "lon": 151.243801,
+   "phone": "+61 2 9096 3100",
+   "emergency_department": false
+  },
+  {
+   "id": "osm:way/1301658335",
+   "name": "East Sydney Private Hospital",
+   "category": "hospital",
+   "lat": -33.873701,
+   "lon": 151.215966
+  },
+  {
+   "id": "osm:way/689259806",
+   "name": "Eastern Suburbs Private Hospital",
+   "category": "hospital",
+   "lat": -33.910623,
+   "lon": 151.246125,
+   "emergency_department": false
+  },
+  {
+   "id": "osm:node/13312341184",
+   "name": "Emergency Department, Sydney Children's Hospital, Randwick",
+   "category": "hospital",
+   "lat": -33.917997,
+   "lon": 151.236696,
+   "emergency_department": true
+  },
+  {
+   "id": "osm:node/13921480301",
+   "name": "Prince Of Wales Loading Dock 5",
+   "category": "hospital",
+   "lat": -33.917822,
+   "lon": 151.238956
+  },
+  {
+   "id": "osm:way/970536217",
+   "name": "Prince of Wales Hospital",
+   "category": "hospital",
+   "lat": -33.918401,
+   "lon": 151.239388,
+   "emergency_department": true
+  },
+  {
+   "id": "osm:way/173134355",
+   "name": "Randwick Hospitals Campus",
+   "category": "hospital",
+   "lat": -33.918969,
+   "lon": 151.238581,
+   "emergency_department": true
+  },
+  {
+   "id": "osm:way/206967239",
+   "name": "Royal Prince Alfred Hospital",
+   "category": "hospital",
+   "lat": -33.889184,
+   "lon": 151.181537,
+   "emergency_department": true
+  },
+  {
+   "id": "osm:way/1298020728",
+   "name": "Sacred Heart Health Service",
+   "category": "hospital",
+   "lat": -33.880438,
+   "lon": 151.219471
+  },
+  {
+   "id": "osm:node/4225187059",
+   "name": "Saint Luke's Private Hospital",
+   "category": "hospital",
+   "lat": -33.874361,
+   "lon": 151.226115,
+   "emergency_department": false
+  },
+  {
+   "id": "osm:way/632337568",
+   "name": "St Vincent's Hospital",
+   "category": "hospital",
+   "lat": -33.880324,
+   "lon": 151.221173,
+   "phone": "+61 2 8382 1111",
+   "emergency_department": true
+  },
+  {
+   "id": "osm:way/270790547",
+   "name": "St Vincent's Private Hospital",
+   "category": "hospital",
+   "lat": -33.880923,
+   "lon": 151.219813,
+   "phone": "+61 2 8382 7111"
+  },
+  {
+   "id": "osm:way/1303632837",
+   "name": "Surry Hills Day Hospital",
+   "category": "hospital",
+   "lat": -33.891,
+   "lon": 151.212705
+  },
+  {
+   "id": "osm:way/1024120595",
+   "name": "Sydney Children's Hospital",
+   "category": "hospital",
+   "lat": -33.917516,
+   "lon": 151.23852,
+   "emergency_department": true
+  },
+  {
+   "id": "osm:way/387748051",
+   "name": "Sydney Hospital",
+   "category": "hospital",
+   "lat": -33.868213,
+   "lon": 151.212863,
+   "emergency_department": true
+  },
+  {
+   "id": "osm:way/1302173111",
+   "name": "Sydney Surgical Centre",
+   "category": "hospital",
+   "lat": -33.916944,
+   "lon": 151.240797
+  },
+  {
+   "id": "osm:way/1303633468",
+   "name": "The Skin Hospital Darlinghurst",
+   "category": "hospital",
+   "lat": -33.875389,
+   "lon": 151.215787
+  },
+  {
+   "id": "osm:way/102757034",
+   "name": "War Memorial Hospital - Waverley",
+   "category": "hospital",
+   "lat": -33.897342,
+   "lon": 151.253588,
+   "emergency_department": false
+  },
+  {
+   "id": "osm:way/1311471183",
+   "name": "Wolper Jewish Hospital",
+   "category": "hospital",
+   "lat": -33.884027,
+   "lon": 151.240968
+  },
+  {
+   "id": "osm:node/11207651993",
+   "name": "Women and Babies Services",
+   "category": "hospital",
+   "lat": -33.888679,
+   "lon": 151.183355
+  },
+  {
+   "id": "osm:node/12808377232",
+   "name": "Help Point 3",
+   "category": "phone",
+   "lat": -33.854495,
+   "lon": 151.205318
+  },
+  {
+   "id": "osm:node/12808377233",
+   "name": "Help Point 5",
+   "category": "phone",
+   "lat": -33.854272,
+   "lon": 151.205522
+  },
+  {
+   "id": "osm:node/12808377234",
+   "name": "Help Point 6",
+   "category": "phone",
+   "lat": -33.854514,
+   "lon": 151.205672
+  },
+  {
+   "id": "osm:node/12808377235",
+   "name": "Help Point 7",
+   "category": "phone",
+   "lat": -33.85553,
+   "lon": 151.206095
+  },
+  {
+   "id": "osm:node/10740284773",
+   "name": null,
+   "category": "phone",
+   "lat": -33.923264,
+   "lon": 151.18718
+  },
+  {
+   "id": "osm:node/10740284774",
+   "name": null,
+   "category": "phone",
+   "lat": -33.923264,
+   "lon": 151.187342
+  },
+  {
+   "id": "osm:node/10740284775",
+   "name": null,
+   "category": "phone",
+   "lat": -33.923095,
+   "lon": 151.187376
+  },
+  {
+   "id": "osm:node/10740284776",
+   "name": null,
+   "category": "phone",
+   "lat": -33.923093,
+   "lon": 151.187178
+  },
+  {
+   "id": "osm:node/10747012930",
+   "name": null,
+   "category": "phone",
+   "lat": -33.906049,
+   "lon": 151.202709
+  },
+  {
+   "id": "osm:node/10747012931",
+   "name": null,
+   "category": "phone",
+   "lat": -33.905967,
+   "lon": 151.202592
+  },
+  {
+   "id": "osm:node/10747012932",
+   "name": null,
+   "category": "phone",
+   "lat": -33.90612,
+   "lon": 151.202423
+  },
+  {
+   "id": "osm:node/10747012933",
+   "name": null,
+   "category": "phone",
+   "lat": -33.906204,
+   "lon": 151.202563
+  },
+  {
+   "id": "osm:node/11175979876",
+   "name": null,
+   "category": "phone",
+   "lat": -33.900905,
+   "lon": 151.185127
+  },
+  {
+   "id": "osm:node/11175979877",
+   "name": null,
+   "category": "phone",
+   "lat": -33.900925,
+   "lon": 151.185224
+  },
+  {
+   "id": "osm:node/11175979878",
+   "name": null,
+   "category": "phone",
+   "lat": -33.900942,
+   "lon": 151.185316
+  },
+  {
+   "id": "osm:node/11175979879",
+   "name": null,
+   "category": "phone",
+   "lat": -33.900962,
+   "lon": 151.185412
+  },
+  {
+   "id": "osm:node/11530747300",
+   "name": null,
+   "category": "phone",
+   "lat": -33.874694,
+   "lon": 151.201724
+  },
+  {
+   "id": "osm:node/11563933250",
+   "name": null,
+   "category": "phone",
+   "lat": -33.860762,
+   "lon": 151.210398
+  },
+  {
+   "id": "osm:node/11563933251",
+   "name": null,
+   "category": "phone",
+   "lat": -33.86078,
+   "lon": 151.210552
+  },
+  {
+   "id": "osm:node/11586036074",
+   "name": null,
+   "category": "phone",
+   "lat": -33.859427,
+   "lon": 151.202449
+  },
+  {
+   "id": "osm:node/11586042169",
+   "name": null,
+   "category": "phone",
+   "lat": -33.859635,
+   "lon": 151.202504
+  },
+  {
+   "id": "osm:node/11586042170",
+   "name": null,
+   "category": "phone",
+   "lat": -33.859638,
+   "lon": 151.202533
+  },
+  {
+   "id": "osm:node/11586042171",
+   "name": null,
+   "category": "phone",
+   "lat": -33.860044,
+   "lon": 151.202661
+  },
+  {
+   "id": "osm:node/11586042172",
+   "name": null,
+   "category": "phone",
+   "lat": -33.859764,
+   "lon": 151.202636
+  },
+  {
+   "id": "osm:node/11586042173",
+   "name": null,
+   "category": "phone",
+   "lat": -33.859599,
+   "lon": 151.202625
+  },
+  {
+   "id": "osm:node/11586042174",
+   "name": null,
+   "category": "phone",
+   "lat": -33.859308,
+   "lon": 151.202617
+  },
+  {
+   "id": "osm:node/11590364899",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873014,
+   "lon": 151.208722
+  },
+  {
+   "id": "osm:node/11590419989",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87471,
+   "lon": 151.208445
+  },
+  {
+   "id": "osm:node/11590419990",
+   "name": null,
+   "category": "phone",
+   "lat": -33.874733,
+   "lon": 151.208441
+  },
+  {
+   "id": "osm:node/11590419991",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873019,
+   "lon": 151.20877
+  },
+  {
+   "id": "osm:node/11590419992",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87301,
+   "lon": 151.208771
+  },
+  {
+   "id": "osm:node/11590419994",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873005,
+   "lon": 151.208723
+  },
+  {
+   "id": "osm:node/11590419995",
+   "name": null,
+   "category": "phone",
+   "lat": -33.874727,
+   "lon": 151.208305
+  },
+  {
+   "id": "osm:node/11590420003",
+   "name": null,
+   "category": "phone",
+   "lat": -33.874632,
+   "lon": 151.208938
+  },
+  {
+   "id": "osm:node/11590420004",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873446,
+   "lon": 151.209014
+  },
+  {
+   "id": "osm:node/11590420007",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873408,
+   "lon": 151.208237
+  },
+  {
+   "id": "osm:node/11590420008",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87459,
+   "lon": 151.208126
+  },
+  {
+   "id": "osm:node/11597420033",
+   "name": null,
+   "category": "phone",
+   "lat": -33.883816,
+   "lon": 151.206635
+  },
+  {
+   "id": "osm:node/11597438878",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884768,
+   "lon": 151.205944
+  },
+  {
+   "id": "osm:node/11597438879",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884435,
+   "lon": 151.206156
+  },
+  {
+   "id": "osm:node/11612558102",
+   "name": null,
+   "category": "phone",
+   "lat": -33.896931,
+   "lon": 151.200164
+  },
+  {
+   "id": "osm:node/11612563973",
+   "name": null,
+   "category": "phone",
+   "lat": -33.897355,
+   "lon": 151.200143
+  },
+  {
+   "id": "osm:node/11612563974",
+   "name": null,
+   "category": "phone",
+   "lat": -33.897597,
+   "lon": 151.200162
+  },
+  {
+   "id": "osm:node/11612563975",
+   "name": null,
+   "category": "phone",
+   "lat": -33.897489,
+   "lon": 151.200312
+  },
+  {
+   "id": "osm:node/11612563976",
+   "name": null,
+   "category": "phone",
+   "lat": -33.897399,
+   "lon": 151.200202
+  },
+  {
+   "id": "osm:node/11612564004",
+   "name": null,
+   "category": "phone",
+   "lat": -33.897714,
+   "lon": 151.200304
+  },
+  {
+   "id": "osm:node/11612564005",
+   "name": null,
+   "category": "phone",
+   "lat": -33.897824,
+   "lon": 151.200344
+  },
+  {
+   "id": "osm:node/11612564006",
+   "name": null,
+   "category": "phone",
+   "lat": -33.898151,
+   "lon": 151.200451
+  },
+  {
+   "id": "osm:node/11640423169",
+   "name": null,
+   "category": "phone",
+   "lat": -33.855725,
+   "lon": 151.206522
+  },
+  {
+   "id": "osm:node/11644249918",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866526,
+   "lon": 151.210462
+  },
+  {
+   "id": "osm:node/11644249919",
+   "name": null,
+   "category": "phone",
+   "lat": -33.868127,
+   "lon": 151.210125
+  },
+  {
+   "id": "osm:node/11644249920",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867998,
+   "lon": 151.210217
+  },
+  {
+   "id": "osm:node/11644249921",
+   "name": null,
+   "category": "phone",
+   "lat": -33.868126,
+   "lon": 151.210107
+  },
+  {
+   "id": "osm:node/11644249931",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867958,
+   "lon": 151.210163
+  },
+  {
+   "id": "osm:node/11644249932",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867945,
+   "lon": 151.210125
+  },
+  {
+   "id": "osm:node/11644249933",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866476,
+   "lon": 151.210216
+  },
+  {
+   "id": "osm:node/11644249934",
+   "name": null,
+   "category": "phone",
+   "lat": -33.86649,
+   "lon": 151.210447
+  },
+  {
+   "id": "osm:node/11644249935",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866481,
+   "lon": 151.210319
+  },
+  {
+   "id": "osm:node/11644249936",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866431,
+   "lon": 151.210375
+  },
+  {
+   "id": "osm:node/11644249937",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866853,
+   "lon": 151.210425
+  },
+  {
+   "id": "osm:node/11644249940",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867926,
+   "lon": 151.210172
+  },
+  {
+   "id": "osm:node/11644249941",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867852,
+   "lon": 151.210216
+  },
+  {
+   "id": "osm:node/11644249942",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867784,
+   "lon": 151.210396
+  },
+  {
+   "id": "osm:node/11644249943",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867745,
+   "lon": 151.209952
+  },
+  {
+   "id": "osm:node/11644249944",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867003,
+   "lon": 151.210524
+  },
+  {
+   "id": "osm:node/11644249945",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866969,
+   "lon": 151.210046
+  },
+  {
+   "id": "osm:node/11644249950",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866669,
+   "lon": 151.210566
+  },
+  {
+   "id": "osm:node/11644249951",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866635,
+   "lon": 151.210128
+  },
+  {
+   "id": "osm:node/11644249952",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867934,
+   "lon": 151.210316
+  },
+  {
+   "id": "osm:node/11799183070",
+   "name": null,
+   "category": "phone",
+   "lat": -33.887697,
+   "lon": 151.188745
+  },
+  {
+   "id": "osm:node/12032061637",
+   "name": null,
+   "category": "phone",
+   "lat": -33.866543,
+   "lon": 151.239526
+  },
+  {
+   "id": "osm:node/12113791684",
+   "name": null,
+   "category": "phone",
+   "lat": -33.869351,
+   "lon": 151.19758
+  },
+  {
+   "id": "osm:node/12113791685",
+   "name": null,
+   "category": "phone",
+   "lat": -33.869414,
+   "lon": 151.197481
+  },
+  {
+   "id": "osm:node/12147638010",
+   "name": null,
+   "category": "phone",
+   "lat": -33.923194,
+   "lon": 151.170726
+  },
+  {
+   "id": "osm:node/12518068995",
+   "name": null,
+   "category": "phone",
+   "lat": -33.86861,
+   "lon": 151.178424
+  },
+  {
+   "id": "osm:node/13032400549",
+   "name": null,
+   "category": "phone",
+   "lat": -33.872766,
+   "lon": 151.242668
+  },
+  {
+   "id": "osm:node/134051575",
+   "name": null,
+   "category": "phone",
+   "lat": -33.877272,
+   "lon": 151.217281
+  },
+  {
+   "id": "osm:node/13467983173",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873636,
+   "lon": 151.200453
+  },
+  {
+   "id": "osm:node/13540733896",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873683,
+   "lon": 151.191856
+  },
+  {
+   "id": "osm:node/13540733897",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873887,
+   "lon": 151.192041
+  },
+  {
+   "id": "osm:node/13644926634",
+   "name": null,
+   "category": "phone",
+   "lat": -33.863074,
+   "lon": 151.217526
+  },
+  {
+   "id": "osm:node/13701273652",
+   "name": null,
+   "category": "phone",
+   "lat": -33.875657,
+   "lon": 151.189391
+  },
+  {
+   "id": "osm:node/13701273653",
+   "name": null,
+   "category": "phone",
+   "lat": -33.875538,
+   "lon": 151.189566
+  },
+  {
+   "id": "osm:node/13701273654",
+   "name": null,
+   "category": "phone",
+   "lat": -33.875396,
+   "lon": 151.189559
+  },
+  {
+   "id": "osm:node/2366580807",
+   "name": null,
+   "category": "phone",
+   "lat": -33.880854,
+   "lon": 151.217017
+  },
+  {
+   "id": "osm:node/3923047256",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876185,
+   "lon": 151.217301
+  },
+  {
+   "id": "osm:node/4027015723",
+   "name": null,
+   "category": "phone",
+   "lat": -33.883262,
+   "lon": 151.206752
+  },
+  {
+   "id": "osm:node/428760369",
+   "name": null,
+   "category": "phone",
+   "lat": -33.925403,
+   "lon": 151.214673
+  },
+  {
+   "id": "osm:node/6835068800",
+   "name": null,
+   "category": "phone",
+   "lat": -33.890909,
+   "lon": 151.217294
+  },
+  {
+   "id": "osm:node/7051883666",
+   "name": null,
+   "category": "phone",
+   "lat": -33.917131,
+   "lon": 151.24054
+  },
+  {
+   "id": "osm:node/9627823480",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876372,
+   "lon": 151.209842
+  },
+  {
+   "id": "osm:node/9627823486",
+   "name": null,
+   "category": "phone",
+   "lat": -33.875743,
+   "lon": 151.210233
+  },
+  {
+   "id": "osm:node/9627823487",
+   "name": null,
+   "category": "phone",
+   "lat": -33.875707,
+   "lon": 151.210142
+  },
+  {
+   "id": "osm:node/9768710631",
+   "name": null,
+   "category": "phone",
+   "lat": -33.861288,
+   "lon": 151.210578
+  },
+  {
+   "id": "osm:node/9768710659",
+   "name": null,
+   "category": "phone",
+   "lat": -33.861394,
+   "lon": 151.210566
+  },
+  {
+   "id": "osm:node/9780863932",
+   "name": null,
+   "category": "phone",
+   "lat": -33.870649,
+   "lon": 151.211981
+  },
+  {
+   "id": "osm:node/9784704107",
+   "name": null,
+   "category": "phone",
+   "lat": -33.86781,
+   "lon": 151.211174
+  },
+  {
+   "id": "osm:node/9784704108",
+   "name": null,
+   "category": "phone",
+   "lat": -33.86787,
+   "lon": 151.211834
+  },
+  {
+   "id": "osm:node/9830492201",
+   "name": null,
+   "category": "phone",
+   "lat": -33.925126,
+   "lon": 151.215001
+  },
+  {
+   "id": "osm:node/9830492204",
+   "name": null,
+   "category": "phone",
+   "lat": -33.904332,
+   "lon": 151.214174
+  },
+  {
+   "id": "osm:node/9830533248",
+   "name": null,
+   "category": "phone",
+   "lat": -33.90379,
+   "lon": 151.21424
+  },
+  {
+   "id": "osm:node/9830533249",
+   "name": null,
+   "category": "phone",
+   "lat": -33.903101,
+   "lon": 151.214422
+  },
+  {
+   "id": "osm:node/9830533250",
+   "name": null,
+   "category": "phone",
+   "lat": -33.902535,
+   "lon": 151.214571
+  },
+  {
+   "id": "osm:node/9830533251",
+   "name": null,
+   "category": "phone",
+   "lat": -33.902283,
+   "lon": 151.214637
+  },
+  {
+   "id": "osm:node/9830533252",
+   "name": null,
+   "category": "phone",
+   "lat": -33.90186,
+   "lon": 151.214748
+  },
+  {
+   "id": "osm:node/9830533253",
+   "name": null,
+   "category": "phone",
+   "lat": -33.901435,
+   "lon": 151.21486
+  },
+  {
+   "id": "osm:node/9830533254",
+   "name": null,
+   "category": "phone",
+   "lat": -33.901036,
+   "lon": 151.214965
+  },
+  {
+   "id": "osm:node/9830533255",
+   "name": null,
+   "category": "phone",
+   "lat": -33.899975,
+   "lon": 151.215293
+  },
+  {
+   "id": "osm:node/9830533256",
+   "name": null,
+   "category": "phone",
+   "lat": -33.900645,
+   "lon": 151.215142
+  },
+  {
+   "id": "osm:node/9830704485",
+   "name": null,
+   "category": "phone",
+   "lat": -33.901027,
+   "lon": 151.215042
+  },
+  {
+   "id": "osm:node/9830704486",
+   "name": null,
+   "category": "phone",
+   "lat": -33.901445,
+   "lon": 151.214932
+  },
+  {
+   "id": "osm:node/9830704487",
+   "name": null,
+   "category": "phone",
+   "lat": -33.901875,
+   "lon": 151.214819
+  },
+  {
+   "id": "osm:node/9830704488",
+   "name": null,
+   "category": "phone",
+   "lat": -33.902315,
+   "lon": 151.214743
+  },
+  {
+   "id": "osm:node/9830704489",
+   "name": null,
+   "category": "phone",
+   "lat": -33.902663,
+   "lon": 151.214612
+  },
+  {
+   "id": "osm:node/9830704490",
+   "name": null,
+   "category": "phone",
+   "lat": -33.903162,
+   "lon": 151.214481
+  },
+  {
+   "id": "osm:node/9830704491",
+   "name": null,
+   "category": "phone",
+   "lat": -33.903801,
+   "lon": 151.214314
+  },
+  {
+   "id": "osm:node/9830704492",
+   "name": null,
+   "category": "phone",
+   "lat": -33.904187,
+   "lon": 151.214212
+  },
+  {
+   "id": "osm:node/9845880859",
+   "name": null,
+   "category": "phone",
+   "lat": -33.887287,
+   "lon": 151.217993
+  },
+  {
+   "id": "osm:node/9845880860",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886505,
+   "lon": 151.217963
+  },
+  {
+   "id": "osm:node/9846252938",
+   "name": null,
+   "category": "phone",
+   "lat": -33.863026,
+   "lon": 151.213445
+  },
+  {
+   "id": "osm:node/9846252939",
+   "name": null,
+   "category": "phone",
+   "lat": -33.862997,
+   "lon": 151.213663
+  },
+  {
+   "id": "osm:node/9846252940",
+   "name": null,
+   "category": "phone",
+   "lat": -33.867969,
+   "lon": 151.21783
+  },
+  {
+   "id": "osm:node/9846252941",
+   "name": null,
+   "category": "phone",
+   "lat": -33.868074,
+   "lon": 151.217599
+  },
+  {
+   "id": "osm:node/9846252942",
+   "name": null,
+   "category": "phone",
+   "lat": -33.872107,
+   "lon": 151.218002
+  },
+  {
+   "id": "osm:node/9846252943",
+   "name": null,
+   "category": "phone",
+   "lat": -33.872706,
+   "lon": 151.217872
+  },
+  {
+   "id": "osm:node/9846252944",
+   "name": null,
+   "category": "phone",
+   "lat": -33.872992,
+   "lon": 151.217827
+  },
+  {
+   "id": "osm:node/9846252945",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873246,
+   "lon": 151.217786
+  },
+  {
+   "id": "osm:node/9846252946",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873842,
+   "lon": 151.217702
+  },
+  {
+   "id": "osm:node/9846252947",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87417,
+   "lon": 151.21766
+  },
+  {
+   "id": "osm:node/9846252948",
+   "name": null,
+   "category": "phone",
+   "lat": -33.874634,
+   "lon": 151.2176
+  },
+  {
+   "id": "osm:node/9846252949",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87514,
+   "lon": 151.217535
+  },
+  {
+   "id": "osm:node/9846252950",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87571,
+   "lon": 151.217464
+  },
+  {
+   "id": "osm:node/9846252951",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876196,
+   "lon": 151.217405
+  },
+  {
+   "id": "osm:node/9846252952",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876668,
+   "lon": 151.217352
+  },
+  {
+   "id": "osm:node/9846252953",
+   "name": null,
+   "category": "phone",
+   "lat": -33.877724,
+   "lon": 151.217234
+  },
+  {
+   "id": "osm:node/9846252954",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87826,
+   "lon": 151.217178
+  },
+  {
+   "id": "osm:node/9846252955",
+   "name": null,
+   "category": "phone",
+   "lat": -33.878802,
+   "lon": 151.217107
+  },
+  {
+   "id": "osm:node/9846252956",
+   "name": null,
+   "category": "phone",
+   "lat": -33.879382,
+   "lon": 151.217048
+  },
+  {
+   "id": "osm:node/9846252957",
+   "name": null,
+   "category": "phone",
+   "lat": -33.874254,
+   "lon": 151.217417
+  },
+  {
+   "id": "osm:node/9846252958",
+   "name": null,
+   "category": "phone",
+   "lat": -33.874925,
+   "lon": 151.217256
+  },
+  {
+   "id": "osm:node/9846252959",
+   "name": null,
+   "category": "phone",
+   "lat": -33.875584,
+   "lon": 151.217258
+  },
+  {
+   "id": "osm:node/9846252960",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876668,
+   "lon": 151.217254
+  },
+  {
+   "id": "osm:node/9846252961",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87726,
+   "lon": 151.217182
+  },
+  {
+   "id": "osm:node/9846252962",
+   "name": null,
+   "category": "phone",
+   "lat": -33.877706,
+   "lon": 151.217126
+  },
+  {
+   "id": "osm:node/9846252963",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87825,
+   "lon": 151.217063
+  },
+  {
+   "id": "osm:node/9846252964",
+   "name": null,
+   "category": "phone",
+   "lat": -33.878794,
+   "lon": 151.217001
+  },
+  {
+   "id": "osm:node/9846252965",
+   "name": null,
+   "category": "phone",
+   "lat": -33.879241,
+   "lon": 151.216972
+  },
+  {
+   "id": "osm:node/9846252966",
+   "name": null,
+   "category": "phone",
+   "lat": -33.879896,
+   "lon": 151.21701
+  },
+  {
+   "id": "osm:node/9846252967",
+   "name": null,
+   "category": "phone",
+   "lat": -33.880279,
+   "lon": 151.216987
+  },
+  {
+   "id": "osm:node/9846252968",
+   "name": null,
+   "category": "phone",
+   "lat": -33.881453,
+   "lon": 151.217123
+  },
+  {
+   "id": "osm:node/9846252969",
+   "name": null,
+   "category": "phone",
+   "lat": -33.881989,
+   "lon": 151.217223
+  },
+  {
+   "id": "osm:node/9846252970",
+   "name": null,
+   "category": "phone",
+   "lat": -33.882571,
+   "lon": 151.217331
+  },
+  {
+   "id": "osm:node/9846252971",
+   "name": null,
+   "category": "phone",
+   "lat": -33.88324,
+   "lon": 151.217469
+  },
+  {
+   "id": "osm:node/9846252972",
+   "name": null,
+   "category": "phone",
+   "lat": -33.883689,
+   "lon": 151.217559
+  },
+  {
+   "id": "osm:node/9846252973",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884278,
+   "lon": 151.217763
+  },
+  {
+   "id": "osm:node/9846252974",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884555,
+   "lon": 151.21791
+  },
+  {
+   "id": "osm:node/9846252976",
+   "name": null,
+   "category": "phone",
+   "lat": -33.88546,
+   "lon": 151.21834
+  },
+  {
+   "id": "osm:node/9846252977",
+   "name": null,
+   "category": "phone",
+   "lat": -33.885873,
+   "lon": 151.218557
+  },
+  {
+   "id": "osm:node/9846252978",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886142,
+   "lon": 151.2187
+  },
+  {
+   "id": "osm:node/9846252979",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886137,
+   "lon": 151.21874
+  },
+  {
+   "id": "osm:node/9846252980",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886875,
+   "lon": 151.219099
+  },
+  {
+   "id": "osm:node/9846252981",
+   "name": null,
+   "category": "phone",
+   "lat": -33.887368,
+   "lon": 151.219368
+  },
+  {
+   "id": "osm:node/9847233771",
+   "name": null,
+   "category": "phone",
+   "lat": -33.885568,
+   "lon": 151.218236
+  },
+  {
+   "id": "osm:node/9847233772",
+   "name": null,
+   "category": "phone",
+   "lat": -33.885201,
+   "lon": 151.218137
+  },
+  {
+   "id": "osm:node/9847233773",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884868,
+   "lon": 151.218022
+  },
+  {
+   "id": "osm:node/9847233774",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884526,
+   "lon": 151.217863
+  },
+  {
+   "id": "osm:node/9847233775",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884174,
+   "lon": 151.217684
+  },
+  {
+   "id": "osm:node/9847233777",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886512,
+   "lon": 151.217996
+  },
+  {
+   "id": "osm:node/9847233778",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886384,
+   "lon": 151.218008
+  },
+  {
+   "id": "osm:node/9847233779",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886256,
+   "lon": 151.218019
+  },
+  {
+   "id": "osm:node/9847233780",
+   "name": null,
+   "category": "phone",
+   "lat": -33.885873,
+   "lon": 151.218071
+  },
+  {
+   "id": "osm:node/9847233781",
+   "name": null,
+   "category": "phone",
+   "lat": -33.885595,
+   "lon": 151.218125
+  },
+  {
+   "id": "osm:node/9847233782",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884988,
+   "lon": 151.21814
+  },
+  {
+   "id": "osm:node/9847233784",
+   "name": null,
+   "category": "phone",
+   "lat": -33.884989,
+   "lon": 151.218102
+  },
+  {
+   "id": "osm:node/9847233785",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886725,
+   "lon": 151.220426
+  },
+  {
+   "id": "osm:node/9847233787",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886487,
+   "lon": 151.219129
+  },
+  {
+   "id": "osm:node/9847233788",
+   "name": null,
+   "category": "phone",
+   "lat": -33.886255,
+   "lon": 151.217982
+  },
+  {
+   "id": "osm:node/9847233789",
+   "name": null,
+   "category": "phone",
+   "lat": -33.88587,
+   "lon": 151.218037
+  },
+  {
+   "id": "osm:node/9847233790",
+   "name": null,
+   "category": "phone",
+   "lat": -33.885591,
+   "lon": 151.218091
+  },
+  {
+   "id": "osm:node/9847233791",
+   "name": null,
+   "category": "phone",
+   "lat": -33.885278,
+   "lon": 151.218118
+  },
+  {
+   "id": "osm:node/9847233792",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876044,
+   "lon": 151.217244
+  },
+  {
+   "id": "osm:node/9847233793",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876494,
+   "lon": 151.217229
+  },
+  {
+   "id": "osm:node/9847233794",
+   "name": null,
+   "category": "phone",
+   "lat": -33.877029,
+   "lon": 151.217155
+  },
+  {
+   "id": "osm:node/9847233795",
+   "name": null,
+   "category": "phone",
+   "lat": -33.877341,
+   "lon": 151.217116
+  },
+  {
+   "id": "osm:node/9847233796",
+   "name": null,
+   "category": "phone",
+   "lat": -33.877959,
+   "lon": 151.217038
+  },
+  {
+   "id": "osm:node/9847233797",
+   "name": null,
+   "category": "phone",
+   "lat": -33.878548,
+   "lon": 151.216969
+  },
+  {
+   "id": "osm:node/9847233798",
+   "name": null,
+   "category": "phone",
+   "lat": -33.879236,
+   "lon": 151.216918
+  },
+  {
+   "id": "osm:node/9847233799",
+   "name": null,
+   "category": "phone",
+   "lat": -33.872712,
+   "lon": 151.217732
+  },
+  {
+   "id": "osm:node/9847233800",
+   "name": null,
+   "category": "phone",
+   "lat": -33.873417,
+   "lon": 151.217725
+  },
+  {
+   "id": "osm:node/9847233801",
+   "name": null,
+   "category": "phone",
+   "lat": -33.87417,
+   "lon": 151.217622
+  },
+  {
+   "id": "osm:node/9847233803",
+   "name": null,
+   "category": "phone",
+   "lat": -33.875129,
+   "lon": 151.217492
+  },
+  {
+   "id": "osm:node/9847233804",
+   "name": null,
+   "category": "phone",
+   "lat": -33.875708,
+   "lon": 151.21743
+  },
+  {
+   "id": "osm:node/9847233805",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876194,
+   "lon": 151.217374
+  },
+  {
+   "id": "osm:node/9847233806",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876566,
+   "lon": 151.21733
+  },
+  {
+   "id": "osm:node/9847233807",
+   "name": null,
+   "category": "phone",
+   "lat": -33.876987,
+   "lon": 151.21728
+  },
+  {
+   "id": "osm:node/9847233808",
+   "name": null,
+   "category": "phone",
+   "lat": -33.877395,
+   "lon": 151.217226
+  },
+  {
+   "id": "osm:node/9847233809",
+   "name": null,
+   "category": "phone",
+   "lat": -33.878025,
+   "lon": 151.217163
+  },
+  {
+   "id": "osm:node/9847233810",
+   "name": null,
+   "category": "phone",
+   "lat": -33.878558,
+   "lon": 151.217093
+  },
+  {
+   "id": "osm:node/9847233811",
+   "name": null,
+   "category": "phone",
+   "lat": -33.879131,
+   "lon": 151.217034
+  },
+  {
+   "id": "osm:node/9847233812",
+   "name": null,
+   "category": "phone",
+   "lat": -33.879883,
+   "lon": 151.216971
+  },
+  {
+   "id": "osm:node/9847233813",
+   "name": null,
+   "category": "phone",
+   "lat": -33.880102,
+   "lon": 151.216953
+  },
+  {
+   "id": "osm:way/1261363035",
+   "name": "Barangaroo",
+   "category": "station",
+   "lat": -33.859676,
+   "lon": 151.202543
+  },
+  {
+   "id": "osm:node/20955155",
+   "name": "Bondi Junction",
+   "category": "station",
+   "lat": -33.891243,
+   "lon": 151.248455
+  },
+  {
+   "id": "osm:way/679354513",
+   "name": "Central",
+   "category": "station",
+   "lat": -33.883881,
+   "lon": 151.205971
+  },
+  {
+   "id": "osm:node/1692720118",
+   "name": "Circular Quay",
+   "category": "station",
+   "lat": -33.861359,
+   "lon": 151.210719
+  },
+  {
+   "id": "osm:node/18372990",
+   "name": "Edgecliff",
+   "category": "station",
+   "lat": -33.87924,
+   "lon": 151.236136
+  },
+  {
+   "id": "osm:node/6627573542",
+   "name": "Erskineville",
+   "category": "station",
+   "lat": -33.900952,
+   "lon": 151.185268
+  },
+  {
+   "id": "osm:way/1261364180",
+   "name": "Gadigal",
+   "category": "station",
+   "lat": -33.873845,
+   "lon": 151.20863
+  },
+  {
+   "id": "osm:node/15445736",
+   "name": "Green Square",
+   "category": "station",
+   "lat": -33.906199,
+   "lon": 151.202436
+  },
+  {
+   "id": "osm:node/1499194256",
+   "name": "Kings Cross",
+   "category": "station",
+   "lat": -33.874487,
+   "lon": 151.222231
+  },
+  {
+   "id": "osm:node/4735626773",
+   "name": "Macdonaldtown",
+   "category": "station",
+   "lat": -33.896905,
+   "lon": 151.185892
+  },
+  {
+   "id": "osm:way/142747518",
+   "name": "Martin Place",
+   "category": "station",
+   "lat": -33.867278,
+   "lon": 151.211212
+  },
+  {
+   "id": "osm:node/6560219244",
+   "name": "Mascot",
+   "category": "station",
+   "lat": -33.923191,
+   "lon": 151.187265
+  },
+  {
+   "id": "osm:way/50940824",
+   "name": "Museum",
+   "category": "station",
+   "lat": -33.875896,
+   "lon": 151.209996
+  },
+  {
+   "id": "osm:node/4735625743",
+   "name": "Newtown",
+   "category": "station",
+   "lat": -33.897918,
+   "lon": 151.179613
+  },
+  {
+   "id": "osm:way/585998416",
+   "name": "Redfern",
+   "category": "station",
+   "lat": -33.89229,
+   "lon": 151.198334
+  },
+  {
+   "id": "osm:way/1115995149",
+   "name": "St James",
+   "category": "station",
+   "lat": -33.8709,
+   "lon": 151.21182
+  },
+  {
+   "id": "osm:node/1853644076",
+   "name": "St Peters",
+   "category": "station",
+   "lat": -33.907286,
+   "lon": 151.18067
+  },
+  {
+   "id": "osm:node/1763901273",
+   "name": "Town Hall",
+   "category": "station",
+   "lat": -33.873567,
+   "lon": 151.20685
+  },
+  {
+   "id": "osm:way/1261365612",
+   "name": "Waterloo",
+   "category": "station",
+   "lat": -33.897714,
+   "lon": 151.200324
+  },
+  {
+   "id": "osm:node/1886265379",
+   "name": "Wynyard",
+   "category": "station",
+   "lat": -33.86599,
+   "lon": 151.20581
+  }
+ ],
+ "attribution": "© OpenStreetMap contributors, ODbL",
+ "bbox": [
+  -33.93,
+  151.17,
+  -33.85,
+  151.26
+ ],
+ "fetched": "2026-10-27T14:24:04+00:00",
+ "query": "[out:json][timeout:60];\n(\n  nwr[\"amenity\"=\"police\"](-33.93,151.17,-33.85,151.26);\n  nwr[\"amenity\"=\"hospital\"](-33.93,151.17,-33.85,151.26);\n  nwr[\"emergency\"=\"phone\"](-33.93,151.17,-33.85,151.26);\n  nwr[\"railway\"=\"station\"](-33.93,151.17,-33.85,151.26);\n);\nout center tags;"
+}
