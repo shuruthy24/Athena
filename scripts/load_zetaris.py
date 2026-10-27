@@ -3,7 +3,7 @@
 Zetaris cannot read files on your laptop, but it can read a URL (the Setup Guide's PokeAPI recipe).
 So each data/*.json file is registered as a Lightning REST table and flattened into a schemastore view.
 
-  python3 scripts/load_zetaris.py --base-url https://raw.githubusercontent.com/<you>/athena-agent/main/data
+  python3 scripts/load_zetaris.py --base-url https://raw.githubusercontent.com/shuruthy24/Athena/main/data
   python3 scripts/load_zetaris.py --base-url http://<docker-gateway>:8000      # local fallback, see README
   python3 scripts/load_zetaris.py --inline                                     # fallback: inline VALUES views
   python3 scripts/load_zetaris.py --check                                      # only verify row counts
