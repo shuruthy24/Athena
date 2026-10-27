@@ -1,4 +1,4 @@
-# 06 · Sponsor technology explanation (paste into the HackOS form)
+# 06 · Sponsor technology explanation
 
 **Track:** Wildcard [Tinkerer]: we extended our existing Athena route map with a new agent layer.
 
@@ -63,7 +63,8 @@ Every step in the "How Athena decided" trace shows the model that actually serve
 - Zetaris is where both the route evidence and the report verification come from, and the SQL is shown to the
   user.
 
-**How Cursor was used.**Cursor was used during the initial testing and exploration phase to evaluate the project and its integrations. However, it was not selected as the tool for implementing the final solution. The final implementation was developed using our chosen development workflow, with responsibility for the resulting codebase, testing and documentation remaining with our team. AI-generated code is permitted under the hackathon rules (Welcome Guide §8).
+**How Cursor was used.**
+Cursor was used during the initial testing and exploration phase to evaluate the project and its integrations. However, it was not selected as the tool for implementing the final solution. The final implementation was developed using our chosen development workflow, with responsibility for the resulting codebase, testing and documentation remaining with our team. AI-generated code is permitted under the hackathon rules (Welcome Guide §8).
 
 **Pre-existing components (declare in the form).**
 Built for UNSW COMP3110 before 22 Oct 2026:
