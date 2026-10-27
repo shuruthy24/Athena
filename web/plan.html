@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Athena Journey Planner</title>
+<meta name="description" content="Plan a night trip in Sydney and compare the fastest route with lower-risk alternatives, with the evidence behind each.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/web/vendor/maplibre-gl.css">
+<style>
+/* Same palette as Ask Athena: deep indigo ground, pink = Athena, blue = fastest. */
+:root{
+  --bg:#f5f3fb; --panel:#fff; --ink:#1c1733; --muted:#5f5a78; --line:#e2dcef; --soft:#efe9fb;
+  --athena:#d02f7c; --fast:#2f6fd6; --accent:#7a3fe0; --ok:#1f8a5b; --warn:#b36414; --bad:#c2384a;
+  --code:#f0ecf8; --map-bg:#eceaf3; --route-dim:#9b95b6; --casing:#ffffff;
+  --f-display:"Bricolage Grotesque",system-ui,sans-serif; --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --panel-w:420px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e0b1c; --panel:#17132d; --ink:#ece8fb; --muted:#a7a0c6; --line:#2b2550; --soft:#221c42;
+  --athena:#ff6aa8; --fast:#6ea4ff; --accent:#a87cff; --ok:#4cc58f; --warn:#f0a35c; --bad:#ff7a8a; --code:#211b40;
+  --map-bg:#1a1631; --route-dim:#6b6590; --casing:#0e0b1c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e0b1c; --panel:#17132d; --ink:#ece8fb; --muted:#a7a0c6; --line:#2b2550; --soft:#221c42;
+  --athena:#ff6aa8; --fast:#6ea4ff; --accent:#a87cff; --ok:#4cc58f; --warn:#f0a35c; --bad:#ff7a8a; --code:#211b40;
+  --map-bg:#1a1631; --route-dim:#6b6590; --casing:#0e0b1c; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);display:grid;grid-template-rows:auto minmax(0,1fr);height:100dvh;overflow:hidden}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.15;text-wrap:balance}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:var(--ink)}
+button:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible,.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---- top bar ---- */
+.top{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;justify-content:space-between;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));
+  background:var(--panel);border-bottom:1px solid var(--line);z-index:3}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--athena);display:grid;place-items:center;color:#fff;font:700 1rem var(--f-display)}
+.brand h1{font-size:1.3rem}
+.brand small{color:var(--muted);font-size:.82rem}
+nav.tabs{display:flex;gap:4px;margin-right:auto}
+nav.tabs a{padding:6px 11px;border-radius:9px;text-decoration:none;color:var(--muted);font-weight:500;font-size:.9rem}
+nav.tabs a[aria-current="page"]{background:var(--soft);color:var(--ink)}
+.sos{display:flex;align-items:center;gap:8px;border:1px solid var(--bad);border-radius:11px;padding:3px 11px;text-decoration:none;color:var(--ink);font-size:.82rem}
+.sos b{font-family:var(--f-display);font-size:1.2rem;color:var(--bad)}
+
+/* ---- layout ---- */
+.app{display:grid;grid-template-columns:var(--panel-w) minmax(0,1fr);min-height:0}
+.panel{overflow-y:auto;border-right:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;min-height:0}
+.mapwrap{position:relative;min-height:0}
+#map{position:absolute;inset:0;background:var(--map-bg)}
+@media (max-width:860px){
+  body{height:auto;min-height:100dvh;overflow:auto;display:block}
+  .app{display:flex;flex-direction:column}
+  .mapwrap{order:1;height:46vh;min-height:280px;position:sticky;top:0;z-index:1}
+  .panel{order:2;overflow:visible;border-right:0}
+  nav.tabs{order:3;width:100%;margin:0}
+  .brand small,.sos .extra{display:none}
+  .top{padding-block:8px}
+}
+
+/* ---- search form ---- */
+.search{background:var(--panel);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.od{display:grid;grid-template-columns:18px minmax(0,1fr) 40px;gap:6px 8px;align-items:center}
+.od .dot{width:12px;height:12px;border-radius:50%;border:3px solid var(--ink);justify-self:center}
+.od .dot.to{border-radius:3px;background:var(--athena);border-color:var(--athena)}
+.od .rail{grid-column:1;height:14px;width:2px;background:var(--line);justify-self:center;margin:-4px 0}
+select{width:100%;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.swap{grid-column:3;grid-row:1 / span 3;height:40px;width:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg);cursor:pointer;display:grid;place-items:center}
+.swap svg{width:18px;height:18px}
+.seg{display:flex;flex-direction:column;gap:5px}
+.seg .lab{font:.7rem var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.seg .opts{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:6px 4px;font-size:.86rem;font-weight:500;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;min-width:0}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(20,10,50,.15)}
+.seg button svg{width:16px;height:16px;flex:none}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+
+/* ---- results ---- */
+.results{padding:14px 16px 28px;display:flex;flex-direction:column;gap:10px}
+.reshead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.reshead h2{font-size:1.05rem}
+.reshead label{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted)}
+.reshead select{width:auto;padding:5px 8px;font-size:.84rem}
+.notice{font-size:.8rem;color:var(--muted);display:flex;gap:8px;align-items:flex-start;background:var(--soft);border-radius:10px;padding:8px 10px}
+.notice svg{flex:none;width:15px;height:15px;margin-top:2px}
+.notice.live{color:var(--ok)}
+.notice.warn{color:var(--warn)}
+.cards{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:border-color .15s, box-shadow .15s}
+.card:hover{border-color:var(--route-dim)}
+.card[aria-expanded="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.card .tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font:500 .7rem var(--f-mono);padding:2px 8px;border-radius:999px;background:var(--soft);letter-spacing:.02em}
+.tag.fast{color:var(--fast)} .tag.athena{color:var(--athena)}
+.card .head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.card .times{font-weight:600;font-variant-numeric:tabular-nums}
+.card .dur{font:700 1.25rem var(--f-display);white-space:nowrap}
+.card .dur small{font:500 .8rem var(--f-body);color:var(--muted)}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.chain .sep{color:var(--muted);font-size:.8rem}
+.leg{display:inline-flex;align-items:center;gap:4px;font:600 .76rem var(--f-body);border-radius:6px;padding:2px 7px;background:var(--soft);color:var(--ink);white-space:nowrap}
+.leg svg{width:13px;height:13px}
+.leg.t{color:#fff}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem;color:var(--muted)}
+.risk{display:flex;align-items:center;gap:8px;font-size:.86rem;font-weight:600}
+.risk .sw{width:10px;height:10px;border-radius:50%;flex:none}
+.risk .num{font:500 .78rem var(--f-mono);color:var(--muted);font-weight:400}
+.risk.low{color:var(--ok)} .risk.low .sw{background:var(--ok)}
+.risk.medium{color:var(--warn)} .risk.medium .sw{background:var(--warn)}
+.risk.high{color:var(--bad)} .risk.high .sw{background:var(--bad)}
+.risk.unknown{color:var(--muted)} .risk.unknown .sw{background:transparent;border:2px dashed var(--muted)}
+.meter{position:relative;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--ok) 0 33%,var(--warn) 33% 55%,var(--bad) 55% 100%);opacity:.85}
+.meter i{position:absolute;top:-4px;width:4px;height:14px;border-radius:2px;background:var(--ink);transform:translateX(-50%)}
+.detail{display:none;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:10px;cursor:auto}
+.card[aria-expanded="true"] .detail{display:flex}
+.why{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:.86rem}
+.itin{list-style:none;margin:0;padding:0}
+.itin>li{position:relative;padding:0 0 12px 22px}
+.itin>li::before{content:"";position:absolute;left:5px;top:6px;bottom:-6px;width:3px;border-radius:2px;background:var(--c,var(--route-dim))}
+.itin>li.walk::before{background:repeating-linear-gradient(var(--c) 0 4px,transparent 4px 8px)}
+.itin>li:last-child::before{display:none}
+.itin>li::after{content:"";position:absolute;left:1px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--panel);border:2px solid var(--c,var(--ink))}
+.itin .t1{display:flex;justify-content:space-between;gap:8px;font-size:.86rem}
+.itin .t1 b{font-weight:600}
+.itin .t1 time{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.itin .t2{font-size:.8rem;color:var(--muted)}
+.streets{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.streets li{display:flex;align-items:center;gap:6px;font-size:.8rem}
+.streets .sw{width:8px;height:8px;border-radius:50%;flex:none}
+.streets .lit{font:.7rem var(--f-mono);color:var(--muted);margin-left:auto;white-space:nowrap}
+.help{font-size:.82rem;display:flex;flex-direction:column;gap:4px}
+.help ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.help li{display:flex;gap:6px;align-items:center}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 .84rem var(--f-body);border-radius:10px;padding:7px 12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+details{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+summary{cursor:pointer;padding:7px 10px;font-size:.82rem;color:var(--muted)}
+pre{margin:0;padding:10px;background:var(--code);border-radius:0 0 10px 10px;overflow-x:auto;font:.74rem/1.45 var(--f-mono);white-space:pre-wrap;word-break:break-word}
+.state{padding:26px 10px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+.state h3{color:var(--ink);font-size:1.05rem}
+.state.error h3{color:var(--bad)}
+.skel{height:118px;border-radius:14px;background:linear-gradient(90deg,var(--soft),var(--panel),var(--soft));background-size:200% 100%;animation:sh 1.3s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.foot{padding:0 16px 20px;font-size:.76rem;color:var(--muted)}
+
+/* ---- map chrome ---- */
+.mapctl{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;z-index:2;max-width:calc(100% - 70px)}
+.chipbar{display:flex;gap:6px;flex-wrap:wrap}
+.mchip{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:.8rem;font-weight:500;cursor:pointer;box-shadow:0 1px 4px rgba(20,10,50,.15)}
+.mchip[aria-pressed="false"]{color:var(--muted)}
+.mchip[aria-pressed="false"] .sw{opacity:.35}
+.mchip .sw{width:10px;height:10px;border-radius:3px}
+.legend{position:absolute;left:12px;bottom:56px;z-index:2;background:var(--panel);border:1px solid var(--line);border-radius:12px;font-size:.75rem;box-shadow:0 1px 4px rgba(20,10,50,.15);max-width:calc(100% - 24px)}
+.legend summary{padding:5px 10px;font-size:.78rem;font-weight:500;color:var(--ink)}
+#legend{display:flex;flex-direction:column;gap:4px;padding:0 10px 8px}
+.legend .r{display:flex;align-items:center;gap:6px}
+.legend .ln{width:20px;height:4px;border-radius:2px}
+.basemap-note{position:absolute;top:50px;left:12px;max-width:calc(100% - 80px);z-index:2;font-size:.74rem;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px 8px;color:var(--muted)}
+.pin{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 .72rem var(--f-body);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);cursor:pointer}
+.pin svg{width:14px;height:14px}
+.pin.police{background:#1d4ed8} .pin.hospital{background:#c2384a} .pin.phone{background:#b36414} .pin.station{background:#0f766e}
+.endpt{width:16px;height:16px;border-radius:50%;background:var(--panel);border:4px solid var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.endpt.to{border-radius:4px;background:var(--athena);border-color:#fff}
+.maplibregl-popup-content{background:var(--panel);color:var(--ink);border-radius:10px;font:13px/1.4 var(--f-body);padding:9px 12px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.maplibregl-popup-tip{border-top-color:var(--panel)!important;border-bottom-color:var(--panel)!important}
+.maplibregl-popup-close-button{color:var(--muted)}
+.maplibregl-ctrl-attrib{font-size:10px}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}.card{transition:none}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/" aria-label="Athena journey planner home"><span class="mark" aria-hidden="true">A</span><h1>Athena</h1><small>Night journeys, lower-risk options</small></a>
+  <nav class="tabs" aria-label="Sections">
+    <a href="/" aria-current="page">Plan a trip</a>
+    <a href="/ask">Ask Athena</a>
+    <a href="/map">Street map</a>
+  </nav>
+  <a class="sos" href="tel:000" aria-label="Call 000 emergency"><span>In danger?</span><b>000</b><span class="extra">police · fire · ambulance</span></a>
+</header>
+
+<div class="app">
+  <aside class="panel" aria-label="Journey planner">
+    <form class="search" id="form" onsubmit="return false">
+      <div class="od">
+        <span class="dot" aria-hidden="true"></span>
+        <label class="sr" for="origin">From</label><select id="origin" aria-label="From"></select>
+        <button class="swap" id="swap" type="button" aria-label="Swap origin and destination" title="Swap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></svg>
+        </button>
+        <span class="rail" aria-hidden="true"></span><span></span>
+        <span class="dot to" aria-hidden="true"></span>
+        <label class="sr" for="destination">To</label><select id="destination" aria-label="To"></select>
+      </div>
+      <div class="seg" role="group" aria-labelledby="mode-l">
+        <span class="lab" id="mode-l">Travel by</span>
+        <div class="opts" id="mode"></div>
+      </div>
+      <div class="seg" role="group" aria-labelledby="band-l">
+        <span class="lab" id="band-l">Leaving at</span>
+        <div class="opts" id="band"></div>
+      </div>
+    </form>
+
+    <section class="results" aria-live="polite" aria-busy="false" id="results"></section>
+    <p class="foot">Athena describes routes as having lower or higher <em>risk indicators</em>, never as safe. Risk is a rule-based street score from lighting, path type and late-night activity; it is not an incident count. Missing lighting data lowers confidence and is never treated as dark. If you feel unsafe, call 000.</p>
+  </aside>
+
+  <section class="mapwrap" aria-label="Map">
+    <div id="map" role="region" aria-label="Route map"></div>
+    <div class="mapctl">
+      <div class="chipbar">
+        <button class="mchip" id="t-safety" type="button" aria-pressed="true"><span class="sw" style="background:linear-gradient(90deg,var(--ok),var(--warn),var(--bad))"></span>Street risk</button>
+        <button class="mchip" id="t-help" type="button" aria-pressed="true"><span class="sw" style="background:#1d4ed8"></span>Help locations</button>
+      </div>
+    </div>
+    <details class="legend" id="legendbox"><summary>Map key</summary><div id="legend" aria-label="Map legend"></div></details>
+    <div class="basemap-note" id="basemap-note" hidden></div>
+  </section>
+</div>
+
+<script src="/web/vendor/maplibre-gl.js"></script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+const ICON = {
+  walk:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="13" cy="4" r="2"/><path d="M10.5 8.5 8 20h2.2l1.6-7 2.2 2.2V20h2v-6.2l-2.2-2.2.7-3.2A6 6 0 0 0 19 11V9a4 4 0 0 1-3.4-1.9l-1-1.6A2 2 0 0 0 12.9 5c-.3 0-.6 0-.9.2L7 7.3V12h2V8.6z"/></svg>',
+  bike:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="6" cy="17" r="3.5"/><circle cx="18" cy="17" r="3.5"/><path d="M6 17l4-8h5l3 8M10 9l2 8M14 5h3"/></svg>',
+  transit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M8 21l2-4M16 21l-2-4"/><circle cx="9" cy="14" r=".6" fill="currentColor"/><circle cx="15" cy="14" r=".6" fill="currentColor"/></svg>',
+  police:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/></svg>',
+  hospital:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg>',
+  station:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><rect x="6" y="3" width="12" height="13" rx="3"/><path d="M6 10h12M9 21l2-5M15 21l-2-5"/></svg>',
+};
+const MODES = [["transit","Transport","transit"],["walk","Walk","walk"],["bike","Cycle","bike"]];
+const BANDS = [["18","6:00 pm"],["22","10:00 pm"],["01","1:00 am"]];
+const SORTS = [["balanced","Balanced"],["lower_risk","Lower risk first"],["fastest","Fastest"],["fewest_transfers","Fewest changes"],["least_walking","Least walking"]];
+const HELP = {police:"Police station", hospital:"Hospital", phone:"Emergency phone", station:"Train station"};
+const RISK_CLASS = {low:"low", medium:"medium", high:"high", unknown:"unknown"};
+
+/* ---------- state, persisted in the URL so a demo link reproduces the view ---------- */
+const q = new URLSearchParams(location.search);
+const state = {
+  origin: q.get("from") || "unsw", destination: q.get("to") || "townhall",
+  mode: q.get("mode") || "transit", band: q.get("band") || "22", sort: q.get("sort") || "balanced",
+  data: null, selected: null, places: {}, help: {points: [], available: false},
+  showSafety: q.get("risk") !== "0", showHelp: q.get("help") !== "0",
+};
+function syncURL(){
+  const p = new URLSearchParams({from: state.origin, to: state.destination, mode: state.mode, band: state.band, sort: state.sort});
+  if(!state.showSafety) p.set("risk","0");
+  if(!state.showHelp) p.set("help","0");
+  history.replaceState(null, "", "?" + p);
+}
+
+/* ---------- helpers ---------- */
+// Google encoded polyline, precision 5 (what OpenTripPlanner returns in legGeometry.points).
+function decodePolyline(str){
+  let i = 0, lat = 0, lon = 0; const out = [];
+  while(i < str.length){
+    for(const k of [0,1]){
+      let b, shift = 0, res = 0;
+      do { b = str.charCodeAt(i++) - 63; res |= (b & 31) << shift; shift += 5; } while(b >= 32);
+      const d = (res & 1) ? ~(res >> 1) : (res >> 1);
+      if(k === 0) lat += d; else lon += d;
+    }
+    out.push([lon / 1e5, lat / 1e5]);
+  }
+  return out;
+}
+// Times arrive as local ISO strings ("2026-10-20T22:00:00+11:00"); show the Sydney clock time as given.
+function clock(iso){
+  if(!iso) return "";
+  const [h, m] = iso.slice(11, 16).split(":").map(Number);
+  return `${(h % 12) || 12}:${String(m).padStart(2,"0")} ${h < 12 ? "am" : "pm"}`;
+}
+const mins = s => Math.max(1, Math.round(s / 60));
+const km = m => m >= 1000 ? `${(m/1000).toFixed(1)} km` : `${Math.round(m)} m`;
+function riskBand(r){ return r == null ? "unknown" : r < .33 ? "low" : r < .55 ? "medium" : "high"; }
+function riskColor(r){ return {low:css("--ok"), medium:css("--warn"), high:css("--bad"), unknown:css("--route-dim")}[riskBand(r)]; }
+function lineColor(leg){
+  if(leg.color) return "#" + leg.color.replace(/^#/, "");
+  return {BUS:"#00B5EF", RAIL:"#F99D1C", TRAM:"#E4022D", FERRY:"#5AB031", SUBWAY:"#168388"}[leg.mode] || css("--fast");
+}
+const isStreet = m => m === "WALK" || m === "BICYCLE" || m === "SCOOTER";
+function legLabel(leg){
+  if(leg.mode === "WALK") return {icon: ICON.walk, text: `${mins(leg.duration_s)} min`};
+  if(leg.mode === "BICYCLE") return {icon: ICON.bike, text: `${mins(leg.duration_s)} min`};
+  const name = leg.line && leg.line.toLowerCase() !== leg.mode.toLowerCase() ? leg.line : leg.mode[0] + leg.mode.slice(1).toLowerCase();
+  return {icon: ICON.transit, text: name, transit: true};
+}
+function haversine(a, b){
+  const R = 6371000, toR = x => x * Math.PI / 180;
+  const dLat = toR(b[1]-a[1]), dLon = toR(b[0]-a[0]);
+  const h = Math.sin(dLat/2)**2 + Math.cos(toR(a[1]))*Math.cos(toR(b[1]))*Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+async function getJSON(url, ms = 15000){
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, {signal: ctl.signal});
+    const body = await r.json().catch(() => ({}));
+    if(!r.ok) throw new Error(body.detail || `HTTP ${r.status}`);
+    return body;
+  } finally { clearTimeout(t); }
+}
+
+/* ---------- form ---------- */
+function segmented(el, items, key, withIcons){
+  el.innerHTML = items.map(([v, t, ic]) =>
+    `<button type="button" data-v="${v}" aria-pressed="${state[key] === v}">${withIcons ? ICON[ic] : ""}<span>${t}</span></button>`).join("");
+  el.onclick = e => {
+    const b = e.target.closest("button"); if(!b) return;
+    state[key] = b.dataset.v;
+    el.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    if(key === "band") loadSafety();
+    plan();
+  };
+}
+function fillPlaces(){
+  const opts = Object.values(state.places).map(p => `<option value="${p.id}">${esc(p.name)} · ${esc(p.area)}</option>`).join("");
+  $("origin").innerHTML = opts; $("destination").innerHTML = opts;
+  $("origin").value = state.origin; $("destination").value = state.destination;
+}
+$("origin").onchange = e => { state.origin = e.target.value; plan(); };
+$("destination").onchange = e => { state.destination = e.target.value; plan(); };
+$("swap").onclick = () => {
+  [state.origin, state.destination] = [state.destination, state.origin];
+  $("origin").value = state.origin; $("destination").value = state.destination; plan();
+};
+
+/* ---------- planning ---------- */
+let seq = 0;
+async function plan(){
+  syncURL();
+  const my = ++seq;
+  const res = $("results");
+  if(state.origin === state.destination){
+    state.data = null; drawRoutes();
+    res.innerHTML = `<div class="state"><h3>Choose two different places</h3><p>The start and end of your trip are the same.</p></div>`;
+    return;
+  }
+  res.setAttribute("aria-busy", "true");
+  res.innerHTML = `<div class="reshead"><h2>Finding routes…</h2></div><div class="skel"></div><div class="skel"></div>`;
+  try {
+    const p = new URLSearchParams({origin: state.origin, destination: state.destination, band: state.band, mode: state.mode, sort: state.sort});
+    const data = await getJSON("/api/journeys?" + p);
+    if(my !== seq) return;
+    state.data = data;
+    const keep = data.journeys.find(j => j.id === state.selected);
+    state.selected = keep ? keep.id : data.journeys[0]?.id ?? null;
+    renderResults(); drawRoutes(true);
+  } catch(err){
+    if(my !== seq) return;
+    state.data = null; drawRoutes();
+    res.innerHTML = `<div class="state error"><h3>Couldn't plan this trip</h3><p>${esc(err.name === "AbortError" ? "The planner took too long to answer." : err.message)}</p><button class="btn" type="button" onclick="plan()">Try again</button></div>`;
+  } finally { if(my === seq) res.setAttribute("aria-busy", "false"); }
+}
+
+function freshnessNotice(d){
+  const f = d.freshness || {};
+  const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  let html = `<div class="notice ${f.live ? "live" : ""}">${icon}<span>${esc(f.note || "")}</span></div>`;
+  if(d.degraded) html += `<div class="notice warn">${icon}<span>${esc(d.degraded)}</span></div>`;
+  return html;
+}
+
+function renderResults(){
+  const d = state.data, res = $("results");
+  if(!d.coverage || !d.journeys.length){
+    res.innerHTML = freshnessNotice(d) + `<div class="state"><h3>No routes for this trip yet</h3><p>${esc(d.message || "")}</p>
+      <button class="btn primary" type="button" id="try-covered">Plan UNSW Library → Town Hall</button></div>`;
+    $("try-covered").onclick = () => { state.origin = "unsw"; state.destination = "townhall"; fillPlaces(); plan(); };
+    return;
+  }
+  const sortSel = `<label>Sort <select id="sort">${SORTS.map(([v,t]) => `<option value="${v}" ${v === state.sort ? "selected" : ""}>${t}</option>`).join("")}</select></label>`;
+  res.innerHTML = `<div class="reshead"><h2>${d.journeys.length} ${d.journeys.length === 1 ? "option" : "options"} · ${esc(d.origin?.name)} to ${esc(d.destination?.name)}</h2>${sortSel}</div>
+    ${freshnessNotice(d)}
+    <ul class="cards" id="cards">${d.journeys.map(cardHTML).join("")}</ul>
+    <details><summary>Data behind these routes (Zetaris queries)</summary><pre>${esc(d.evidence.map(e => `-- ${e.executed_by} · ${e.rows} rows · ${e.ms} ms\n${e.sql}`).join("\n\n"))}</pre></details>`;
+  $("sort").onchange = e => { state.sort = e.target.value; plan(); };
+  $("cards").addEventListener("click", e => {
+    if(e.target.closest(".detail a, .detail button, .detail details")) return;
+    const c = e.target.closest(".card"); if(c) select(c.dataset.id, true);
+  });
+  $("cards").addEventListener("keydown", e => {
+    const c = e.target.closest(".card");
+    if(c && e.target === c && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); select(c.dataset.id, true); }
+  });
+}
+
+function cardHTML(j){
+  const s = j.safety, cls = RISK_CLASS[s.band] || "unknown";
+  const tags = [];
+  if(j.is_fastest) tags.push(`<span class="tag fast">Fastest</span>`);
+  if(j.is_lowest_risk && !j.is_fastest) tags.push(`<span class="tag athena">Lowest risk indicators</span>`);
+  if(j.is_lowest_risk && j.is_fastest) tags.push(`<span class="tag athena">Also lowest risk indicators</span>`);
+  const chain = j.legs.map(l => {
+    const L = legLabel(l);
+    return `<span class="leg ${L.transit ? "t" : ""}" style="${L.transit ? `background:${lineColor(l)}` : ""}">${L.icon}${esc(L.text)}</span>`;
+  }).join('<span class="sep" aria-hidden="true">›</span>');
+  const walkWord = j.mode === "bike" ? "cycling" : "walking";
+  const meta = [
+    j.mode === "transit" ? (j.transfers ? `${j.transfers} change${j.transfers > 1 ? "s" : ""}` : "No changes") : null,
+    `${km(j.mode === "bike" ? (s.scored_m || 0) : j.walk_m)} ${walkWord}`,
+    s.lit_share_pct != null ? `${Math.round(s.lit_share_pct)}% lit` : null,
+    `Confidence: ${s.confidence}`,
+  ].filter(Boolean);
+  const pos = s.risk == null ? null : Math.min(100, Math.max(0, s.risk * 100));
+  return `<li class="card" tabindex="0" role="button" data-id="${esc(j.id)}" aria-expanded="${j.id === state.selected}">
+    ${tags.length ? `<div class="tags">${tags.join("")}</div>` : ""}
+    <div class="head"><span class="times">${clock(j.start_time)} – ${clock(j.end_time)}</span><span class="dur">${Math.round(j.total_min)} <small>min</small></span></div>
+    <div class="chain" aria-label="Legs">${chain}</div>
+    <div class="risk ${cls}"><span class="sw" aria-hidden="true"></span>${esc(s.label)}${s.risk != null ? `<span class="num">score ${s.risk.toFixed(2)}</span>` : ""}</div>
+    ${pos != null ? `<div class="meter" role="img" aria-label="Risk score ${s.risk.toFixed(2)} on a scale from 0 to 1"><i style="left:${pos}%"></i></div>` : ""}
+    <div class="meta">${meta.map(esc).map(m => `<span>${m}</span>`).join("")}</div>
+    <div class="detail">${detailHTML(j)}</div>
+  </li>`;
+}
+
+function detailHTML(j){
+  const why = `<ul class="why">${j.explanation.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+  const prefs = j.from_preferences?.length > 1
+    ? `<p class="notice" style="margin:0">Both the fastest search and Athena's lower-risk search returned this same route.</p>` : "";
+  const last = j.legs[j.legs.length - 1];
+  const itin = j.legs.map(l => {
+    const L = legLabel(l), c = isStreet(l.mode) ? (l.safety ? riskColor(l.safety.risk) : css("--route-dim")) : lineColor(l);
+    let title, sub;
+    if(isStreet(l.mode)){
+      title = `${l.mode === "WALK" ? "Walk" : "Cycle"} ${mins(l.duration_s)} min to ${esc(l.to.name)}`;
+      sub = `${km(l.distance_m)}${l.safety ? ` · ${riskText(l.safety.risk)}` : ""}`;
+    } else {
+      title = `${esc(L.text)}${l.headsign ? ` towards ${esc(l.headsign)}` : ""}`;
+      sub = `From ${esc(l.from.name)} · ${mins(l.duration_s)} min · ${km(l.distance_m)}`;
+    }
+    const streets = l.safety?.streets?.length ? `<ul class="streets">${l.safety.streets.map(st =>
+      `<li><span class="sw" style="background:${riskColor(st.risk)}"></span>${esc(st.street)} · ${km(st.distance_m)}${st.tunnel ? " · tunnel" : ""}${st.report_penalty ? " · recent reports" : ""}
+       <span class="lit">${st.lit === "yes" ? "lit" : st.lit === "no" ? "unlit" : "no lighting data"}${st.risk != null ? ` · ${st.risk.toFixed(2)}` : ""}</span></li>`).join("")}</ul>` : "";
+    return `<li class="${isStreet(l.mode) ? "walk" : ""}" style="--c:${c}"><div class="t1"><b>${title}</b><time>${clock(l.start)}</time></div><div class="t2">${sub}</div>${streets}</li>`;
+  }).join("") + `<li style="--c:${css("--athena")}"><div class="t1"><b>Arrive ${esc(last.to.name)}</b><time>${clock(last.end)}</time></div></li>`;
+  const ask = new URLSearchParams({origin: state.origin, destination: state.destination, band: state.band, mode: state.mode,
+    q: j.is_fastest ? "Is the fastest route OK tonight?" : "Why is the Athena route better tonight?"});
+  return `${prefs}${why}<ol class="itin" aria-label="Step by step">${itin}</ol>${helpHTML(j)}
+    <div class="actions"><a class="btn primary" href="/ask?${ask}">Ask Athena about this route</a><button class="btn" type="button" onclick="fitTo(state.selected)">Zoom to route</button></div>`;
+}
+function riskText(r){ return {low:"Lower risk indicators", medium:"Moderate risk indicators", high:"Higher risk indicators", unknown:"Insufficient lighting data"}[riskBand(r)]; }
+
+// Help locations within 400 m of the route's geometry, nearest first.
+function nearbyHelp(j, limit = 4, radius = 400){
+  if(!state.help.available) return null;
+  const pts = j.legs.flatMap(l => l.polyline ? decodePolyline(l.polyline) : []);
+  if(!pts.length) return [];
+  const step = Math.max(1, Math.floor(pts.length / 400));
+  return state.help.points.map(p => {
+    let best = Infinity;
+    for(let i = 0; i < pts.length; i += step) best = Math.min(best, haversine([p.lon, p.lat], pts[i]));
+    return {...p, dist: best};
+  }).filter(p => p.dist <= radius).sort((a, b) => a.dist - b.dist).slice(0, limit);
+}
+function helpHTML(j){
+  const near = nearbyHelp(j);
+  if(near == null) return "";
+  if(!near.length) return `<div class="help"><span class="muted">No mapped help locations within 400 m of this route.</span></div>`;
+  return `<div class="help"><b>Help near this route</b><ul>${near.map(p =>
+    `<li><span class="pin ${p.category}" style="width:18px;height:18px;border-width:1px">${ICON[p.category] || ""}</span>${esc(p.name || HELP[p.category])} <span class="muted">· ${HELP[p.category] || p.category} · ${Math.round(p.dist)} m from route</span></li>`).join("")}</ul></div>`;
+}
+
+function select(id, fit){
+  state.selected = id;
+  document.querySelectorAll(".card").forEach(c => c.setAttribute("aria-expanded", c.dataset.id === id));
+  drawRoutes(fit);
+}
+
+/* ---------- map ---------- */
+// Start on a plain background so routes render even if basemap tiles are blocked; add the basemap after.
+const map = new maplibregl.Map({
+  container: "map", center: [151.218, -33.895], zoom: 12.4, attributionControl: false,
+  style: {version: 8, sources: {}, layers: [{id: "bg", type: "background", paint: {"background-color": css("--map-bg")}}]},
+});
+map.addControl(new maplibregl.NavigationControl({showCompass: false}), "top-right");
+map.addControl(new maplibregl.GeolocateControl({positionOptions: {enableHighAccuracy: true}}), "top-right");
+map.addControl(new maplibregl.AttributionControl({compact: true,
+  customAttribution: 'Routes: OpenTripPlanner · Street data: Athena / Zetaris · <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>'}));
+const mapReady = new Promise(r => map.on("load", r));
+const FIRST_ATHENA_LAYER = "safety-line";
+let endMarkers = [], helpMarkers = [];
+
+mapReady.then(() => {
+  document.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
+  const empty = {type: "FeatureCollection", features: []};
+  map.addSource("safety", {type: "geojson", data: empty});
+  map.addSource("routes", {type: "geojson", data: empty});
+  map.addLayer({id: "safety-line", type: "line", source: "safety", layout: {"line-cap": "round", "line-join": "round"},
+    paint: {"line-width": ["interpolate", ["linear"], ["zoom"], 12, 3, 16, 8], "line-opacity": .55,
+      "line-color": ["case", ["==", ["get", "risk"], null], css("--route-dim"),
+        ["<", ["get", "risk"], .33], css("--ok"), ["<", ["get", "risk"], .55], css("--warn"), css("--bad")]}});
+  map.addLayer({id: "route-dim", type: "line", source: "routes", filter: ["==", ["get", "sel"], false],
+    layout: {"line-cap": "round", "line-join": "round"},
+    paint: {"line-color": css("--route-dim"), "line-width": 5, "line-opacity": .75}});
+  map.addLayer({id: "route-casing", type: "line", source: "routes", filter: ["==", ["get", "sel"], true],
+    layout: {"line-cap": "round", "line-join": "round"}, paint: {"line-color": css("--casing"), "line-width": 9}});
+  map.addLayer({id: "route-sel-transit", type: "line", source: "routes", filter: ["all", ["==", ["get", "sel"], true], ["==", ["get", "street"], false]],
+    layout: {"line-cap": "round", "line-join": "round"}, paint: {"line-color": ["get", "color"], "line-width": 6}});
+  map.addLayer({id: "route-sel-street", type: "line", source: "routes", filter: ["all", ["==", ["get", "sel"], true], ["==", ["get", "street"], true]],
+    layout: {"line-cap": "round", "line-join": "round"}, paint: {"line-color": css("--accent"), "line-width": 5, "line-dasharray": [1.2, 1.4]}});
+  for(const id of ["route-dim", "route-sel-transit", "route-sel-street"]){
+    map.on("click", id, e => { const f = e.features[0]; if(f) { select(f.properties.jid, false); document.querySelector(`.card[data-id="${CSS.escape(f.properties.jid)}"]`)?.scrollIntoView({block: "nearest", behavior: "smooth"}); } });
+    map.on("mouseenter", id, () => map.getCanvas().style.cursor = "pointer");
+    map.on("mouseleave", id, () => map.getCanvas().style.cursor = "");
+  }
+  map.on("click", "safety-line", e => {
+    if(map.queryRenderedFeatures(e.point, {layers: ["route-dim", "route-sel-transit", "route-sel-street"]}).length) return;
+    const p = e.features[0].properties, r = p.risk === "null" || p.risk == null ? null : Number(p.risk);
+    new maplibregl.Popup({closeButton: true}).setLngLat(e.lngLat).setHTML(
+      `<b>${esc(p.name)}</b><br>${riskText(r)}${r != null ? ` · ${r.toFixed(2)}` : ""}<br><span style="color:${css("--muted")}">${p.lit === "yes" ? "Lit" : p.lit === "no" ? "Unlit" : "No lighting data"}${p.tunnel === true || p.tunnel === "true" ? " · tunnel" : ""} · ${esc(p.highway || "")}</span>`).addTo(map);
+  });
+  map.on("mouseenter", "safety-line", () => map.getCanvas().style.cursor = "pointer");
+  map.on("mouseleave", "safety-line", () => map.getCanvas().style.cursor = "");
+  applyToggles();
+  addBasemap();
+});
+
+async function addBasemap(){
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light";
+  const urls = dark ? ["https://tiles.openfreemap.org/styles/dark", "https://tiles.openfreemap.org/styles/positron"]
+                    : ["https://tiles.openfreemap.org/styles/positron"];
+  for(const url of urls){
+    try {
+      const style = await getJSON(url, 6000);
+      if(style.glyphs) map.setGlyphs(style.glyphs);
+      if(typeof style.sprite === "string") map.setSprite(style.sprite);
+      for(const [id, src] of Object.entries(style.sources || {})) if(!map.getSource(id)) map.addSource(id, src);
+      for(const layer of style.layers || []){
+        if(layer.type === "background") continue;
+        try { map.addLayer(layer, FIRST_ATHENA_LAYER); } catch(e) { /* skip a layer this build can't parse */ }
+      }
+      return;
+    } catch(e) { /* try the next style, then fall back to the plain background */ }
+  }
+  const n = $("basemap-note"); n.hidden = false;
+  n.textContent = "Basemap unavailable — routes and street data shown on a plain background.";
+}
+
+function journeyFeatures(){
+  const d = state.data; if(!d?.journeys) return [];
+  const feats = [];
+  for(const j of d.journeys) for(const l of j.legs){
+    if(!l.polyline) continue;
+    feats.push({type: "Feature", geometry: {type: "LineString", coordinates: decodePolyline(l.polyline)},
+      properties: {jid: j.id, sel: j.id === state.selected, street: isStreet(l.mode), color: lineColor(l)}});
+  }
+  // Selected route last so it draws on top within each layer.
+  return feats.sort((a, b) => a.properties.sel - b.properties.sel);
+}
+
+async function drawRoutes(fit){
+  await mapReady;
+  map.getSource("routes").setData({type: "FeatureCollection", features: journeyFeatures()});
+  endMarkers.forEach(m => m.remove()); endMarkers = [];
+  const d = state.data;
+  if(d?.origin && d?.destination){
+    for(const [p, cls] of [[d.origin, ""], [d.destination, "to"]]){
+      const el = document.createElement("div"); el.className = "endpt " + cls; el.title = p.name;
+      endMarkers.push(new maplibregl.Marker({element: el}).setLngLat([p.lon, p.lat])
+        .setPopup(new maplibregl.Popup({offset: 12}).setHTML(`<b>${esc(p.name)}</b><br>${esc(p.area)}`)).addTo(map));
+    }
+    if(fit) fitTo(state.selected) || fitPoints([[d.origin.lon, d.origin.lat], [d.destination.lon, d.destination.lat]]);
+  }
+}
+function fitPoints(pts){
+  if(!pts.length) return false;
+  const b = pts.reduce((b, p) => b.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
+  const narrow = innerWidth <= 860;
+  map.fitBounds(b, {padding: narrow ? {top: 90, bottom: 70, left: 30, right: 56} : {top: 110, bottom: 60, left: 80, right: 80}, maxZoom: 16, duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 700});
+  return true;
+}
+function fitTo(id){
+  const j = state.data?.journeys?.find(x => x.id === id); if(!j) return false;
+  return fitPoints(j.legs.flatMap(l => l.polyline ? decodePolyline(l.polyline) : [[l.from.lon, l.from.lat], [l.to.lon, l.to.lat]]));
+}
+
+async function loadSafety(){
+  try {
+    const g = await getJSON("/api/street-safety?band=" + state.band);
+    await mapReady; map.getSource("safety").setData(g);
+  } catch(e) { /* the overlay is optional; routes still work */ }
+}
+async function loadHelp(){
+  try { state.help = await getJSON("/api/safety-points"); } catch(e) { state.help = {points: [], available: false}; }
+  await mapReady;
+  helpMarkers.forEach(m => m.remove());
+  helpMarkers = state.help.points.map(p => {
+    const el = document.createElement("div"); el.className = "pin " + p.category; el.innerHTML = ICON[p.category] || "";
+    el.setAttribute("aria-label", `${HELP[p.category] || p.category}: ${p.name || ""}`);
+    const extra = [p.phone ? `<a href="tel:${esc(p.phone)}">${esc(p.phone)}</a>` : "", p.opening_hours ? esc(p.opening_hours) : ""].filter(Boolean).join("<br>");
+    return new maplibregl.Marker({element: el}).setLngLat([p.lon, p.lat])
+      .setPopup(new maplibregl.Popup({offset: 14}).setHTML(`<b>${esc(p.name || HELP[p.category])}</b><br>${HELP[p.category] || esc(p.category)}${extra ? "<br>" + extra : ""}`));
+  });
+  applyToggles(); renderLegend();
+  if(state.data?.coverage) renderResults();
+}
+function applyToggles(){
+  $("t-safety").setAttribute("aria-pressed", state.showSafety);
+  $("t-help").setAttribute("aria-pressed", state.showHelp && state.help.available);
+  $("t-help").disabled = !state.help.available;
+  $("t-help").title = state.help.available ? "" : "Help locations have not been loaded yet";
+  if(map.getLayer("safety-line")) map.setLayoutProperty("safety-line", "visibility", state.showSafety ? "visible" : "none");
+  helpMarkers.forEach(m => state.showHelp ? m.addTo(map) : m.remove());
+}
+$("t-safety").onclick = () => { state.showSafety = !state.showSafety; applyToggles(); renderLegend(); syncURL(); };
+$("t-help").onclick = () => { state.showHelp = !state.showHelp; applyToggles(); renderLegend(); syncURL(); };
+
+function renderLegend(){
+  const rows = [
+    `<div class="r"><span class="ln" style="background:repeating-linear-gradient(90deg,${css("--accent")} 0 5px,transparent 5px 9px)"></span>Selected route, walking or cycling</div>`,
+    `<div class="r"><span class="ln" style="background:linear-gradient(90deg,#00B5EF 0 33%,#F99D1C 33% 66%,#E4022D 66%)"></span>Selected route, bus, train or tram (line colour)</div>`,
+    `<div class="r"><span class="ln" style="background:${css("--route-dim")}"></span>Other options (tap to select)</div>`,
+  ];
+  if(state.showSafety) rows.push(`<div class="r"><span class="ln" style="background:linear-gradient(90deg,${css("--ok")} 0 33%,${css("--warn")} 33% 66%,${css("--bad")} 66%)"></span>Street risk indicators: lower · moderate · higher</div>`);
+  if(state.help.available && state.showHelp) rows.push(`<div class="r">${Object.entries(HELP).map(([k, t]) => `<span class="pin ${k}" style="width:16px;height:16px;border-width:1px" title="${t}">${ICON[k]}</span>`).join("")} Police · hospital · emergency phone · station</div>`);
+  else if(!state.help.available) rows.push(`<div class="r muted" style="color:${css("--muted")}">Help locations not loaded</div>`);
+  $("legend").innerHTML = rows.join("");
+}
+
+/* ---------- boot ---------- */
+if(innerWidth > 860) $("legendbox").open = true;
+segmented($("mode"), MODES, "mode", true);
+segmented($("band"), BANDS, "band", false);
+renderLegend();
+(async () => {
+  try {
+    const {places} = await getJSON("/api/places");
+    state.places = Object.fromEntries(places.map(p => [p.id, p]));
+  } catch(e) {
+    state.places = {unsw: {id: "unsw", name: "UNSW Library", area: "Kensington"}, townhall: {id: "townhall", name: "Town Hall station", area: "Sydney CBD"}};
+  }
+  if(!state.places[state.origin]) state.origin = "unsw";
+  if(!state.places[state.destination]) state.destination = "townhall";
+  fillPlaces();
+  plan(); loadSafety(); loadHelp();
+})();
+</script>
+</body>
+</html>

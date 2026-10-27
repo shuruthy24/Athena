@@ -18,6 +18,12 @@ BANDS = ("18", "22", "01")
 MODES = ("walk", "bike", "transit")
 STEP_COLS = "variant, duration_min, walk_m, transfers, leg, leg_mode, line, step, street, distance_m"
 STREET_COLS = "name, highway, lit, tunnel, risk_18, risk_22, risk_01, venues_22"
+LEG_COLS = ("journey, variant, itinerary, total_min, walk_m, transfers, start_time, end_time, leg, "
+            "leg_mode, line, line_color, headsign, from_name, from_lat, from_lon, to_name, to_lat, "
+            "to_lon, distance_m, duration_s, leg_start, leg_end, polyline")
+LEG_STREET_COLS = "journey, variant, itinerary, leg, step, street, distance_m"
+NUMERIC_LEG = ("total_min", "walk_m", "from_lat", "from_lon", "to_lat", "to_lon", "distance_m")
+INT_LEG = ("itinerary", "transfers", "leg", "duration_s")
 
 
 def validate_trip(origin: str, destination: str, band: str, mode: str) -> None:
@@ -39,12 +45,42 @@ def streets_sql(schema: str) -> str:
     return f"SELECT {STREET_COLS} FROM {schema}.streets"
 
 
+def legs_sql(schema: str, origin: str, destination: str, band: str, mode: str) -> str:
+    validate_trip(origin, destination, band, mode)
+    return (f"SELECT {LEG_COLS} FROM {schema}.route_legs "
+            f"WHERE trip = '{origin}|{destination}' AND band = '{band}' AND mode = '{mode}'")
+
+
+def leg_streets_sql(schema: str, origin: str, destination: str, band: str, mode: str) -> str:
+    validate_trip(origin, destination, band, mode)
+    return (f"SELECT {LEG_STREET_COLS} FROM {schema}.leg_streets "
+            f"WHERE trip = '{origin}|{destination}' AND band = '{band}' AND mode = '{mode}'")
+
+
 class LocalSource:
     name = "sample.json"
+    freshness = {"source": "precomputed", "live": False,
+                 "note": "Route alternatives precomputed with OpenTripPlanner; times are scheduled, not live."}
 
     def __init__(self, data_dir: Path = ROOT / "data", schema: str = "athena"):
         self.data_dir = data_dir
         self.schema = schema
+
+    def route_legs(self, origin, destination, band, mode):
+        t0 = time.perf_counter()
+        rows = [r for r in self._rows("route_legs.json")
+                if r["trip"] == f"{origin}|{destination}" and r["band"] == band and r["mode"] == mode]
+        return rows, {"sql": legs_sql(self.schema, origin, destination, band, mode),
+                      "executed_by": "sample mode (local JSON, same table shape)", "rows": len(rows),
+                      "ms": round((time.perf_counter() - t0) * 1000, 2)}
+
+    def leg_streets(self, origin, destination, band, mode):
+        t0 = time.perf_counter()
+        rows = [r for r in self._rows("leg_streets.json")
+                if r["trip"] == f"{origin}|{destination}" and r["band"] == band and r["mode"] == mode]
+        return rows, {"sql": leg_streets_sql(self.schema, origin, destination, band, mode),
+                      "executed_by": "sample mode (local JSON, same table shape)", "rows": len(rows),
+                      "ms": round((time.perf_counter() - t0) * 1000, 2)}
 
     def _rows(self, file: str) -> list[dict]:
         return json.loads((self.data_dir / file).read_text())["rows"]
@@ -66,10 +102,34 @@ class LocalSource:
 
 class ZetarisSource:
     name = "zetaris.sql"
+    freshness = {"source": "precomputed", "live": False,
+                 "note": "Route alternatives precomputed with OpenTripPlanner and served from Zetaris; "
+                         "times are scheduled, not live."}
 
     def __init__(self, client: ZetarisClient, schema: str = "athena"):
         self.client = client
         self.schema = schema
+
+    def route_legs(self, origin, destination, band, mode):
+        rows, ev = self._run(legs_sql(self.schema, origin, destination, band, mode))
+        for r in rows:
+            for k in NUMERIC_LEG:
+                if r.get(k) is not None:
+                    r[k] = float(r[k])
+            for k in INT_LEG:
+                if r.get(k) is not None:
+                    r[k] = int(float(r[k]))
+        return rows, ev
+
+    def leg_streets(self, origin, destination, band, mode):
+        rows, ev = self._run(leg_streets_sql(self.schema, origin, destination, band, mode))
+        for r in rows:
+            for k in ("leg", "step", "itinerary"):
+                if r.get(k) is not None:
+                    r[k] = int(float(r[k]))
+            if r.get("distance_m") is not None:
+                r["distance_m"] = float(r["distance_m"])
+        return rows, ev
 
     def _run(self, sql: str):
         t0 = time.perf_counter()

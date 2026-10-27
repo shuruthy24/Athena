@@ -128,7 +128,7 @@ pre{margin:0;padding:10px;background:var(--code);border-radius:0 0 10px 10px;ove
     <details id="contractbox" hidden><summary>Scout Intent execution contract</summary><pre id="contract"></pre></details>
   </aside>
 </main>
-<p class="foot">Athena describes routes as lower risk, never safe. Lighting data that is missing shows as unknown and lowers confidence. <a href="/map">Open the route map</a> · <a href="/docs">API docs</a> · <span id="mode-note"></span></p>
+<p class="foot">Athena describes routes as lower risk, never safe. Lighting data that is missing shows as unknown and lowers confidence. <a href="/">Plan a journey</a> · <a href="/map">Open the route map</a> · <a href="/docs">API docs</a> · <span id="mode-note"></span></p>
 
 <script>
 const PLACES = {unsw:"UNSW Library",townhall:"Town Hall",central:"Central station",quay:"Circular Quay",redfern:"Redfern station",kingsx:"Kings Cross station",newtown:"Newtown station"};
@@ -237,6 +237,12 @@ function render(d){
   if(s.contract) $("contract").textContent = JSON.stringify({...s.contract, toolPlan: s.toolPlan, modelProfile: s.modelProfile}, null, 2);
   $("mode-note").textContent = d.data_mode === "sample" ? "Sample mode: local data and an offline model stand-in." : "Live: Zetaris data, Nemotron via Meterless Nightshift.";
 }
+// Opened from the journey planner: /ask?origin=&destination=&band=&mode=&q=
+(() => {
+  const p = new URLSearchParams(location.search);
+  for(const k of ["origin","destination","band","mode"]) if(p.get(k) && $(k).querySelector(`option[value="${CSS.escape(p.get(k))}"]`)) $(k).value = p.get(k);
+  if(p.get("q")){ $("message").value = p.get("q").slice(0, 500); ask($("message").value); }
+})();
 </script>
 </body>
 </html>

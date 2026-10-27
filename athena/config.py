@@ -37,6 +37,9 @@ class Settings:
     # Scout Intent
     scout_secret: str
     max_revisions: int
+    # Journey planning
+    otp_url: str
+    otp_timeout_s: float
 
 
 def get_settings() -> Settings:
@@ -58,4 +61,6 @@ def get_settings() -> Settings:
         llm_timeout_s=float(e("LLM_TIMEOUT_S", "60")),
         scout_secret=e("SCOUT_SECRET", "dev-only-change-me"),
         max_revisions=int(e("MAX_REVISIONS", "2")),
+        otp_url=e("OTP_URL", "").strip().rstrip("/"),
+        otp_timeout_s=float(e("OTP_TIMEOUT_S", "20")),
     )

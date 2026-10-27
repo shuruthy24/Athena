@@ -41,6 +41,8 @@ def main() -> int:
     check("Zetaris SELECT 1 over REST", lambda: f"(auth={z.run_sql('SELECT 1 AS one') and z.auth_method})")
     check("Zetaris athena.streets", lambda: f"({len(z.run_sql(f'SELECT name FROM {s.zetaris_schema}.streets'))} rows)")
     check("Zetaris athena.route_steps", lambda: f"({len(z.run_sql(f'SELECT trip FROM {s.zetaris_schema}.route_steps'))} rows)")
+    check("Zetaris athena.route_legs (journey planner)", lambda: f"({len(z.run_sql(f'SELECT journey FROM {s.zetaris_schema}.route_legs'))} rows)")
+    check("Zetaris athena.leg_streets (journey planner)", lambda: f"({len(z.run_sql(f'SELECT journey FROM {s.zetaris_schema}.leg_streets'))} rows)")
 
     def health():
         r = requests.get(s.meterless_base_url.rsplit('/v1', 1)[0] + "/healthz", timeout=10)

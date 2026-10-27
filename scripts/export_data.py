@@ -29,6 +29,14 @@ STREET_FIELDS = ["id", "name", "highway", "lit", "tunnel", "risk_18", "risk_22",
                  "venues_18", "venues_22", "venues_01", "lights_per_100m"]
 STEP_FIELDS = ["trip", "origin", "destination", "band", "mode", "variant", "duration_min",
                "walk_m", "transfers", "leg", "leg_mode", "line", "step", "street", "distance_m"]
+# Journey-planner tables (all itineraries, with the geometry OTP returned).
+LEG_FIELDS = ["journey", "trip", "origin", "destination", "band", "mode", "variant", "itinerary",
+              "total_min", "walk_m", "transfers", "start_time", "end_time",
+              "leg", "leg_mode", "line", "line_color", "headsign",
+              "from_name", "from_lat", "from_lon", "to_name", "to_lat", "to_lon",
+              "distance_m", "duration_s", "leg_start", "leg_end", "polyline"]
+LEG_STREET_FIELDS = ["journey", "trip", "band", "mode", "variant", "itinerary", "leg", "step",
+                     "street", "distance_m"]
 
 
 def _lit(value):
@@ -110,6 +118,51 @@ SYNTHETIC_REPORTS = [
 ]
 
 
+def export_journeys(routes: dict) -> tuple[list[dict], list[dict]]:
+    """One row per leg (with its OTP polyline) and one per street step, for EVERY itinerary.
+
+    route_steps keeps only the first itinerary and is what the agent layer queries; these two tables
+    are for the journey planner, which compares every option the router returned.
+    """
+    legs, leg_streets = [], []
+    for key, result in routes["results"].items():
+        origin, destination, band = key.split("|")
+        for mode in ("walk", "bike", "transit"):
+            for variant in ("fastest", "athena"):
+                its = (result.get(mode) or {}).get(variant, {}).get("itineraries") or []
+                for idx, it in enumerate(its):
+                    journey = f"{origin}|{destination}|{band}|{mode}|{variant}|{idx}"
+                    head = {
+                        "journey": journey, "trip": f"{origin}|{destination}", "origin": origin,
+                        "destination": destination, "band": band, "mode": mode, "variant": variant,
+                        "itinerary": idx, "total_min": round(it["duration"] / 60, 1),
+                        "walk_m": round(it.get("walkDistance") or 0, 1),
+                        "transfers": it.get("numberOfTransfers") or 0,
+                        "start_time": it.get("start"), "end_time": it.get("end"),
+                    }
+                    for leg_no, leg in enumerate(it["legs"]):
+                        route = leg.get("route") or {}
+                        legs.append({
+                            **head, "leg": leg_no, "leg_mode": leg["mode"],
+                            "line": route.get("shortName"), "line_color": route.get("color"),
+                            "headsign": leg.get("headsign"),
+                            "from_name": leg["from"]["name"], "from_lat": leg["from"]["lat"],
+                            "from_lon": leg["from"]["lon"], "to_name": leg["to"]["name"],
+                            "to_lat": leg["to"]["lat"], "to_lon": leg["to"]["lon"],
+                            "distance_m": round(leg.get("distance") or 0, 1),
+                            "duration_s": round(leg.get("duration") or 0),
+                            "leg_start": (leg.get("start") or {}).get("scheduledTime"),
+                            "leg_end": (leg.get("end") or {}).get("scheduledTime"),
+                            "polyline": (leg.get("legGeometry") or {}).get("points"),
+                        })
+                        for st_no, st in enumerate(leg.get("steps") or []):
+                            leg_streets.append({
+                                "journey": journey, "trip": head["trip"], "band": band, "mode": mode,
+                                "variant": variant, "itinerary": idx, "leg": leg_no, "step": st_no,
+                                "street": st["streetName"], "distance_m": round(st.get("distance") or 0, 1)})
+    return legs, leg_streets
+
+
 def export_reports() -> list[dict]:
     return [{"id": i, "street": s, "band": b, "text": t, "expected_action": a, "expected_reason": r,
              "synthetic": True} for i, s, b, t, a, r in SYNTHETIC_REPORTS]
@@ -128,9 +181,13 @@ def main() -> int:
     places = [{"id": p["id"], "name": p["name"], "area": p["area"], "lat": p["lat"], "lon": p["lon"]}
               for p in routes["places"]]
     reports = export_reports()
+    legs, leg_streets = export_journeys(routes)
     for name, rows in (("streets.json", streets), ("route_steps.json", steps),
-                       ("places.json", places), ("reports.json", reports)):
+                       ("places.json", places), ("reports.json", reports),
+                       ("route_legs.json", legs), ("leg_streets.json", leg_streets)):
         write(name, rows)
+    print(f"route_legs={len(legs)} rows across {len({l['journey'] for l in legs})} journeys; "
+          f"leg_streets={len(leg_streets)}; with geometry={sum(1 for l in legs if l['polyline'])}")
     # validation: every street referenced by a route step must exist in the streets table
     known = {s["name"] for s in streets}
     missing = sorted({r["street"] for r in steps if r["street"] and r["street"] not in known})

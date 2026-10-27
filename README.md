@@ -7,6 +7,10 @@ Sydney, and explains the difference in plain English. This hackathon adds an **a
 route planner. Every explanation is checked against street lighting data served by **Zetaris** before the user
 sees it. **Scout Intent**, a Meterless Engine, decides what each message is and what the system may do with it.
 **NVIDIA Nemotron** models, reached through **Meterless Nightshift**, draft and critique the explanations.
+A **journey planner** with a real map puts it in the shape of a trip planner: comparable route options, each with
+safety indicators and the evidence behind them.
+
+![Athena journey planner](docs/submission/img/plan_desktop.png)
 
 ![Ask Athena](docs/submission/img/ask_desktop.png)
 
@@ -14,6 +18,7 @@ sees it. **Scout Intent**, a Meterless Engine, decides what each message is and 
 
 | You do | Athena does |
 |---|---|
+| Open the planner, choose UNSW Library → Town Hall, public transport, 10 pm | Lists every option the router returned, deduplicated and ranked (balanced, lower risk, fastest, fewest changes, least walking). Each card shows times, legs, a risk-indicator band, lit share and confidence; opening one shows every leg and every street with its lighting and score. The map draws the real OpenTripPlanner geometry, a street-risk overlay and nearby police, hospitals, emergency phones and stations. |
 | Pick a trip and ask "Why is the Athena route better tonight?" | Queries Zetaris for both routes and every street on them. Computes time, route risk, lit share and the worst stretch. Nemotron drafts claims, and the Evidence Critic sends unsupported ones back for revision. Shows the answer with the SQL behind every number. |
 | Type "Someone is following me" | Scout routes to the emergency card at once (000, staffed stations). No model call, no clarification. |
 | Report "two lights out on Moore Park path" | Removes personal details before any model sees the text. Nemotron moderates, a verifier checks the street against Zetaris data, and an approved report adds a temporary risk penalty that halves every 7 days. |
@@ -26,13 +31,14 @@ critic's verdict and the signed execution contract.
 
 ```mermaid
 flowchart LR
+  J[Journey planner] -->|GET /api/journeys| JP[JourneyPlanner<br/>rank + safety bands] -->|SQL| Z
   U[Ask Athena page] -->|POST /api/ask| S[Scout Intent<br/>Sense · Interpret · Guard · Route · Recommend]
   S -->|signed contract| R{intent}
   R -->|route.plan / route.explain| A[Route Analyst]
   R -->|report.submit| M[Report Moderator]
   R -->|safety.emergency| E[Emergency card<br/>no model]
   R -->|blocked / GENERAL| G[Refuse or help text]
-  A -->|SQL| Z[(Zetaris<br/>athena.route_steps<br/>athena.streets)]
+  A -->|SQL| Z[(Zetaris<br/>athena.route_steps · route_legs<br/>leg_streets · streets)]
   A --> C[Evidence Critic<br/>rules + Nemotron]
   C -->|revise, max 2| A
   C -->|approve, or fact-only fallback| P[Reporter]
@@ -46,9 +52,9 @@ Full write-up: [docs/submission/03_architecture.md](docs/submission/03_architect
 
 ### Option 1: sample mode (no Zetaris, Nightshift or credentials needed)
 ```bash
-git clone https://github.com/<you>/athena-agent.git && cd athena-agent
+git clone https://github.com/shuruthy24/Athena.git && cd Athena
 SAMPLE_MODE=true ./run.sh
-# open http://localhost:8001
+# open http://localhost:8001 (journey planner) or http://localhost:8001/ask (Ask Athena)
 ```
 Sample mode reads the same tables from `data/*.json` and uses an offline stand-in labelled
 `sample-offline-stub` in every trace, so it's never mistaken for Nemotron output.
@@ -61,6 +67,7 @@ cp .env.example .env        # fill in Zetaris login and the Nightshift Console U
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 python3 scripts/export_data.py                          # rebuild data/*.json from web/routes.json
 python3 scripts/load_zetaris.py --base-url https://raw.githubusercontent.com/<you>/athena-agent/main/data
+python3 scripts/fetch_safety_points.py                  # help locations from OpenStreetMap -> data/safety_points.json
 python3 scripts/check_stack.py                          # PASS lines -> docs/evidence/stack_checks.txt
 ./run.sh                                                # http://localhost:8001
 ```
@@ -79,7 +86,7 @@ python3 -c "from athena.config import get_settings as g;from athena.llm import N
 
 ## Tests and evaluation
 ```bash
-python3 -m pytest -q                 # 39 tests: Scout spec, agents, API, live path against mock Zetaris + Nightshift
+python3 -m pytest -q                 # 61 tests: Scout spec, agents, journey planner, API, live path against mock Zetaris + Nightshift
 python3 evals/run_evals.py           # writes docs/evidence/evaluation_report.md
 python3 evals/run_evals.py --live    # also moderates the synthetic reports with Nemotron via Nightshift
 python3 scripts/make_samples.py      # sample inputs -> samples/outputs_sample_mode/
@@ -90,15 +97,18 @@ Current results: [docs/evidence/evaluation_report.md](docs/evidence/evaluation_r
 ```
 athena/            agent layer (new in the build window)
   scout/           Scout Intent engine (Meterless spec) + intent registry
-  data/            Zetaris REST client (API key, then login fallback) and sample-mode source
+  data/            Zetaris REST client (API key, then login fallback), sample-mode source, live OTP source
   analysis.py      route metrics, report penalties, fact-only fallback explanations
+  journeys.py      journey options, per-leg safety, dedupe and ranking for the planner
   agents.py        Route Analyst, Evidence Critic, Reporter, Report Moderator + Verifier, orchestrator
   llm.py           Meterless Nightshift client (OpenAI-compatible Runtime) and offline stub
-  server.py        FastAPI: /api/ask, /api/health, /docs, the Ask Athena page and the map
+  server.py        FastAPI: /api/ask, /api/journeys, /api/street-safety, /api/safety-points, /api/places, /api/health, pages
+web/plan.html      journey planner with map (new)
 web/ask.html       Ask Athena interface (new)
+web/vendor/        MapLibre GL JS 4.7.1, vendored so the map works offline (BSD-3-Clause)
 web/index.html, web/routes.json, web/streets.geojson   PRE-EXISTING route map and sample data (declared)
-data/              exported tables for Zetaris (streets, route_steps, places, synthetic reports)
-scripts/           export_data, load_zetaris, check_stack, make_samples
+data/              exported tables for Zetaris (streets, route_steps, route_legs, leg_streets, places, synthetic reports)
+scripts/           export_data, load_zetaris, check_stack, make_samples, fetch_safety_points
 evals/             held-out routing sets, injection set, evaluation runner
 tests/             pytest suite with mock Zetaris and Nightshift servers
 docs/submission/   proposal, architecture, data and models, demo and slides, sponsor tech, compliance
@@ -112,12 +122,14 @@ Built for UNSW COMP3110 before the build window opened on 22 October 2026:
 - `web/index.html` (MapLibre route map and its route scoring)
 - `web/routes.json` and `web/streets.geojson` (hand-made **sample** routes, `"source": "sample"`)
 
-Everything under `athena/`, `web/ask.html`, `data/`, `scripts/`, `evals/`, `tests/` and `docs/` was built during the
+Everything under `athena/`, `web/plan.html`, `web/ask.html`, `web/vendor/`, `data/`, `scripts/`, `evals/`, `tests/` and `docs/` was built during the
 build window.
 
 ## Data, licences and attribution
 - Street names in `data/` and the map: © OpenStreetMap contributors, ODbL. Map tiles: OpenFreeMap.
 - Route and risk values: a hand-made sample from our pre-existing pipeline, **not** live OTP output or real-world measurements.
+- `data/safety_points.json` (after running the fetch script): © OpenStreetMap contributors, ODbL.
+- MapLibre GL JS: BSD-3-Clause, vendored unmodified in `web/vendor/`.
 - `data/reports.json`: **synthetic** reports written for the moderation demo and evaluation.
 - Scout Intent design and the 10 `meterless-v1` injection prompts: Meterless, Apache-2.0 (see `NOTICE`).
 

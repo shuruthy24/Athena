@@ -31,6 +31,14 @@ TABLES = {
                     "transfers", "leg", "leg_mode", "line", "step", "street", "distance_m"],
     "places": ["id", "name", "area", "lat", "lon"],
     "reports": ["id", "street", "band", "text", "expected_action", "expected_reason", "synthetic"],
+    # Journey planner: every itinerary OTP returned, with its leg geometry, and the street steps of each leg.
+    "route_legs": ["journey", "trip", "origin", "destination", "band", "mode", "variant", "itinerary",
+                   "total_min", "walk_m", "transfers", "start_time", "end_time",
+                   "leg", "leg_mode", "line", "line_color", "headsign",
+                   "from_name", "from_lat", "from_lon", "to_name", "to_lat", "to_lon",
+                   "distance_m", "duration_s", "leg_start", "leg_end", "polyline"],
+    "leg_streets": ["journey", "trip", "band", "mode", "variant", "itinerary", "leg", "step",
+                    "street", "distance_m"],
 }
 DB = "ATHENA_REST"
 
@@ -55,7 +63,8 @@ def sql_literal(v) -> str:
         return "true" if v else "false"
     if isinstance(v, (int, float)):
         return repr(v)
-    return "'" + str(v).replace("'", "''") + "'"
+    # Encoded polylines contain backslashes, which Spark SQL string literals treat as escapes.
+    return "'" + str(v).replace("\\", "\\\\").replace("'", "''") + "'"
 
 
 def inline_statements(schema: str) -> list[str]:

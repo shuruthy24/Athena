@@ -58,6 +58,12 @@ class MockHandler(BaseHTTPRequestHandler):
             if auth != f"Bearer {JWT}":
                 return self._send(401, {"msg": "unauthorized"})
             sql = body["sql"]
+            m = re.match(r"SELECT (.+?) FROM \w+\.(route_legs|leg_streets) WHERE trip = '([^']+)' AND band = '(\d+)' AND mode = '(\w+)'", sql)
+            if m:  # journey-planner tables: return exactly the selected columns, as strings like Zetaris does
+                cols, table, trip, band, mode = [x.strip() for x in m.group(1).split(",")], *m.groups()[1:]
+                rows = [r for r in json.loads((ROOT / f"data/{table}.json").read_text())["rows"]
+                        if r["trip"] == trip and r["band"] == band and r["mode"] == mode]
+                return self._send(200, {"headers": cols, "data": [[None if r[c] is None else str(r[c]) for c in cols] for r in rows]})
             if "route_steps" in sql:
                 trip, band, mode = re.search(r"trip = '([^']+)' AND band = '(\d+)' AND mode = '(\w+)'", sql).groups()
                 rows = [r for r in json.loads((ROOT / "data/route_steps.json").read_text())["rows"]
