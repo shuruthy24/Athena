@@ -1,4 +1,4 @@
-# Athena: lower-risk night routes, explained with evidence
+# Winner of Wildcard Track Open Agent Hacakathon - Athena: lower-risk night routes, explained with evidence
 
 Open Agent Hackathon 2026 · Team Athena (Kaira Dumasia, Shuruthy Dhushiyandan, Andrii Rohovyi) · Track: **Wildcard [Tinkerer]**
 
