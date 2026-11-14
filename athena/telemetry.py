@@ -34,7 +34,7 @@ class Trace:
         return entry
 
     def event(self, name: str, **fields) -> None:
-        """Scout telemetry events (scout.decision, contract.issued, contract.verified, ...)."""
+        """Named events attached to a trace (e.g. data.fallback)."""
         e = {"event": name, "traceId": self.trace_id, **fields}
         self.events.append(e)
         log.info("%s %s", name, " ".join(f"{k}={v}" for k, v in fields.items()))

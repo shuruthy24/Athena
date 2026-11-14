@@ -4,7 +4,7 @@
   python scripts/run_traces.py --offline       # SampleLLM, to try the workflow; NOT evidence, labelled as such
 
 Runs every trip/band/mode the app serves with two question phrasings (36 cases on the sample data) through
-Athena.handle, exactly as /api/ask does, and saves one JSON per case under evals/traces/<run>/:
+Athena.explain, exactly as /api/explain does, and saves one JSON per case under evals/traces/<run>/:
 the case, the facts the explainer saw, the explanation shown to the user, the critic verdict, the full step
 trace (served model, tokens, cost, prompt version) and the fact-only explanation for the blind A/B.
 It also adds a row per trace to evals/analysis.csv with the human columns left empty.
@@ -50,19 +50,16 @@ def run(athena: Athena, src: LocalSource, out_dir: Path, limit: int | None = Non
     streets, _ = src.streets()
     saved = []
     for c in cases(src)[:limit]:
-        # One eval user per case: Scout rate-limits a single user, as it should.
-        r = athena.handle(c["question"], trip=c["trip"], user={"id": f"eval-{c['case_id']}", "role": "traveller"})
-        # Facts for the trip Athena actually explained. Scout reads time words in the question ("tonight" is
-        # the 10 pm band), which can differ from the trip passed in; both are saved so analysis can see it.
-        used = {k: (r.get("trip") or {}).get(k) or c["trip"][k] for k in ("origin", "destination", "band", "mode")}
+        r = athena.explain(c["trip"], question=c["question"])
+        used = {k: c["trip"][k] for k in ("origin", "destination", "band", "mode")}
         steps, _ = src.route_steps(used["origin"], used["destination"], used["band"], used["mode"])
         cmp = compare(steps, streets, used["band"])  # same settings as the app, report penalties included
         head, claims = fallback_explanation(cmp)
         model_steps = [s for s in r["trace"] if s.get("model")]
         rec = {"trace_id": r["traceId"], "case": c, "trip_used": used,
-               "trip_overridden": used != c["trip"], "facts": flatten_facts(cmp),
+               "trip_overridden": False, "facts": flatten_facts(cmp),
                "explanation": {"headline": r.get("answer"), "claims": r.get("claims", [])},
-               "critic_verdict": r.get("critic_verdict"), "intent": r.get("intent"),
+               "critic_verdict": r.get("critic_verdict"),
                "fact_only": {"headline": head, "claims": claims}, "trace": r["trace"],
                "models": sorted({s["model"] for s in model_steps}),
                "usage": {"calls": len(model_steps), "tokens_in": sum(s.get("tokens_in") or 0 for s in model_steps),

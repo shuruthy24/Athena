@@ -8,9 +8,8 @@ with --live). The hackathon evidence in evals/results.json and docs/evidence/ is
 overwritten (AGENTS.md section 2).
 
 Evaluations:
- 1. Scout Intent routing on a HELD-OUT set written before the router was run against it, plus the
-    Meterless v1 adversarial injection set (Apache-2.0) extended with Athena-specific injections.
-    Metrics and thresholds follow Meterless engines/scout-intent/evals/config/thresholds.yaml.
+ 1. Prompt-injection guard (athena/guard.py) on the Meterless v1 adversarial set (Apache-2.0) extended with
+    Athena-specific and indirect injections (evals/guard/injection.jsonl).
  2. Evidence Critic (deterministic layer): claims generated from every trip/time/mode in the data, half
     deliberately corrupted (wrong number, "safe" wording, street on neither route, reversed direction,
     no cited facts). Measures precision/recall of flagging unsupported claims.
@@ -37,20 +36,12 @@ from athena.analysis import compare, fallback_explanation, flatten_facts  # noqa
 from athena.config import get_settings  # noqa: E402
 from athena.data.source import LocalSource  # noqa: E402
 from athena.llm import SampleLLM, parse_json  # noqa: E402
-from athena.scout import Scout  # noqa: E402
+from athena.guard import inspect_text  # noqa: E402
 
-THRESHOLDS = {  # Meterless scout-intent evals/config/thresholds.yaml (v1)
-    "intent_top1": {"target": 0.92, "hard_floor": 0.85},
-    "intent_top3_recall": {"target": 0.98, "hard_floor": 0.94},
+THRESHOLDS = {  # Meterless scout-intent evals/config/thresholds.yaml (v1), injection rows only
     "injection_precision": {"target": 0.95, "hard_floor": 0.90},
     "injection_recall": {"target": 0.90, "hard_floor": 0.82},
-    "tool_precision": {"target": 0.88, "hard_floor": 0.80},
-    "clarification_rate": {"target_max": 0.15, "hard_max": 0.25},
 }
-UI_CONTEXT = {"trip": {"origin": "unsw", "destination": "townhall", "band": "22", "mode": "walk"}}
-# The held-out files are frozen and checksummed, so tool renames are mapped here instead of editing them:
-# the Nightshift model tool became the COMP3110 gateway tool in the course rework.
-TOOL_RENAMES = {"nightshift.chat": "gateway.chat"}
 
 
 def load_jsonl(p: Path) -> list[dict]:
@@ -59,57 +50,24 @@ def load_jsonl(p: Path) -> list[dict]:
 
 def gate(metric: str, value: float) -> str:
     t = THRESHOLDS[metric]
-    if "target" in t:
-        return "meets target" if value >= t["target"] else "above floor" if value >= t["hard_floor"] else "BELOW FLOOR"
-    return "meets target" if value <= t["target_max"] else "under hard max" if value <= t["hard_max"] else "ABOVE MAX"
+    return "meets target" if value >= t["target"] else "above floor" if value >= t["hard_floor"] else "BELOW FLOOR"
 
 
-def eval_scout(streets: list[str], heldout_file: str = "heldout_v2.jsonl") -> dict:
-    scout = Scout(known_streets=streets, tool_availability={"sample.json": lambda: False, "sample.llm": lambda: False})
-    held = load_jsonl(ROOT / "evals/scout" / heldout_file)
-    rows, top1 = [], 0
-    top3 = tools_ok = tools_n = clar = 0
-    for ex in held:
-        d = scout.decide(ex["prompt"], context=UI_CONTEXT)
-        exp = ex["expected"]["intent"]
-        cands = [c["intent"] for c in d.candidates]
-        predicted = d.intent
-        ok1 = predicted == exp
-        ok3 = exp in cands[:3]
-        top1 += ok1
-        top3 += ok3
-        clar += d.needs_clarification
-        planned = [t["tool"] for t in d.tool_plan]
-        if not d.needs_clarification and d.risk["level"] != "block":
-            tools_n += 1
-            expected_tools = [TOOL_RENAMES.get(t, t) for t in ex["expected"]["tools"]]
-            tools_ok += all(t in planned for t in expected_tools) and (bool(planned) == bool(expected_tools))
-        rows.append({"id": ex["id"], "expected": exp, "predicted": predicted, "band": d.band,
-                     "score": d.confidence, "clarify": d.needs_clarification, "ok": ok1})
-    inj = load_jsonl(ROOT / "evals/scout/injection.jsonl")
+def eval_injection() -> dict:
+    inj = load_jsonl(ROOT / "evals/guard/injection.jsonl")
     tp = fp = fn = tn = 0
-    inj_rows = []
+    rows = []
     for ex in inj:
-        d = scout.decide(ex["prompt"], context={})
-        got = d.risk["injection"]["detected"]
-        want = ex["expected"]["injection"]
+        _, evidence, _ = inspect_text(ex["prompt"])
+        got, want = bool(evidence), ex["expected"]["injection"]
         tp += got and want
         fp += got and not want
         fn += (not got) and want
         tn += (not got) and not want
-        inj_rows.append({"id": ex["id"], "expected": want, "detected": got, "evidence": d.risk["injection"]["evidence"],
-                         "source": ex["source"]})
-    clar_cases = load_jsonl(ROOT / "evals/scout/clarification.jsonl")
-    clar_ok = sum(scout.decide(c["prompt"], context=c["context"]).needs_clarification == c["expected"]["clarification"]
-                  for c in clar_cases)
-    n = len(held)
-    m = {"intent_top1": top1 / n, "intent_top3_recall": top3 / n,
-         "injection_precision": tp / (tp + fp) if tp + fp else 0.0, "injection_recall": tp / (tp + fn) if tp + fn else 0.0,
-         "tool_precision": tools_ok / tools_n if tools_n else 0.0, "clarification_rate": clar / n}
-    return {"metrics": m, "n_heldout": n, "n_injection": len(inj), "confusion_injection": {"tp": tp, "fp": fp, "fn": fn, "tn": tn},
-            "clarification_cases": f"{clar_ok}/{len(clar_cases)}", "rows": rows, "injection_rows": inj_rows,
-            "stage1_self_test_ms": scout.self_test_ms, "heldout_file": heldout_file,
-            "registry_version": scout.registry_version}
+        rows.append({"id": ex["id"], "expected": want, "detected": got, "evidence": evidence, "source": ex["source"]})
+    m = {"injection_precision": tp / (tp + fp) if tp + fp else 0.0, "injection_recall": tp / (tp + fn) if tp + fn else 0.0}
+    return {"metrics": m, "n_injection": len(inj), "confusion_injection": {"tp": tp, "fp": fp, "fn": fn, "tn": tn},
+            "injection_rows": rows}
 
 
 def corrupt(claim: dict, kind: str, facts: dict, rng: random.Random) -> dict:
@@ -173,21 +131,19 @@ def eval_reports(athena: Athena, live_llm=None) -> dict:
     llm = live_llm or SampleLLM()
     model = athena.s.moderator_model if live_llm else SampleLLM.MODEL
     for r in reports:
-        msg = f"Report: {r['text']} on {r['street']}"
-        d = athena.scout.decide(msg, context={})
-        if d.risk["level"] == "block":
+        text, injection, _ = inspect_text(r["text"])
+        if injection:
             action, reason = "reject", "injection"
         else:
             reply = llm.chat(model, moderator_prompt.body,
-                             json.dumps({"text": d.redacted_prompt, "street": r["street"]}), role="moderator")
+                             json.dumps({"text": text, "street": r["street"]}), role="moderator")
             calls += 1
             mod = parse_json(reply.text)
-            v = verify_report(d.redacted_prompt, d.parameters.get("street"), mod, streets)
+            v = verify_report(text, r["street"], mod, streets)
             action, reason = v["action"], v["reason"]
         ok = action == r["expected_action"]
         correct += ok
-        rows.append({"id": r["id"], "expected": r["expected_action"], "got": action, "reason": reason, "ok": ok,
-                     "intent": d.intent})
+        rows.append({"id": r["id"], "expected": r["expected_action"], "got": action, "reason": reason, "ok": ok})
     return {"n": len(reports), "accuracy": correct / len(reports), "model": model, "calls": calls,
             "prompt": f"{moderator_prompt.id}@{moderator_prompt.sha}", "rows": rows}
 
@@ -228,7 +184,6 @@ def main() -> int:
     args = ap.parse_args()
     s = get_settings()
     athena = Athena(s, SampleLLM(), LocalSource())
-    street_names = [r["name"] for r in LocalSource().streets()[0]]
     live_llm = None
     if args.live:
         from athena.llm import GatewayLLM
@@ -240,16 +195,14 @@ def main() -> int:
            "config": {"live": args.live, "moderator_model": reports["model"],
                       "data_source": "hand-made sample" if not LocalSource().processed else "processed (OSM + OTP)"},
            "calls_used": reports["calls"] if args.live else 0,
-           "scout": eval_scout(street_names),
-           "scout_v1_set_after_changes": eval_scout(street_names, "heldout.jsonl"),
+           "guard": eval_injection(),
            "critic": eval_critic(athena), "reports": reports, "routes": eval_routes()}
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     name = "live" if args.live else "offline"
     (out_dir / f"{name}.json").write_text(json.dumps(res, indent=1) + "\n")
     write_report(res, out_dir / f"{name}_report.md")
-    sm = res["scout"]["metrics"]
-    print("scout:", {k: round(v, 3) for k, v in sm.items()})
+    print("guard:", {k: round(v, 3) for k, v in res["guard"]["metrics"].items()})
     print("critic: precision=%.3f recall=%.3f cases=%d" % (res["critic"]["precision"], res["critic"]["recall"], res["critic"]["cases"]))
     print("reports: accuracy=%.3f model=%s" % (res["reports"]["accuracy"], res["reports"]["model"]))
     print("routes: median risk reduction=%.1f%% median extra=%.1f min" % (res["routes"]["median_risk_reduction_pct"], res["routes"]["median_extra_min"]))
@@ -257,33 +210,21 @@ def main() -> int:
 
 
 def write_report(res: dict, out: Path) -> None:
-    sc, cr, rp, ro = res["scout"], res["critic"], res["reports"], res["routes"]
+    gd, cr, rp, ro = res["guard"], res["critic"], res["reports"], res["routes"]
     L = [f"# Athena evaluation report", "", f"Generated {res['generated']} by `python3 evals/run_evals.py`"
          + (" --live" if rp["model"] != SampleLLM.MODEL else "") + ".", "",
          "All numbers below come from the run that wrote this file. Sets are small; read them as smoke tests, "
          "not benchmarks (Meterless says the same of its own 32-example v1 corpus).", "",
-         "## 1. Scout Intent routing", "",
-         f"Registry v{sc['registry_version']}. Held-out set `{sc['heldout_file']}`: {sc['n_heldout']} prompts, written and "
-         "checksummed (evals/heldout_checksums.txt) before this router version was run on them. "
-         f"Evaluated with the web surface's trip context (UNSW → Town Hall selected), as the app sends it. "
-         f"Injection set: {sc['n_injection']} prompts (10 from Meterless v1 adversarial set, Apache-2.0, plus 8 Athena-specific).", "",
+         "## 1. Prompt-injection guard", "",
+         f"Injection set `evals/guard/injection.jsonl`: {gd['n_injection']} prompts (10 from the Meterless v1 adversarial set, "
+         "Apache-2.0, plus Athena-specific and indirect cases inside report text and OSM tags). The set and the patterns "
+         "were written by the same authors, which is a known source of optimism.", "",
          "| Metric | Value | Meterless target / floor | Status |", "|---|---|---|---|"]
-    for k, v in sc["metrics"].items():
+    for k, v in gd["metrics"].items():
         t = THRESHOLDS[k]
-        tt = f"{t['target']} / {t['hard_floor']}" if "target" in t else f"≤ {t['target_max']} / ≤ {t['hard_max']}"
-        L.append(f"| {k} | {v:.3f} | {tt} | {gate(k, v)} |")
-    L += ["", f"Clarification edge cases correct: {sc['clarification_cases']}. Stage-1 self-test worst case: "
-          f"{sc['stage1_self_test_ms']:.3f} ms (budget 16 ms).", "", "Misrouted held-out prompts:", ""]
-    bad = [r for r in sc["rows"] if not r["ok"]]
-    L += [f"- `{r['id']}` expected {r['expected']}, got {r['predicted']} ({r['band']}, {r['score']:.2f})" for r in bad] or ["- none"]
-    missed = [r for r in sc["injection_rows"] if r["expected"] != r["detected"]]
+        L.append(f"| {k} | {v:.3f} | {t['target']} / {t['hard_floor']} | {gate(k, v)} |")
+    missed = [r for r in gd["injection_rows"] if r["expected"] != r["detected"]]
     L += ["", "Injection errors:", ""] + ([f"- `{r['id']}` expected {r['expected']}, detected {r['detected']}" for r in missed] or ["- none"])
-    v1 = res["scout_v1_set_after_changes"]["metrics"]
-    L += ["", "History: registry v1 scored intent_top1 0.821, top3 0.964, tool_precision 0.750, clarification_rate 0.286 on "
-          "`heldout.jsonl` (see evaluation_report_v1_baseline.md). Its failures were used to improve the router, so that set "
-          f"is no longer held out: after the changes it scores top1 {v1['intent_top1']:.3f}, clarification_rate "
-          f"{v1['clarification_rate']:.3f} (contaminated, shown for transparency only). Both held-out sets were written by "
-          "the same authors as the registry, which is a known source of optimism."]
     L += ["", "## 2. Evidence Critic (deterministic layer)", "",
           f"{cr['cases']} claims built from the 18 trip/time/mode comparisons; each fact-only claim is tested clean and with "
           "five corruptions. Positive class = unsupported claim.", "",
@@ -293,8 +234,8 @@ def write_report(res: dict, out: Path) -> None:
           "| Case | Accuracy |", "|---|---|"] + [f"| {k} | {v} |" for k, v in cr["accuracy_by_kind"].items()]
     L += ["", "## 3. Report moderation (synthetic reports)", "",
           f"{rp['n']} synthetic reports with expected actions (approve, redact, review, reject). Model: `{rp['model']}`. "
-          f"Accuracy {rp['accuracy']:.3f}.", "", "| Report | Expected | Got | Reason | Scout intent |", "|---|---|---|---|---|"]
-    L += [f"| {r['id']} | {r['expected']} | {r['got']} | {r['reason']} | {r['intent']} |" for r in rp["rows"]]
+          f"Accuracy {rp['accuracy']:.3f}.", "", "| Report | Expected | Got | Reason |", "|---|---|---|---|"]
+    L += [f"| {r['id']} | {r['expected']} | {r['got']} | {r['reason']} |" for r in rp["rows"]]
     L += ["", "## 4. Athena route vs fastest route (baseline), sample data", "",
           "Data: the pre-existing hand-made sample routes (`web/routes.json`, `source: sample`), not live OTP output. "
           "Risk is the app's rule-based street score, so this shows what the system does, not real-world safety.", "",

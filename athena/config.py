@@ -52,7 +52,7 @@ class Settings:
     zetaris_password: str
     zetaris_schema: str
     zetaris_timeout_s: float
-    # Scout Intent
+    # Rate-limit secret (name kept from the removed Scout router)
     scout_secret: str
     max_revisions: int
     # Journey planning

@@ -1,9 +1,9 @@
 """Athena agents and the orchestrator.
 
-Every request: Scout Intent decides (signed execution contract) -> executors verify the contract for the
-capability they are about to use -> agents run -> Reporter assembles the answer with a full trace.
+Two direct entry points, no chat router: Athena.explain(trip) for a route explanation and
+Athena.submit_report(street, band, text) for a street report. Each returns the answer with a full trace.
 
-Route questions run a draft-and-check loop (evaluator-optimiser):
+Route explanations run a draft-and-check loop (evaluator-optimiser):
   Route Analyst (EXPLAINER_MODEL) drafts 2-4 claims, each citing fact keys computed from street data
   Evidence Critic = deterministic rules (numbers, banned wording, street names, direction)
                     + model critic (CRITIC_MODEL, semantic support, per-claim indexes)
@@ -25,14 +25,14 @@ from . import analysis as _analysis
 from .analysis import close, compare, fallback_explanation, flatten_facts, numbers_in
 from .cache import ExplanationCache, cache_key
 from .config import Settings
-from .data.source import PLACES, LocalSource, ZetarisSource
+from .data.source import PLACES, LocalSource, ZetarisSource, validate_trip
 from .llm import LLMError, parse_json
 from .prompts import load as load_prompt
-from .scout import ContractError, Scout
+from .guard import inspect_text
 from .telemetry import Trace
 
 log = logging.getLogger("athena.agents")
-ROLE_FOR_CAPABILITY = {"llm.draft": "explainer", "llm.critique": "critic", "llm.moderate": "moderator"}
+DEFAULT_QUESTION = "Why is the Athena route better tonight?"
 
 PLACE_NAMES = {"unsw": "UNSW Library", "townhall": "Town Hall station", "central": "Central station",
                "quay": "Circular Quay", "redfern": "Redfern station", "kingsx": "Kings Cross station",
@@ -72,7 +72,7 @@ def leaks_prompt(text: str, windows: set[str], size: int = LEAK_WINDOW) -> bool:
 
 
 class Athena:
-    def __init__(self, settings: Settings, llm, source=None, scout: Scout | None = None):
+    def __init__(self, settings: Settings, llm, source=None):
         self.s = settings
         self.llm = llm
         # Prompts are versioned files (prompts/<role>.v<N>.md); traces record which version ran. The
@@ -92,25 +92,9 @@ class Athena:
         self.local_source = source if isinstance(source, LocalSource) else LocalSource(schema=settings.zetaris_schema)
         self._zetaris_ok = self.live_source is not None
         street_rows, _ = self.local_source.streets()
-        self.scout = scout or Scout(
-            secret=settings.scout_secret,
-            known_streets=[r["name"] for r in street_rows],
-            tool_availability={
-                "zetaris.sql": lambda: self.live_source is not None and self._zetaris_ok,
-                "sample.json": lambda: self.live_source is None or not self._zetaris_ok,
-                "gateway.chat": lambda: getattr(self.llm, "provider", "") == "comp3110-gateway",
-                "sample.llm": lambda: getattr(self.llm, "provider", "") != "comp3110-gateway",
-            })
+        self.known_streets = [r["name"] for r in street_rows]
 
     # ------------------------------------------------------------------ helpers
-    def _model_for(self, decision, capability: str) -> str:
-        """One model per role (AGENTS.md section 6): draft -> explainer, critique -> critic, moderate -> moderator."""
-        return self.s.model_for(ROLE_FOR_CAPABILITY[capability])
-
-    def _verify(self, decision, capability: str, trace: Trace) -> None:
-        self.scout.verify(decision.contract, capability)
-        trace.event("contract.verified", contractId=decision.contract["contractId"], engine=capability)
-
     def _prompt_tag(self, role: str) -> str:
         p = self.prompts[role]
         return f"{p.id}@{p.sha}"
@@ -120,55 +104,11 @@ class Athena:
             return "zetaris"
         return "files" if getattr(self.local_source, "processed", False) else "sample"
 
-    def _source(self, decision):
-        tool = next((t["tool"] for t in decision.tool_plan if t["capability"] == "zetaris.query"), "sample.json")
-        return self.live_source if tool == "zetaris.sql" else self.local_source
+    def _source(self):
+        return self.live_source if self.live_source is not None and self._zetaris_ok else self.local_source
 
-    # ------------------------------------------------------------------ entry point
-    def handle(self, message: str, trip: dict | None = None, user: dict | None = None,
-               session: dict | None = None) -> dict:
-        trace = Trace()
-        user = user or {"id": "anon", "role": "traveller"}
-        session = session or {}
-        context = {"trip": trip or {}, "last_intent": session.get("last_intent"),
-                   "recent_intents": session.get("recent_intents", []), "home": session.get("home")}
-        t0 = time.perf_counter()
-        decision = self.scout.decide(message, user=user, surface="web", context=context, trace=trace)
-        trace.step("scout-intent", f"intent={decision.intent} band={decision.band} confidence={decision.confidence:.2f} "
-                   f"risk={decision.risk['level']}" + (f" clarify={decision.clarification['trigger']}" if decision.clarification else ""),
-                   model=None, ms=(time.perf_counter() - t0) * 1000)
-        base = {"traceId": trace.trace_id, "intent": decision.intent, "scout": decision.summary(),
-                "help": HELP, "data_mode": self._data_mode()}
-
-        if decision.risk["level"] == "block":
-            reason = decision.risk.get("reason") or "policy"
-            trace.step("guard", f"blocked: {reason}; evidence={decision.risk['injection']['evidence']}")
-            resp = {**base, "intent": "blocked", "confidence": None,
-                    "answer": "I can't act on that request. It looks like an attempt to change how Athena works, "
-                              "so nothing was changed. You can ask about a route, report a street, or get help now."}
-        elif decision.clarification:
-            resp = {**base, "confidence": None, "answer": decision.clarification["question"],
-                    "clarification": decision.clarification}
-        elif decision.intent == "safety.emergency":
-            self._verify(decision, "emergency.card", trace)
-            trace.step("emergency", "emergency card shown immediately; no model call")
-            resp = {**base, "confidence": None, "emergency": True,
-                    "answer": "If you are in danger, call 000 now. Move towards people and light. "
-                              "Staffed stations nearby: " + ", ".join(STAFFED) + "."}
-        elif decision.intent == "GENERAL":
-            resp = {**base, "confidence": None,
-                    "answer": "I compare the fastest route with a lower-risk route for night trips between UNSW and "
-                              "the CBD, explain why using street lighting data, take street safety reports, and show "
-                              "help options. Try: “Why is the Athena walk better at 10pm?”"}
-        elif decision.intent in ("route.plan", "route.explain"):
-            resp = {**base, **self._route(decision, message, trace, user, context)}
-        elif decision.intent == "report.submit":
-            resp = {**base, **self._report(decision, trace)}
-        else:  # pragma: no cover - registry and handlers are kept in sync by tests
-            resp = {**base, "answer": "Unsupported intent."}
-
-        for sec in decision.secondary:  # multi-intent: e.g. a report plus a route request
-            trace.step("scout-intent", f"secondary intent={sec['intent']} score={sec['score']}")
+    @staticmethod
+    def _finish(trace: Trace, resp: dict, request: dict) -> dict:
         model_steps = [t for t in trace.steps if t.get("model")]
         costs = [t.get("cost_usd") for t in model_steps]
         trace.step("usage", f"{len(model_steps)} model calls this request",
@@ -178,27 +118,33 @@ class Athena:
         resp["trace"] = trace.steps
         resp["events"] = trace.events
         resp["total_ms"] = trace.total_ms()
-        trace.persist({"message": decision.redacted_prompt, "trip": trip}, resp)
+        trace.persist(request, resp)
         return resp
 
+    # ------------------------------------------------------------------ entry points
+    def explain(self, trip: dict, question: str = DEFAULT_QUESTION) -> dict:
+        """Explain the trade-off between the fastest route and Athena's lower-risk route for one trip."""
+        trace = Trace()
+        p = {k: trip.get(k) for k in ("origin", "destination", "band", "mode")}
+        validate_trip(p["origin"], p["destination"], p["band"], p["mode"])  # ValueError on anything unknown
+        base = {"traceId": trace.trace_id, "help": HELP, "data_mode": self._data_mode()}
+        resp = {**base, **self._route(p, question, trace)}
+        return self._finish(trace, resp, {"trip": p})
+
     # ------------------------------------------------------------------ routes
-    def _route(self, decision, message: str, trace: Trace, user: dict, context: dict) -> dict:
-        p = decision.parameters
+    def _route(self, p: dict, message: str, trace: Trace) -> dict:
         if p["origin"] not in PLACES or p["destination"] not in PLACES:
             return {"answer": "I don't recognise that trip yet.", "confidence": None}
-        self._verify(decision, "zetaris.query", trace)
-        source = self._source(decision)
+        source = self._source()
         try:
             steps, ev1 = source.route_steps(p["origin"], p["destination"], p["band"], p["mode"])
             streets, ev2 = source.streets()
             trace.step("data", f"{len(steps)} route rows + {len(streets)} street rows via {ev1['executed_by']}",
                        ms=ev1["ms"] + ev2["ms"], tool=source.name)
         except Exception as exc:  # noqa: BLE001 - degrade with a re-plan, never crash the request
-            trace.step("data", f"Zetaris query failed ({exc.__class__.__name__}); re-planning on sample data", tool=source.name)
+            trace.step("data", f"Zetaris query failed ({exc.__class__.__name__}); falling back to local files", tool=source.name)
+            trace.event("data.fallback", reason="zetaris unavailable")
             self._zetaris_ok = False
-            decision = self.scout.replan(decision.contract, "zetaris.sql unavailable", message, user=user,
-                                         surface="web", context=context, trace=trace)
-            self._verify(decision, "zetaris.query", trace)
             steps, ev1 = self.local_source.route_steps(p["origin"], p["destination"], p["band"], p["mode"])
             streets, ev2 = self.local_source.streets()
             trace.step("data", f"fallback: {len(steps)} route rows from sample data", ms=ev1["ms"] + ev2["ms"],
@@ -209,21 +155,20 @@ class Athena:
             return {"answer": f"Athena has no routes for {PLACE_NAMES[p['origin']]} to {PLACE_NAMES[p['destination']]} "
                               "yet. The current data covers UNSW Library and Town Hall in both directions.",
                     "confidence": None, "evidence": evidence, "trip": p}
-        self._verify(decision, "route.compare", trace)
         cmp = compare(steps, streets, p["band"])
         facts = flatten_facts(cmp)
         trace.step("route-metrics", f"fastest risk={cmp['fastest']['risk']} athena risk={cmp['athena']['risk']} "
                    f"extra={cmp['extra_min']} min reduction={cmp['risk_reduction_pct']}%")
 
         key = cache_key([self._prompt_tag("explainer"), self._prompt_tag("critic")],
-                        [self._model_for(decision, "llm.draft"), self._model_for(decision, "llm.critique")],
+                        [self.s.model_for("explainer"), self.s.model_for("critic")],
                         self.s.max_revisions, facts)
         hit = self.cache.get(key)
         if hit:
             headline, claims, verdict = hit["headline"], json.loads(json.dumps(hit["claims"])), hit["verdict"]
             trace.step("cache", f"explanation cache hit ({verdict}); no model call", key=key[:12])
         else:
-            headline, claims, verdict = self._draft_and_check(decision, message, cmp, facts, trace)
+            headline, claims, verdict = self._draft_and_check(message, cmp, facts, trace)
             self.cache.put(key, {"headline": headline, "claims": claims, "verdict": verdict})
         confidence = cmp["confidence"] if verdict != "fallback-error" else "low"
         confidence_note = {
@@ -246,7 +191,7 @@ class Athena:
     def check_claims(self, claims: list[dict], facts: dict) -> list[dict]:
         """Deterministic part of the Evidence Critic. Returns one result per claim."""
         known_streets = set(facts.get("fastest.streets", [])) | set(facts.get("athena.streets", []))
-        all_known = set(self.scout.known_streets)
+        all_known = set(self.known_streets)
         out = []
         for i, c in enumerate(claims):
             problems = []
@@ -273,17 +218,15 @@ class Athena:
             out.append({"index": i, "supported": not problems, "problems": problems})
         return out
 
-    def _draft_once(self, decision, payload: dict):
+    def _draft_once(self, payload: dict):
         """One analyst call. The client owns the single permitted retry (AGENTS.md section 2), so a failure
         here goes straight to the fact-only fallback."""
-        return self.llm.chat(self._model_for(decision, "llm.draft"), self.prompts["explainer"].body,
+        return self.llm.chat(self.s.model_for("explainer"), self.prompts["explainer"].body,
                              json.dumps(payload), role="explainer")
 
-    def _draft_and_check(self, decision, message, cmp, facts, trace) -> tuple[str, list[dict], str]:
+    def _draft_and_check(self, message, cmp, facts, trace) -> tuple[str, list[dict], str]:
         feedback = None
         attempts = self.s.max_revisions + 1
-        self._verify(decision, "llm.draft", trace)
-        self._verify(decision, "llm.critique", trace)
         for attempt in range(1, attempts + 1):
             # Keep the prompt small: the analyst needs the flat facts, not the whole comparison object.
             # The offline stub builds its claims from the comparison, so it still receives it.
@@ -291,7 +234,7 @@ class Athena:
             if getattr(self.llm, "provider", "") == "local":
                 payload["comparison"] = cmp
             try:
-                r = self._draft_once(decision, payload)
+                r = self._draft_once(payload)
                 draft = parse_json(r.text)
                 claims = [c for c in draft.get("claims", []) if isinstance(c, dict)][:4]
                 headline = str(draft.get("headline", ""))[:200]
@@ -309,7 +252,7 @@ class Athena:
                     rule_results.append({"index": i, "supported": False, "problems": ["repeats system prompt text"]})
             llm_unsupported, llm_note, critic_usage = [], "", {}
             try:
-                cr = self.llm.chat(self._model_for(decision, "llm.critique"), self.prompts["critic"].body,
+                cr = self.llm.chat(self.s.model_for("critic"), self.prompts["critic"].body,
                                    json.dumps({"facts": facts, "claims": claims}), role="critic")
                 critic_usage = {"prompt": self._prompt_tag("critic"), **cr.usage()}
                 cv = parse_json(cr.text)
@@ -335,24 +278,29 @@ class Athena:
         return headline, [{**c, "supported": True, "problems": []} for c in claims], "fallback"
 
     # ------------------------------------------------------------------ reports
-    def _report(self, decision, trace: Trace) -> dict:
-        p = decision.parameters
-        self._verify(decision, "guard.redact", trace)
-        text = decision.redacted_prompt
-        if decision.risk["redactions"]:
-            trace.step("guard", f"redacted {[r['kind'] for r in decision.risk['redactions']]} before any model call")
-        self._verify(decision, "llm.moderate", trace)
+    def submit_report(self, street: str | None, band: str, text: str) -> dict:
+        """Moderate one anonymous street report: redact PII, block instructions, classify, verify against
+        street data, queue. The report text reaches the model only as a quoted JSON field."""
+        trace = Trace()
+        base = {"traceId": trace.trace_id, "help": HELP, "data_mode": self._data_mode()}
+        redacted, injection, redactions = inspect_text(text)
+        if injection:
+            trace.step("guard", f"blocked: injection; evidence={injection}")
+            resp = {**base, "blocked": True, "answer": "This report can't be used because it looks like an attempt "
+                    "to give Athena instructions. Describe what you saw on the street instead."}
+            return self._finish(trace, resp, {"street": street, "band": band})
+        if redactions:
+            trace.step("guard", f"redacted {[r['kind'] for r in redactions]} before any model call")
         if self.classifier is not None:
-            mod = self._classify(text, p.get("street"), trace)
+            mod = self._classify(redacted, street, trace)
         else:
-            mod = self._moderate_v1(decision, text, p.get("street"), trace)
-        self._verify(decision, "zetaris.query", trace)
-        source = self._source(decision)
+            mod = self._moderate_v1(redacted, street, trace)
         try:
-            streets, ev = source.streets()
+            streets, ev = self._source().streets()
         except Exception:  # noqa: BLE001
             streets, ev = self.local_source.streets()
-        return self._finish_report(decision, text, mod, streets, ev, trace)
+        resp = {**base, **self._finish_report(street, band, redacted, mod, streets, ev, trace)}
+        return self._finish(trace, resp, {"street": street, "band": band})
 
     def _classify(self, text: str, street: str | None, trace: Trace) -> dict:
         """A chosen ReportClassifier (athena/classify). Any failure sends the report to human review."""
@@ -369,9 +317,9 @@ class Athena:
                    model=reply.model if reply is not None else None, ms=reply.ms if reply is not None else None, **extra)
         return out
 
-    def _moderate_v1(self, decision, text: str, street: str | None, trace: Trace) -> dict:
+    def _moderate_v1(self, text: str, street: str | None, trace: Trace) -> dict:
         try:
-            r = self.llm.chat(self._model_for(decision, "llm.moderate"), self.prompts["moderator"].body,
+            r = self.llm.chat(self.s.model_for("moderator"), self.prompts["moderator"].body,
                               json.dumps({"text": text, "street": street}), role="moderator")
             mod = parse_json(r.text)
             trace.step("report-moderator", f"category={mod.get('category')} prejudiced={mod.get('prejudiced')}",
@@ -382,12 +330,11 @@ class Athena:
             mod["force_review"] = True
         return mod
 
-    def _finish_report(self, decision, text: str, mod: dict, streets: list[dict], ev: dict, trace: Trace) -> dict:
-        p = decision.parameters
-        verdict = verify_report(text, p.get("street"), mod, {s["name"]: s for s in streets})
+    def _finish_report(self, street: str | None, band: str, text: str, mod: dict, streets: list[dict], ev: dict,
+                       trace: Trace) -> dict:
+        verdict = verify_report(text, street, mod, {s["name"]: s for s in streets})
         trace.step("report-verifier", f"action={verdict['action']} reason={verdict['reason']}")
-        self._verify(decision, "report.queue", trace)
-        record = {"at": datetime.now(timezone.utc).isoformat(), "street": p.get("street"), "band": p.get("band"),
+        record = {"at": datetime.now(timezone.utc).isoformat(), "street": street, "band": band,
                   "text": text, "action": verdict["action"], "reason": verdict["reason"],
                   "street_resolved": verdict["street_resolved"], "category": mod.get("category"),
                   "traceId": trace.trace_id}

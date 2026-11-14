@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from athena.scout.engine import PII_PATTERNS
+from athena.guard import PII_PATTERNS
 
 EXTRA_PII = [
     ("address", re.compile(r"\b\d{1,4}[A-Za-z]?\s+(?:[A-Z][a-z]+\s){1,3}(?:Street|St|Road|Rd|Avenue|Ave|Lane|Ln|"

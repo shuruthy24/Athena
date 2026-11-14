@@ -33,7 +33,7 @@ def traces(tmp_path_factory):
 def test_run_traces_saves_everything_the_evals_need(traces):
     out, recs = traces
     assert len(recs) == 36 and len(list(out.glob("*.json"))) == 36
-    assert {r["intent"] for r in recs} == {"route.explain"}  # no case lost to the per-user rate limit
+    assert all(r["critic_verdict"] for r in recs)  # every case produced an explanation
     r = recs[0]
     assert {"trace_id", "case", "facts", "explanation", "fact_only", "trace", "usage", "critic_verdict"} <= set(r)
     assert r["models"] == ["sample-offline-stub"]

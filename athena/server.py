@@ -1,4 +1,4 @@
-"""FastAPI server: the Ask Athena page, the pre-existing map, and the agent API.
+"""FastAPI server: the journey planner, the street map, and the explain/report API.
 
 Run:  uvicorn athena.server:app --port 8001      (or ./run.sh)
 Docs: http://localhost:8001/docs (OpenAPI generated from the models below)
@@ -13,6 +13,8 @@ from typing import Literal
 
 import hashlib
 import hmac
+import time
+from collections import defaultdict, deque
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
@@ -51,7 +53,7 @@ def athena() -> Athena:
 
 
 app = FastAPI(title="Athena agent API", version=__version__,
-              description="Scout Intent routing, evidence-checked night-route explanations and report moderation.")
+              description="Evidence-checked night-route explanations and street report moderation.")
 
 
 class Trip(BaseModel):
@@ -61,32 +63,64 @@ class Trip(BaseModel):
     mode: Literal["walk", "bike", "transit"] | None = None
 
 
-class AskRequest(BaseModel):
-    message: str = Field(min_length=1, max_length=500)
-    trip: Trip | None = None
-    session: dict | None = Field(default=None, description="last_intent, recent_intents, home")
+class ExplainRequest(BaseModel):
+    origin: Literal["unsw", "townhall", "central", "quay", "redfern", "kingsx", "newtown"]
+    destination: Literal["unsw", "townhall", "central", "quay", "redfern", "kingsx", "newtown"]
+    band: Literal["18", "22", "01"]
+    mode: Literal["walk", "bike", "transit"]
+
+
+class ReportRequest(BaseModel):
+    street: str = Field(min_length=1, max_length=100)
+    band: Literal["18", "22", "01"]
+    text: str = Field(min_length=1, max_length=500)
+
+
+RATE_LIMIT_PER_MIN = 30
+_hits: dict[str, deque] = defaultdict(deque)
 
 
 def client_id(request: Request) -> str:
-    """Pseudonymous per-client id for Scout's rate limit: the first X-Forwarded-For hop (set by the hosting
+    """Pseudonymous per-client id for the rate limit: the first X-Forwarded-For hop (set by the hosting
     proxy) or the socket address, keyed-hashed with SCOUT_SECRET so no IP address is stored or logged.
-    Without this every visitor shared one 'anon' bucket and a busy room was rate-limited together."""
+    Without this every visitor shared one bucket and a busy room was rate-limited together."""
     fwd = request.headers.get("x-forwarded-for", "")
     ip = fwd.split(",")[0].strip() or (request.client.host if request.client else "unknown")
     digest = hmac.new(get_settings().scout_secret.encode(), ip.encode(), hashlib.sha256).hexdigest()
     return f"client-{digest[:12]}"
 
 
-@app.post("/api/ask")
-def ask(req: AskRequest, request: Request) -> dict:
-    trip = {k: v for k, v in (req.trip.model_dump() if req.trip else {}).items() if v}
-    session = {k: v for k, v in (req.session or {}).items() if k in ("last_intent", "recent_intents", "home")}
+def rate_limit(request: Request) -> None:
+    q, now = _hits[client_id(request)], time.time()
+    while q and now - q[0] > 60:
+        q.popleft()
+    q.append(now)
+    if len(q) > RATE_LIMIT_PER_MIN:
+        raise HTTPException(429, "Too many requests. Wait a minute and try again.")
+
+
+@app.post("/api/explain")
+def explain(req: ExplainRequest, request: Request) -> dict:
+    """Evidence-checked explanation of the fastest route vs Athena's lower-risk route."""
+    rate_limit(request)
     try:
-        return athena().handle(req.message, trip=trip, session=session,
-                               user={"id": client_id(request), "role": "traveller"})
+        return athena().explain(req.model_dump())
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
     except Exception as exc:  # noqa: BLE001 - return a clean error; details stay in the server log
-        log.exception("ask failed")
-        raise HTTPException(status_code=500, detail=f"Athena could not complete this request ({exc.__class__.__name__}).") from exc
+        log.exception("explain failed")
+        raise HTTPException(500, f"Athena could not complete this request ({exc.__class__.__name__}).") from exc
+
+
+@app.post("/api/report")
+def report(req: ReportRequest, request: Request) -> dict:
+    """Moderate and queue one anonymous street report."""
+    rate_limit(request)
+    try:
+        return athena().submit_report(req.street.strip(), req.band, req.text.strip())
+    except Exception as exc:  # noqa: BLE001
+        log.exception("report failed")
+        raise HTTPException(500, f"Athena could not complete this request ({exc.__class__.__name__}).") from exc
 
 
 @lru_cache(maxsize=1)
@@ -215,7 +249,6 @@ def health() -> dict:
     a = athena()
     s = get_settings()
     out = {"version": __version__, "sample_mode": s.sample_mode, "data_backend": s.data_backend,
-           "scout_registry": a.scout.registry_version, "scout_self_test_ms": round(a.scout.self_test_ms, 3),
            "report_classifier": s.report_classifier, "explanation_cache": a.cache.stats()}
     if s.sample_mode:
         out.update(zetaris="skipped (sample mode)", gateway="skipped (sample mode)")
@@ -244,10 +277,6 @@ def plan_page():
     """The journey planner."""
     return _page("plan.html")
 
-
-@app.get("/ask")
-def ask_page():
-    return _page("ask.html")
 
 
 @app.get("/map")

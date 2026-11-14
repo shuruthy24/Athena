@@ -88,6 +88,16 @@ async function getJSON(url, ms = 15000){
   } finally { clearTimeout(t); }
 }
 
+async function postJSON(url, body, ms = 60000){
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body), signal: ctl.signal});
+    const out = await r.json().catch(() => ({}));
+    if(!r.ok) throw new Error(typeof out.detail === "string" ? out.detail : `HTTP ${r.status}`);
+    return out;
+  } finally { clearTimeout(t); }
+}
+
 /* ---------- map ---------- */
 // Starts on a plain background so Athena's layers render even if basemap tiles are blocked;
 // the OpenFreeMap basemap is slotted in underneath afterwards.

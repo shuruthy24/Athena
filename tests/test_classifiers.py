@@ -122,7 +122,7 @@ def test_app_uses_the_chosen_classifier_without_a_model_call(monkeypatch):
     monkeypatch.setenv("SAMPLE_MODE", "true")
     monkeypatch.setenv("REPORT_CLASSIFIER", "keyword")
     a = Athena(get_settings(), SampleLLM(), LocalSource())
-    r = a.handle("Report: two street lights out on Anzac Parade", trip=TRIP)
+    r = a.submit_report("Anzac Parade", "22", "two street lights out")
     step = next(t for t in r["trace"] if t["agent"] == "report-moderator")
     assert "classifier=keyword" in step["detail"] and step["model"] is None
     assert r["report"]["action"] == "approve"

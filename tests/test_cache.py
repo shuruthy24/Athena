@@ -32,9 +32,9 @@ def make(monkeypatch, llm):
 def test_repeat_request_hits_the_cache(monkeypatch):
     llm = Counting()
     a = make(monkeypatch, llm)
-    first = a.handle(Q, trip=TRIP)
+    first = a.explain(TRIP)
     calls = llm.calls
-    second = a.handle(Q, trip=TRIP)
+    second = a.explain(TRIP)
     assert llm.calls == calls and any(t["agent"] == "cache" for t in second["trace"])
     assert second["claims"] == first["claims"] and second["critic_verdict"] == first["critic_verdict"]
     assert a.cache.stats()["hits"] == 1
@@ -43,18 +43,18 @@ def test_repeat_request_hits_the_cache(monkeypatch):
 def test_new_facts_miss_the_cache(monkeypatch):
     llm = Counting()
     a = make(monkeypatch, llm)
-    a.handle(Q, trip=TRIP)
-    a.handle("Report: two street lights out on Anzac Parade", trip=TRIP)  # adds a penalty -> facts change
+    a.explain(TRIP)
+    a.submit_report("Anzac Parade", "22", "two street lights out")  # adds a penalty -> facts change
     calls = llm.calls
-    r = a.handle(Q, trip=TRIP)
+    r = a.explain(TRIP)
     assert llm.calls > calls and not any(t["agent"] == "cache" for t in r["trace"])
 
 
 def test_outage_fallback_is_not_cached(monkeypatch):
     llm = Counting(fail_first_draft=True)
     a = make(monkeypatch, llm)
-    assert a.handle(Q, trip=TRIP)["critic_verdict"] == "fallback-error"
-    r = a.handle(Q, trip=TRIP)
+    assert a.explain(TRIP)["critic_verdict"] == "fallback-error"
+    r = a.explain(TRIP)
     assert r["critic_verdict"] == "approve" and not any(t["agent"] == "cache" for t in r["trace"])
 
 
@@ -74,7 +74,7 @@ def test_cache_is_bounded():
 
 
 def test_usage_step_totals_the_request(monkeypatch):
-    r = make(monkeypatch, Counting()).handle(Q, trip=TRIP)
+    r = make(monkeypatch, Counting()).explain(TRIP)
     usage = r["trace"][-1]
     model_steps = [t for t in r["trace"] if t.get("model")]
     assert usage["agent"] == "usage" and usage["calls"] == len(model_steps) == 2

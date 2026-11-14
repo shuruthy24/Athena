@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 
-from ..scout.engine import INJECTION_PATTERNS
+from ..guard import INJECTION_PATTERNS
 
 # Reports that blame a group of people instead of describing the street. Group words only, no slurs.
 PREJUDICE = re.compile(r"\b(ethnic|ethnicity|race|racial|foreigners?|immigrants?|refugees?|those people|"

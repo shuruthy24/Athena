@@ -47,9 +47,8 @@ eval-live:
 	@for s in evals/compare_models.py evals/eval_classifier.py evals/judge.py; do \
 		if [ -f $$s ]; then echo "run $$s explicitly; each has its own call budget (AGENTS.md section 7)"; fi; done
 
-# Frozen eval sets must not change: held-out Scout prompts now, the report test split once it exists.
+# Frozen eval sets must not change: the report test split, once it exists.
 checksums:
-	cd evals/scout && sha256sum -c --quiet ../heldout_checksums.txt
 	@if [ -f evals/checksums.txt ]; then sha256sum -c --quiet evals/checksums.txt; fi
 	@echo "checksums: ok"
 

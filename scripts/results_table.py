@@ -32,10 +32,7 @@ def rows() -> list[tuple[str, str, str]]:
     out = []
     off = _load("offline.json")
     if off:
-        m, sc = off["scout"]["metrics"], off["scout"]
-        out.append(("Scout intent routing (held-out, 26 prompts)",
-                    f"top-1 {_f(m['intent_top1'])}, tool precision {_f(m['tool_precision'])}, "
-                    f"clarification rate {_f(m['clarification_rate'])}", "offline.json"))
+        m, sc = off["guard"]["metrics"], off["guard"]
         out.append((f"Prompt-injection guard ({sc['n_injection']} prompts, incl. indirect)",
                     f"precision {_f(m['injection_precision'])}, recall {_f(m['injection_recall'])}", "offline.json"))
         c = off["critic"]
@@ -88,8 +85,8 @@ def rows() -> list[tuple[str, str, str]]:
                 if ab else "not run yet (`python evals/ab.py`)", "ab.json"))
     ops = _load("ops.json")
     if ops and not ops["config"].get("sample_mode"):
-        a = ops["endpoints"]["ask_route"]
-        out.append(("Deployed service (/api/ask)",
+        a = ops["endpoints"]["explain_route"]
+        out.append(("Deployed service (/api/explain)",
                     f"p50 {a['p50_ms']} ms, p95 {a['p95_ms']} ms, errors {a['error_rate']}, "
                     f"cost/request {_f(a['cost_usd_per_request'], 6)} USD", "ops.json"))
     else:

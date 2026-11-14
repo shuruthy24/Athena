@@ -44,9 +44,9 @@ def athena(monkeypatch):
 @pytest.mark.parametrize("ask", LEAK_ASKS)
 def test_leak_requests_never_return_prompt_text(athena, ask):
     a, rec = athena
-    r = a.handle(ask)
+    r = a.submit_report("Anzac Parade", "22", ask)  # a leak request typed into the only free-text field
     assert not leaks_prompt(output_text(r), ALL_PROMPT_WINDOWS)
-    assert rec.calls == []  # answered without any model call
+    assert all(ask not in c["system"] for c in rec.calls)  # the text rides in the user JSON, never the system prompt
 
 
 class LeakyLLM(SampleLLM):
@@ -62,7 +62,7 @@ class LeakyLLM(SampleLLM):
 
 def test_echoed_system_prompt_is_caught_and_replaced(monkeypatch):
     monkeypatch.setenv("SAMPLE_MODE", "true")
-    r = Athena(get_settings(), LeakyLLM(), LocalSource()).handle("Why is the Athena route better tonight?", trip=TRIP)
+    r = Athena(get_settings(), LeakyLLM(), LocalSource()).explain(TRIP)
     assert r["critic_verdict"] == "fallback"
     assert any("repeats system prompt text" in t["detail"] for t in r["trace"] if t["agent"] == "evidence-critic")
     assert not leaks_prompt(output_text(r), ALL_PROMPT_WINDOWS)
@@ -76,8 +76,8 @@ def test_leak_check_passes_normal_text_and_fails_an_echo():
 
 def test_system_prompts_are_exactly_the_prompt_files_and_data_rides_in_json(athena):
     a, rec = athena
-    a.handle("Why is the Athena route better tonight?", trip=TRIP)
-    a.handle("Report: two street lights out on Anzac Parade", trip=TRIP)
+    a.explain(TRIP)
+    a.submit_report("Anzac Parade", "22", "two street lights out")
     bodies = {load(r).body for r in ("explainer", "critic")} | {load("moderator", 1).body}
     assert rec.calls and all(c["system"] in bodies for c in rec.calls)
     mod = next(c for c in rec.calls if c["role"] == "moderator")
@@ -91,8 +91,8 @@ def test_system_prompts_are_exactly_the_prompt_files_and_data_rides_in_json(athe
 ])
 def test_instructions_inside_a_report_are_blocked_before_any_model(athena, report):
     a, rec = athena
-    r = a.handle(report, trip=TRIP)
-    assert r["intent"] == "blocked" and rec.calls == []
+    r = a.submit_report("Anzac Parade", "22", report)
+    assert r["blocked"] and rec.calls == []
 
 
 def test_instructions_inside_a_street_name_stay_data(monkeypatch, tmp_path):
@@ -105,7 +105,7 @@ def test_instructions_inside_a_street_name_stay_data(monkeypatch, tmp_path):
     monkeypatch.setenv("SAMPLE_MODE", "true")
     rec = Recorder()
     a = Athena(get_settings(), rec, LocalSource(data_dir=tmp_path))
-    a.handle("Why is the Athena route better tonight?", trip={**TRIP, "mode": "bike"})
+    a.explain({**TRIP, "mode": "bike"})
     explainer = [c for c in rec.calls if c["role"] == "explainer"]
     assert explainer and all(c["system"] == load("explainer").body for c in explainer)
     assert any(hostile in json.dumps(json.loads(c["user"])["facts"]) for c in explainer)

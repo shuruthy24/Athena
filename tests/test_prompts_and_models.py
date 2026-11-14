@@ -29,7 +29,7 @@ def test_every_app_role_has_a_prompt_file_and_traces_name_it(monkeypatch):
         p = load(role)
         assert p.role == role and p.meta.get("model") and p.meta.get("date")
     monkeypatch.setenv("SAMPLE_MODE", "true")
-    r = Athena(get_settings(), SampleLLM(), LocalSource()).handle("Why is the Athena route better tonight?", trip=TRIP)
+    r = Athena(get_settings(), SampleLLM(), LocalSource()).explain(TRIP)
     tags = {t.get("prompt") for t in r["trace"] if t["agent"] in ("route-analyst", "evidence-critic")}
     assert tags == {f"explainer.v1@{load('explainer').sha}", f"critic.v1@{load('critic').sha}"}
 

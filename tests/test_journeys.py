@@ -175,11 +175,12 @@ def test_safety_points_absent_then_present(client, tmp_path, monkeypatch):
 
 def test_pages_share_navigation(client):
     c, _ = client
-    pages = {"/": "Athena Journey Planner", "/map": "Athena Street Map", "/ask": "Ask Athena", "/prototype": "Athena Prototype Map"}
+    pages = {"/": "Athena Journey Planner", "/map": "Athena Street Map", "/prototype": "Athena Prototype Map"}
     for path, title in pages.items():
         html = c.get(path).text
         assert f"<title>{title}</title>" in html
-        assert 'class="tb-tabs"' in html and 'href="/map"' in html and 'href="/ask"' in html and "000" in html
+        assert 'class="tb-tabs"' in html and 'href="/map"' in html and "000" in html
+    assert c.get("/ask").status_code == 404                           # the Ask page is gone
     assert 'src="/web/index.html"' in c.get("/prototype").text        # relative data URLs resolve under /web/
     assert c.get("/web/routes.json").status_code == 200
     for asset in ("/web/vendor/maplibre-gl.js", "/web/athena.js", "/web/athena.css"):

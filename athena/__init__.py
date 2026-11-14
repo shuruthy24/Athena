@@ -1,2 +1,2 @@
-"""Athena agent layer: Scout Intent routing, evidence-checked route explanations, report moderation."""
+"""Athena agent layer: evidence-checked route explanations and street report moderation."""
 __version__ = "0.1.0"

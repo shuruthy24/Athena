@@ -3,11 +3,11 @@
   python scripts/load_test.py --base-url https://<your-host>          # 50 requests per endpoint
   python scripts/load_test.py --base-url http://127.0.0.1:8001 -n 20 --concurrency 4
 
-Measures p50/p95 latency and error rate per endpoint, and cost per /api/ask request from each response's
-"usage" trace step (null when any model call was unpriced). /api/ask questions rotate across the trips
+Measures p50/p95 latency and error rate per endpoint, and cost per /api/explain request from each response's
+"usage" trace step (null when any model call was unpriced). /api/explain trips rotate across the trips
 the app serves, so the run shows both cache misses and hits; the cache hit share is reported because it
 changes cost a lot. Street reports are NOT sent: each approved report changes route risk for two weeks.
-Each worker sends a different X-Forwarded-For so Scout's per-client rate limit treats them as separate
+Each worker sends a different X-Forwarded-For so the per-client rate limit treats them as separate
 visitors, as real users would be.
 
 Writes evals/results/ops.json (or --out). Run it against the deployed URL for the numbers in the docs.
@@ -27,8 +27,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-# No time words: Scout reads "tonight" as the 10 pm band, which would override each trip's band.
-QUESTION = "Why is the Athena route the better option?"
 GETS = {
     "health": "/api/health",
     "journeys": "/api/journeys?origin=unsw&destination=townhall&band=01&mode=walk,transit&sort=balanced",
@@ -88,19 +86,19 @@ def run(base: str, n: int, concurrency: int, timeout: float) -> dict:
         for name, path in GETS.items():
             endpoints[name] = summarise(list(pool.map(lambda i, p=path: _request(base, p, None, i, timeout), range(n))))
         all_trips = trips(base, timeout)
-        asks = [{"message": QUESTION, "trip": all_trips[i % len(all_trips)]} for i in range(n)]
-        ask_results = list(pool.map(lambda a: _request(base, "/api/ask", a[1], a[0], timeout), enumerate(asks)))
+        asks = [all_trips[i % len(all_trips)] for i in range(n)]
+        ask_results = list(pool.map(lambda a: _request(base, "/api/explain", a[1], a[0], timeout), enumerate(asks)))
     s = summarise(ask_results)
     usage = [next((t for t in (r[2] or {}).get("trace", []) if t.get("agent") == "usage"), None) for r in ask_results]
     usage = [u for u in usage if u]
     costs = [u.get("cost_usd") for u in usage]
     hits = sum(1 for r in ask_results if any(t.get("agent") == "cache" for t in (r[2] or {}).get("trace", [])))
-    answered = [r for r in ask_results if r[2] and r[2].get("intent") == "route.explain"]
+    answered = [r for r in ask_results if r[2] and r[2].get("critic_verdict")]
     s.update({"routes_explained": len(answered), "cache_hit_share": round(hits / len(ask_results), 3) if ask_results else None,
               "model_calls_per_request": round(sum(u.get("calls", 0) for u in usage) / len(usage), 2) if usage else None,
               "cost_usd_per_request": round(sum(costs) / len(costs), 8) if costs and all(c is not None for c in costs) else None,
               "fallbacks": sum(1 for r in answered if str(r[2].get("critic_verdict", "")).startswith("fallback"))})
-    endpoints["ask_route"] = s
+    endpoints["explain_route"] = s
     return endpoints
 
 
@@ -120,11 +118,11 @@ def main(argv=None) -> int:
                       "sample_mode": (health or {}).get("sample_mode"), "gateway": (health or {}).get("gateway"),
                       "models": (health or {}).get("models")},
            "calls_used": None, "endpoints": endpoints}
-    res["calls_used"] = round((endpoints["ask_route"].get("model_calls_per_request") or 0) * args.n)
+    res["calls_used"] = round((endpoints["explain_route"].get("model_calls_per_request") or 0) * args.n)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(res, indent=1) + "\n")
     for name, e in endpoints.items():
-        extra = f" cost/req {e.get('cost_usd_per_request')} cache hits {e.get('cache_hit_share')}" if name == "ask_route" else ""
+        extra = f" cost/req {e.get('cost_usd_per_request')} cache hits {e.get('cache_hit_share')}" if name == "explain_route" else ""
         print(f"{name:14} n={e['n']} p50={e['p50_ms']} ms p95={e['p95_ms']} ms errors={e['error_rate']}{extra}")
     if res["config"]["sample_mode"]:
         print("note: the server is in SAMPLE_MODE, so these numbers are not evidence about the deployed system")

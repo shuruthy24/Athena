@@ -34,6 +34,7 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 .swap svg{width:18px;height:18px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field .hint{margin-top:-2px}
+.field input,.field textarea{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;color:inherit;width:100%;box-sizing:border-box}
 
 /* results */
 .results{padding:14px 16px 24px;display:flex;flex-direction:column;gap:10px}
@@ -104,7 +105,6 @@ details.data pre{margin:0;padding:10px;background:var(--code);border-radius:0 0 
   <nav class="tb-tabs" aria-label="Sections">
     <a href="/" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a4 4 0 0 0 0-8H8a4 4 0 0 1 0-8h8"/></svg>Plan a trip</a>
     <a href="/map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z M9 4v14M15 6v14"/></svg>Street map</a>
-    <a href="/ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Ask Athena</a>
   </nav>
   <a class="tb-sos" href="tel:000" aria-label="Call 000 in an emergency"><span>In danger?</span><b>000</b><span class="extra">police · fire · ambulance</span></a>
 </header>
@@ -341,6 +341,35 @@ function openDetail(id){
   $("back").focus();
   $("back").onclick = () => { showList(); document.querySelector(`.opt[data-id="${CSS.escape(id)}"]`)?.focus(); };
   $("zoom").onclick = () => fitTo(id);
+  $("explain").onclick = () => explainTrip(j);
+  $("report").onsubmit = e => { e.preventDefault(); sendReport(j); };
+}
+function streetNames(j){
+  return [...new Set((j.legs || []).flatMap(l => (l.safety?.streets || []).map(st => st.street)))];
+}
+async function explainTrip(j){
+  const btn = $("explain"), out = $("explain-out");
+  btn.disabled = true; out.innerHTML = `<p class="notice">${ICON.info}<span>Checking the route facts…</span></p>`;
+  try {
+    const r = await postJSON("/api/explain", {origin: state.origin, destination: state.destination, band: j.band, mode: j.mode});
+    const claims = (r.claims || []).map(c => `<li>${esc(c.text)}</li>`).join("");
+    const verdict = r.critic_verdict === "approve" ? "Every claim passed the evidence checks."
+      : "Shown from the route facts only: the model draft was unavailable or did not pass the evidence checks.";
+    out.innerHTML = `<p><b>${esc(r.answer)}</b></p>${claims ? `<ul class="why">${claims}</ul>` : ""}
+      <p class="notice">${ICON.info}<span>${esc(verdict)} ${esc(r.confidence_note || "")}</span></p>`;
+  } catch(e){
+    out.innerHTML = `<p class="notice warn">${ICON.info}<span>Couldn't explain this trip (${esc(e.message)}). The rating above still applies.</span></p>`;
+  } finally { btn.disabled = false; }
+}
+async function sendReport(j){
+  const out = $("rp-out");
+  try {
+    const r = await postJSON("/api/report", {street: $("rp-street").value.trim(), band: j.band, text: $("rp-text").value.trim()});
+    out.innerHTML = `<p class="notice">${ICON.info}<span>${esc(r.answer)}</span></p>`;
+    if(!r.blocked) $("rp-text").value = "";
+  } catch(e){
+    out.innerHTML = `<p class="notice warn">${ICON.info}<span>Couldn't send the report (${esc(e.message)}).</span></p>`;
+  }
 }
 function detailHTML(j){
   const s = j.safety, d = state.data;
@@ -368,8 +397,6 @@ function detailHTML(j){
        <span class="lit">${litText(st.lit).toLowerCase()}${st.risk != null ? ` · ${st.risk.toFixed(2)}` : ""}</span></li>`).join("")}</ul>` : "";
     return `<li class="${isStreet(l.mode) ? "walk" : ""}" style="--c:${c}"><div class="t1"><b>${title}</b><time>${approx(j)}${clock(l.start)}</time></div><div class="t2">${sub}</div>${streets}</li>`;
   }).join("") + `<li style="--c:${css("--athena")}"><div class="t1"><b>Arrive at ${esc(last.to.name)}</b><time>${approx(j)}${clock(last.end)}</time></div></li>`;
-  const ask = new URLSearchParams({origin: state.origin, destination: state.destination, band: j.band, mode: j.mode,
-    q: j.is_fastest ? "Is the fastest route OK tonight?" : "Why is the Athena route better tonight?"});
   const same = j.from_preferences?.length > 1 ? `<p class="notice">${ICON.info}<span>Both the fastest search and Athena's lower-risk search found this same route.</span></p>` : "";
   const timeNote = j.times_estimated ? `<p class="notice">${ICON.clock}<span>Public transport times are estimated from the ${BAND_LABEL[j.band]} timetable. Check live departures before you leave.</span></p>` : "";
   return `<div class="detail">
@@ -384,9 +411,24 @@ function detailHTML(j){
     </div>
     ${timeNote}${same}
     <div class="sec"><h3>Why this rating</h3><ul class="why">${j.explanation.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="sec"><h3>Explain the trade-off</h3>
+      <p class="muted" style="font-size:.82rem;margin:0 0 8px">A language model drafts this from the route facts only; every number and street is then checked against the data. It compares the fastest and lower-risk options for ${BAND_LABEL[j.band]}.</p>
+      <button class="btn" type="button" id="explain">Explain this trade-off</button>
+      <div id="explain-out" aria-live="polite"></div></div>
     <div class="sec"><h3>Step by step</h3><ol class="itin">${steps}</ol></div>
     ${helpHTML(j)}
-    <div class="actions"><a class="btn primary" href="/ask?${ask}">Ask Athena about this route</a><button class="btn" type="button" id="zoom">Zoom to route</button></div>
+    <details class="data"><summary>Report a street condition</summary>
+      <form id="report" class="field" style="padding:10px">
+        <label for="rp-street">Street</label>
+        <input id="rp-street" list="rp-streets" maxlength="100" required autocomplete="off">
+        <datalist id="rp-streets">${streetNames(j).map(n => `<option value="${esc(n)}">`).join("")}</datalist>
+        <label for="rp-text">What did you see? (a street condition, not a person)</label>
+        <textarea id="rp-text" maxlength="500" rows="3" required></textarea>
+        <span class="hint muted">Anonymous. Phone numbers and emails are removed. Reports are checked before they affect any route.</span>
+        <button class="btn" type="submit">Send report</button>
+        <div id="rp-out" aria-live="polite"></div>
+      </form></details>
+    <div class="actions"><button class="btn primary" type="button" id="zoom">Zoom to route</button></div>
     <details class="data"><summary>Data behind this route (Zetaris queries)</summary><pre>${esc(d.evidence.map(e => `-- ${e.executed_by} · ${e.rows} rows · ${e.ms} ms\n${e.sql}`).join("\n\n"))}</pre></details>
   </div>`;
 }
