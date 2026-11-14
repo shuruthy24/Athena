@@ -1,6 +1,6 @@
 # Athena evaluation report
 
-Generated 2026-11-14T05:48:17.185517+00:00 by `python3 evals/run_evals.py`.
+Generated 2026-11-14T05:52:58.154209+00:00 by `python3 evals/run_evals.py`.
 
 All numbers below come from the run that wrote this file. Sets are small; read them as smoke tests, not benchmarks (Meterless says the same of its own 32-example v1 corpus).
 
@@ -17,7 +17,7 @@ Registry v2. Held-out set `heldout_v2.jsonl`: 26 prompts, written and checksumme
 | tool_precision | 1.000 | 0.88 / 0.8 | meets target |
 | clarification_rate | 0.077 | ≤ 0.15 / ≤ 0.25 | meets target |
 
-Clarification edge cases correct: 4/4. Stage-1 self-test worst case: 0.180 ms (budget 16 ms).
+Clarification edge cases correct: 4/4. Stage-1 self-test worst case: 0.093 ms (budget 16 ms).
 
 Misrouted held-out prompts:
 

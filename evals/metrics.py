@@ -50,6 +50,9 @@ class CallBudget:
     def __init__(self, llm, limit: int):
         self.llm, self.limit, self.used = llm, limit, 0
 
+    def __getattr__(self, name):  # provider, models(), ... pass through to the wrapped client
+        return getattr(self.llm, name)
+
     def chat(self, *args, **kwargs):
         if self.used >= self.limit:
             raise BudgetExceeded(f"call budget of {self.limit} reached")
