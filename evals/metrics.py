@@ -57,5 +57,6 @@ class CallBudget:
         return self.llm.chat(*args, **kwargs)
 
 
-class BudgetExceeded(RuntimeError):
-    pass
+class BudgetExceeded(Exception):
+    """Deliberately not a RuntimeError, so no classifier or client error handler can swallow it: a spent
+    budget always stops the run instead of turning into 'malformed' predictions."""

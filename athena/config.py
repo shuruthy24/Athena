@@ -41,6 +41,8 @@ class Settings:
     judge_model: str
     fallback_model: str
     llm_timeout_s: float
+    # Report classifier the app uses (athena/classify); moderator-v1 = the hackathon moderator prompt
+    report_classifier: str
     # Zetaris (optional data adapter, DATA_BACKEND=zetaris)
     zetaris_rest_url: str
     zetaris_base_url: str
@@ -76,6 +78,7 @@ def get_settings() -> Settings:
         judge_model=e("JUDGE_MODEL", DEFAULT_MODELS["judge"]),
         fallback_model=e("FALLBACK_MODEL", "").strip(),
         llm_timeout_s=float(e("LLM_TIMEOUT_S", "60")),
+        report_classifier=e("REPORT_CLASSIFIER", "moderator-v1").strip(),
         zetaris_rest_url=e("ZETARIS_REST_URL", "http://localhost:8888/api/v1.0").rstrip("/"),
         zetaris_base_url=e("ZETARIS_BASE_URL", "http://localhost:3000").rstrip("/"),
         zetaris_org_id=e("ZETARIS_ORG_ID", "1"),

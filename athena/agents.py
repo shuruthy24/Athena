@@ -54,8 +54,17 @@ class Athena:
     def __init__(self, settings: Settings, llm, source=None, scout: Scout | None = None):
         self.s = settings
         self.llm = llm
-        # Prompts are versioned files (prompts/<role>.v<N>.md); traces record which version ran.
+        # Prompts are versioned files (prompts/<role>.v<N>.md); traces record which version ran. The
+        # moderator is pinned to v1 for the default path: v2 has a different output shape and is only used
+        # through a prompted classifier chosen with REPORT_CLASSIFIER.
         self.prompts = {role: load_prompt(role) for role in PROMPT_ROLES}
+        self.prompts["moderator"] = load_prompt("moderator", 1)
+        self.classifier = None
+        if settings.report_classifier != "moderator-v1":
+            from .classify import build_classifier
+            from .classify.tfidf import train_rows
+            self.classifier = build_classifier(settings.report_classifier, llm=llm,
+                                               model=settings.moderator_model, train_rows=train_rows())
         self.live_source = source if isinstance(source, ZetarisSource) else None
         self.local_source = source if isinstance(source, LocalSource) else LocalSource(schema=settings.zetaris_schema)
         self._zetaris_ok = self.live_source is not None
@@ -292,9 +301,37 @@ class Athena:
         if decision.risk["redactions"]:
             trace.step("guard", f"redacted {[r['kind'] for r in decision.risk['redactions']]} before any model call")
         self._verify(decision, "llm.moderate", trace)
+        if self.classifier is not None:
+            mod = self._classify(text, p.get("street"), trace)
+        else:
+            mod = self._moderate_v1(decision, text, p.get("street"), trace)
+        self._verify(decision, "zetaris.query", trace)
+        source = self._source(decision)
+        try:
+            streets, ev = source.streets()
+        except Exception:  # noqa: BLE001
+            streets, ev = self.local_source.streets()
+        return self._finish_report(decision, text, mod, streets, ev, trace)
+
+    def _classify(self, text: str, street: str | None, trace: Trace) -> dict:
+        """A chosen ReportClassifier (athena/classify). Any failure sends the report to human review."""
+        from .classify import ClassifierError
+        c = self.classifier
+        try:
+            out = c.predict(text, street)
+        except (ClassifierError, LLMError, ValueError) as exc:
+            trace.step("report-moderator", f"classifier={c.name} failed ({exc}); sent to human review")
+            return {"action": "review", "category": "other", "reason": "classifier unavailable", "force_review": True}
+        reply = getattr(c, "last_reply", None)
+        extra = {"prompt": f"{c.prompt.id}@{c.prompt.sha}", **reply.usage()} if reply is not None else {}
+        trace.step("report-moderator", f"classifier={c.name} action={out['action']} category={out['category']}",
+                   model=reply.model if reply is not None else None, ms=reply.ms if reply is not None else None, **extra)
+        return out
+
+    def _moderate_v1(self, decision, text: str, street: str | None, trace: Trace) -> dict:
         try:
             r = self.llm.chat(self._model_for(decision, "llm.moderate"), self.prompts["moderator"].body,
-                              json.dumps({"text": text, "street": p.get("street")}), role="moderator")
+                              json.dumps({"text": text, "street": street}), role="moderator")
             mod = parse_json(r.text)
             trace.step("report-moderator", f"category={mod.get('category')} prejudiced={mod.get('prejudiced')}",
                        model=r.model, ms=r.ms, prompt=self._prompt_tag("moderator"), **r.usage())
@@ -302,12 +339,10 @@ class Athena:
             mod = {"prejudiced": False, "category": "other", "plausible": True, "reason": "moderator unavailable"}
             trace.step("report-moderator", f"model unavailable ({exc}); sent to human review")
             mod["force_review"] = True
-        self._verify(decision, "zetaris.query", trace)
-        source = self._source(decision)
-        try:
-            streets, ev = source.streets()
-        except Exception:  # noqa: BLE001
-            streets, ev = self.local_source.streets()
+        return mod
+
+    def _finish_report(self, decision, text: str, mod: dict, streets: list[dict], ev: dict, trace: Trace) -> dict:
+        p = decision.parameters
         verdict = verify_report(text, p.get("street"), mod, {s["name"]: s for s in streets})
         trace.step("report-verifier", f"action={verdict['action']} reason={verdict['reason']}")
         self._verify(decision, "report.queue", trace)
@@ -331,12 +366,16 @@ CONTRADICTS_LIT = re.compile(r"\bno (street )?lights?\b.{0,30}\b(at all|anywhere
 
 
 def verify_report(text: str, street: str | None, mod: dict, streets: dict[str, dict]) -> dict:
-    """Report Verifier: combine moderation with street data. Order matters: reject > review > redact > approve."""
+    """Report Verifier: combine the classifier or moderator output with street data.
+    Order matters: reject > review > redact > approve. Accepts the classifier shape {action, category, reason}
+    (AGENTS.md section 6) and the hackathon moderator shape {prejudiced, category, plausible, reason}."""
     resolved = bool(street and street in streets)
-    if mod.get("prejudiced"):
-        return {"action": "reject", "reason": "prejudiced", "street_resolved": resolved}
     if mod.get("force_review"):
         return {"action": "review", "reason": "moderator_unavailable", "street_resolved": resolved}
+    if mod.get("action") == "reject" or mod.get("prejudiced"):
+        return {"action": "reject", "reason": "prejudiced", "street_resolved": resolved}
+    if mod.get("action") == "review":
+        return {"action": "review", "reason": "classifier_review", "street_resolved": resolved}
     if not resolved:
         return {"action": "review", "reason": "unknown_street", "street_resolved": False}
     if CONTRADICTS_LIT.search(text) and streets[street].get("lit") == "yes":

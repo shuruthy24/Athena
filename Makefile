@@ -2,10 +2,10 @@
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 PORT ?= 8001
 
-.PHONY: help install data ingest dvc-track labels test eval eval-live check checksums secrets serve hooks
+.PHONY: help install data ingest dvc-track labels train test eval eval-live check checksums secrets serve hooks
 
 help:
-	@echo "make install | ingest | data | dvc-track | labels | test | eval | eval-live | check | serve | hooks"
+	@echo "make install | ingest | data | dvc-track | labels | train | test | eval | eval-live | check | serve | hooks"
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
@@ -29,6 +29,10 @@ dvc-track:
 labels:
 	$(PYTHON) -m pipeline.agreement
 	$(PYTHON) -m pipeline.split
+
+# Train the TF-IDF report classifier on the train split (needed when REPORT_CLASSIFIER=tfidf-*).
+train:
+	$(PYTHON) -m athena.classify.tfidf --kind $(or $(KIND),logreg)
 
 test:
 	SAMPLE_MODE=true $(PYTHON) -m pytest -q
