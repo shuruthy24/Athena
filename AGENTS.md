@@ -519,6 +519,8 @@ deployment were deliberately left to the team.
 | 9 Deploy | Dockerfile, per-client rate limit (bug fix), `load_test.py`, `docs/deploy.md` | build, deploy, `make load-test BASE_URL=...` |
 | 10 Docs | `docs/design.md` (NOT READY until the evidence exists), `docs/metrics.md`, `docs/model_card.md`, README with generated results table | update READY/NOT READY from `evals/release.md` |
 
-Findings for the error analysis: Scout reads time words in the question ("tonight" is the 10 pm band),
-which can override the band picked in the planner (traces record `trip_used` and `trip_overridden`).
+**Chat removed (14 Nov 2026).** The Ask page, `/api/ask` and the Scout router (intents, signed contracts, clarification,
+routing evals) are gone. The planner now calls two typed endpoints, `POST /api/explain` and `POST /api/report`;
+`athena/guard.py` keeps the report-text injection block and PII redaction. This replaces the Scout, contract and
+emergency-by-typing parts of Sections 4 to 6. That also fixes the time-word override finding.
 

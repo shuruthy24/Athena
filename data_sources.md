@@ -62,7 +62,7 @@ synthetic.
 
 ### Meterless Scout Intent adversarial prompts
 
-10 of the 18 prompts in `evals/scout/injection.jsonl` come from the Meterless v1 adversarial set
+10 of the 18 prompts in `evals/guard/injection.jsonl` come from the Meterless v1 adversarial set
 (Apache-2.0, see `NOTICE`); the other 8 were written by the team.
 
 ## Excluded

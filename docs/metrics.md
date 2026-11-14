@@ -29,14 +29,13 @@ TNR on hold for the report pipeline, with every reject-labelled report held.
 | | judge TPR and TNR against held-out human PASS/FAIL, malformed counted wrong | rules only | `evals/labels/heldout.json` | `evals/judge.py` → `judge_audit.json` | TNR ≥ 0.9 before the judge may gate anything | whether the model critic or judge can be trusted |
 | Explanations: usefulness | blind human preference, LLM explanation vs fact-only (A/B/TIE) | fact-only explanation | 6+ presentations from the trace run | `evals/ab.py` → `ab.json` | LLM preferred in a majority | Rules of ML #1: if the LLM does not help, ship the fact-only text |
 | Model choice | first-draft pass rate, p50/p95 latency, tokens, cost per call, per role | the cheapest model | 18+ trips; dev reports | `evals/compare_models.py` → `model_comparison.json` | cheapest model within 0.05 pass rate of the best | `EXPLAINER_MODEL`, `CRITIC_MODEL`, `MODERATOR_MODEL` |
-| Intent routing (Scout) | top-1, top-3 recall, tool precision, clarification rate on the checksummed held-out set | Meterless thresholds | `evals/scout/heldout_v2.jsonl` | `make eval` → `offline.json` | top-1 ≥ 0.92, clarification ≤ 0.15 | whether a model router is needed (so far: no) |
-| Security | injection precision and recall (direct and indirect); no prompt text in any output | none | `evals/scout/injection.jsonl`, `tests/test_leakage.py` | `make eval`, `make test` | recall ≥ 0.9, precision ≥ 0.95, zero leaks | release gate |
-| Operations | p50/p95 latency, error rate, cost per request, cache hit share on the deployed URL | none | `scripts/load_test.py`, 50 requests per endpoint | `make load-test` → `ops.json` | p95 for /api/ask ≤ 10 s; errors ≤ 1% | model tier, cache, host |
+| Security | injection precision and recall (direct and indirect); no prompt text in any output | none | `evals/guard/injection.jsonl`, `tests/test_leakage.py` | `make eval`, `make test` | recall ≥ 0.9, precision ≥ 0.95, zero leaks | release gate |
+| Operations | p50/p95 latency, error rate, cost per request, cache hit share on the deployed URL | none | `scripts/load_test.py`, 50 requests per endpoint | `make load-test` → `ops.json` | p95 for /api/explain ≤ 10 s; errors ≤ 1% | model tier, cache, host |
 | Data | `pipeline.check` passes; frozen test checksum unchanged | none | `data/processed` | `make check` | always | release gate |
 
 ## Rules
 
 - A metric's definition, data and target are set before its first run; changing them afterwards needs a note in
   `evals/release.md` saying what changed and why.
-- The report test split and the Scout held-out set are touched once per release and are checksummed.
+- The report test split is touched once per release and is checksummed.
 - Every number quoted in the talk, the design doc or the README traces to a file in `evals/results/`.

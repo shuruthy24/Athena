@@ -64,4 +64,4 @@ See [metrics.md](metrics.md) for definitions and proposed targets and the README
 
 - The evaluation sets so far were written by the people who built the system, which flatters the numbers.
 - The street risk rule's weights are a team judgement, not learned (there are no risk labels).
-- Scout reads time words in the question, which can override the time picked in the planner.
+- Explanations and reports are only reachable from a route's detail page; there is no free-text chat.
