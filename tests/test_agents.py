@@ -93,6 +93,27 @@ def test_each_role_uses_its_own_model(monkeypatch):
     assert ("moderator", "m-moderate") in seen
 
 
+def test_saying_the_route_is_not_lower_risk_is_not_flagged_but_claiming_it_is(athena):
+    facts = {"risk_reduction_pct": -0.8, "extra_min": 1.9}
+    ok = athena.check_claims([{"text": "Athena's route is not lower risk for this trip.", "facts": ["risk_reduction_pct"]}], facts)
+    assert ok[0]["supported"], ok
+    bad = athena.check_claims([{"text": "Athena's route has lower route risk.", "facts": ["risk_reduction_pct"]}], facts)
+    assert not bad[0]["supported"] and any("lower risk" in p for p in bad[0]["problems"])
+
+
+def test_fallback_says_not_lower_risk_instead_of_negative_lower():
+    src = LocalSource()
+    streets, _ = src.streets()
+    steps, _ = src.route_steps("unsw", "townhall", "18", "transit")
+    c = compare(steps, streets, "18", use_reports=False)
+    c["risk_reduction_pct"] = -0.8
+    head, claims = fallback_explanation(c)
+    text = " ".join(x["text"] for x in claims)
+    assert "not lower risk" in head and "0.8% higher" in text and "-0.8" not in text and "lower route risk" not in text
+    c["risk_reduction_pct"] = 12.5
+    assert "12.5% lower route risk" in " ".join(x["text"] for x in fallback_explanation(c)[1])
+
+
 def test_unknown_lighting_is_unknown_not_unlit():
     src = LocalSource()
     steps, _ = src.route_steps("unsw", "townhall", "22", "walk")

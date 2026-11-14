@@ -15,6 +15,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -100,7 +101,7 @@ def main(argv=None) -> int:
         from athena.llm import GatewayLLM
         llm = CallBudget(GatewayLLM(os.environ["COMP3110_MODEL_BASE_URL"], os.environ["COMP3110_API_KEY"],
                                     timeout_s=s.llm_timeout_s, fallback_model=s.fallback_model), args.budget)
-        label = "live"
+        label = "live-" + re.sub(r"[^A-Za-z0-9._-]+", "_", s.explainer_model)  # one folder per model, reruns don't mix
     run_name = f"{datetime.now(timezone.utc):%Y-%m-%d}-{label}"
     out_dir = ROOT / "evals" / "traces" / run_name
     try:

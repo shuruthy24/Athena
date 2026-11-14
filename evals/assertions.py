@@ -3,7 +3,8 @@
   python evals/assertions.py evals/traces/<run>        # writes evals/results/assertions.json
 
 Each assertion is a named, objective check that code can make from the saved trace. The first five are the
-existing check_claims rules, now run on real model output; the rest add what the critic does not check. Add
+existing check_claims rules, now run on real model output; the rest add what the critic does not check
+(no_risk_benefit_disclosed came from the first error analysis). Add
 one assertion per new code-checkable failure the team finds in evals/analysis.csv, with a passing and a
 failing test in tests/test_explanation_evals.py.
 """
@@ -21,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from athena.agents import BANNED, Athena  # noqa: E402
+from athena.analysis import risk_benefit_missing, says_no_risk_benefit  # noqa: E402
 from athena.config import get_settings  # noqa: E402
 from athena.data.source import LocalSource  # noqa: E402
 from athena.llm import SampleLLM  # noqa: E402
@@ -90,6 +92,16 @@ def unknown_lighting_disclosed(rec: dict) -> AssertionResult:
     return AssertionResult("unknown_lighting_disclosed", said, f"unknown {unknown}%")
 
 
+def no_risk_benefit_disclosed(rec: dict) -> AssertionResult:
+    """Found in the first error analysis: when Athena's route is not lower risk (risk_reduction_pct <= 0) the
+    explanation must say so. The model critic and check_claims only catch wrong statements, not this omission."""
+    if not risk_benefit_missing(rec["facts"]):
+        return AssertionResult("no_risk_benefit_disclosed", True, "route is lower risk (not required)")
+    said = says_no_risk_benefit(rec["explanation"].get("headline") or "", rec["explanation"]["claims"])
+    return AssertionResult("no_risk_benefit_disclosed", said,
+                           f"risk_reduction_pct {rec['facts'].get('risk_reduction_pct')}")
+
+
 def model_steps_observable(rec: dict) -> AssertionResult:
     """Every model step names its model, prompt version and token counts (week 1 gateways: log every call)."""
     steps = [s for s in rec["trace"] if s.get("model")]
@@ -98,7 +110,8 @@ def model_steps_observable(rec: dict) -> AssertionResult:
 
 
 ASSERTIONS = [claims_cite_known_facts, numbers_match_facts, no_banned_wording, streets_on_routes,
-              direction_correct, claim_count, unknown_lighting_disclosed, model_steps_observable]
+              direction_correct, claim_count, unknown_lighting_disclosed, no_risk_benefit_disclosed,
+              model_steps_observable]
 
 
 def run_all(recs: list[dict]) -> dict:

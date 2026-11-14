@@ -31,7 +31,7 @@ def test_every_app_role_has_a_prompt_file_and_traces_name_it(monkeypatch):
     monkeypatch.setenv("SAMPLE_MODE", "true")
     r = Athena(get_settings(), SampleLLM(), LocalSource()).explain(TRIP)
     tags = {t.get("prompt") for t in r["trace"] if t["agent"] in ("route-analyst", "evidence-critic")}
-    assert tags == {f"explainer.v1@{load('explainer').sha}", f"critic.v1@{load('critic').sha}"}
+    assert tags == {f"explainer.v2@{load('explainer').sha}", f"critic.v1@{load('critic').sha}"}
 
 
 class FakeGateway:

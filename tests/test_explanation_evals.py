@@ -83,6 +83,19 @@ def test_unknown_lighting_must_be_disclosed(traces):
     assert A.unknown_lighting_disclosed(rec).passed
 
 
+def test_no_risk_benefit_must_be_disclosed(traces):
+    rec = good(traces)
+    assert A.no_risk_benefit_disclosed(rec).passed                      # route is lower risk: nothing to disclose
+    rec["facts"]["risk_reduction_pct"] = -0.8                           # the omission found in analysis.csv
+    rec["explanation"]["headline"] = "Route trade-off: speed vs simplicity"
+    rec["explanation"]["claims"] = [{"text": "Athena's route takes 1.9 min longer and has 0 transfers.",
+                                     "facts": ["extra_min", "athena.transfers"]}]
+    assert not A.no_risk_benefit_disclosed(rec).passed                  # fails: never says risk is not lower
+    rec["explanation"]["claims"].append({"text": "Its route risk is not lower than the fastest route.",
+                                         "facts": ["risk_reduction_pct"]})
+    assert A.no_risk_benefit_disclosed(rec).passed                      # passes once it says so
+
+
 def test_run_all_counts(traces):
     res = A.run_all(traces[1])
     assert res["traces"] == 36 and set(res["assertions"]) == {a.__name__ for a in A.ASSERTIONS}

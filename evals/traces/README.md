@@ -1,6 +1,6 @@
 # Explanation traces
 
-`python scripts/run_traces.py` writes one JSON per case to `evals/traces/<date>-live/` and adds a row per trace
+`python scripts/run_traces.py` writes one JSON per case to `evals/traces/<date>-live-<explainer model>/` and adds a row per trace
 to `evals/analysis.csv` for the team's error analysis. Commit the live run you analyse: the assertions, judge
 audit and blind A/B all point at it. `--offline` runs use the labelled sample stand-in and are not evidence.
 
