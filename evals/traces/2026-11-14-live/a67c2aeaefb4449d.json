@@ -1,0 +1,178 @@
+{
+ "trace_id": "a67c2aeaefb4449d",
+ "case": {
+  "case_id": "townhall-unsw-18-bike-q1",
+  "question": "Is the Athena option worth the extra time?",
+  "trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "18",
+   "mode": "bike"
+  }
+ },
+ "trip_used": {
+  "origin": "townhall",
+  "destination": "unsw",
+  "band": "18",
+  "mode": "bike"
+ },
+ "trip_overridden": false,
+ "facts": {
+  "fastest.duration_min": 22.4,
+  "fastest.walk_m": 0,
+  "fastest.transfers": 0,
+  "fastest.lit_share_pct": 77.4,
+  "fastest.unknown_share_pct": 0.0,
+  "fastest.risk": 0.27,
+  "fastest.mean_risk": 0.229,
+  "fastest.worst.name": "Moore Park path",
+  "fastest.worst.risk": 0.32,
+  "fastest.worst.lit": "no",
+  "fastest.worst.distance_m": 1397,
+  "fastest.worst.tunnel": false,
+  "fastest.streets": [
+   "George Street",
+   "Bourke Street cycleway",
+   "Moore Park path",
+   "Anzac Parade",
+   "UNSW campus"
+  ],
+  "fastest.transit_lines": [],
+  "athena.duration_min": 23.2,
+  "athena.walk_m": 0,
+  "athena.transfers": 0,
+  "athena.lit_share_pct": 100.0,
+  "athena.unknown_share_pct": 0.0,
+  "athena.risk": 0.223,
+  "athena.mean_risk": 0.176,
+  "athena.worst.name": "UNSW campus",
+  "athena.worst.risk": 0.28,
+  "athena.worst.lit": "yes",
+  "athena.worst.distance_m": 648,
+  "athena.worst.tunnel": false,
+  "athena.streets": [
+   "George Street",
+   "Liverpool Street",
+   "Oxford Street",
+   "Flinders Street",
+   "Anzac Parade",
+   "UNSW campus"
+  ],
+  "athena.transit_lines": [],
+  "extra_min": 0.8,
+  "risk_reduction_pct": 17.4,
+  "avoided_streets": [
+   "Bourke Street cycleway",
+   "Moore Park path"
+  ],
+  "added_streets": [
+   "Liverpool Street",
+   "Oxford Street",
+   "Flinders Street"
+  ],
+  "confidence": "high"
+ },
+ "explanation": {
+  "headline": "Lower risk for a slightly longer trip",
+  "claims": [
+   {
+    "text": "The Athena route takes 23.2 minutes, which is 0.8 minutes longer than the fastest route.",
+    "facts": [
+     "athena.duration_min",
+     "extra_min"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena's route is lower risk and is 100.0% lit.",
+    "facts": [
+     "athena.risk",
+     "athena.lit_share_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "The fastest route includes the Moore Park path, which has no lighting.",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ]
+ },
+ "critic_verdict": "approve",
+ "fact_only": {
+  "headline": "Athena's route is lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +0.8 min and has 17.4% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ]
+   },
+   {
+    "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.32).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit",
+     "fastest.worst.risk"
+    ]
+   },
+   {
+    "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+    "facts": [
+     "athena.lit_share_pct",
+     "fastest.lit_share_pct"
+    ]
+   }
+  ]
+ },
+ "trace": [
+  {
+   "step": 1,
+   "agent": "data",
+   "model": null,
+   "ms": 1,
+   "detail": "11 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+   "tool": "sample.json"
+  },
+  {
+   "step": 2,
+   "agent": "route-metrics",
+   "model": null,
+   "ms": null,
+   "detail": "fastest risk=0.27 athena risk=0.223 extra=0.8 min reduction=17.4%"
+  },
+  {
+   "step": 3,
+   "agent": "cache",
+   "model": null,
+   "ms": null,
+   "detail": "explanation cache hit (approve); no model call",
+   "key": "3ed5f6726dea"
+  },
+  {
+   "step": 4,
+   "agent": "usage",
+   "model": null,
+   "ms": null,
+   "detail": "0 model calls this request",
+   "calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd": 0
+  }
+ ],
+ "models": [],
+ "usage": {
+  "calls": 0,
+  "tokens_in": 0,
+  "tokens_out": 0,
+  "cost_usd": 0
+ }
+}

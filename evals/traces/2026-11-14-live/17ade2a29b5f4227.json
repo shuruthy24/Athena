@@ -1,0 +1,189 @@
+{
+ "trace_id": "17ade2a29b5f4227",
+ "case": {
+  "case_id": "townhall-unsw-01-transit-q0",
+  "question": "Why is the Athena route better tonight?",
+  "trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "01",
+   "mode": "transit"
+  }
+ },
+ "trip_used": {
+  "origin": "townhall",
+  "destination": "unsw",
+  "band": "01",
+  "mode": "transit"
+ },
+ "trip_overridden": false,
+ "facts": {
+  "fastest.duration_min": 43.5,
+  "fastest.walk_m": 1057,
+  "fastest.transfers": 1,
+  "fastest.lit_share_pct": 100.0,
+  "fastest.unknown_share_pct": 0.0,
+  "fastest.risk": 0.606,
+  "fastest.mean_risk": 0.513,
+  "fastest.worst.name": "Devonshire St tunnel",
+  "fastest.worst.risk": 0.72,
+  "fastest.worst.lit": "yes",
+  "fastest.worst.distance_m": 237,
+  "fastest.worst.tunnel": true,
+  "fastest.streets": [
+   "Central concourse",
+   "Devonshire St tunnel",
+   "Chalmers Street",
+   "UNSW campus"
+  ],
+  "fastest.transit_lines": [
+   "T2",
+   "Bus"
+  ],
+  "athena.duration_min": 46.4,
+  "athena.walk_m": 728,
+  "athena.transfers": 0,
+  "athena.lit_share_pct": 100.0,
+  "athena.unknown_share_pct": 0.0,
+  "athena.risk": 0.449,
+  "athena.mean_risk": 0.44,
+  "athena.worst.name": "UNSW campus",
+  "athena.worst.risk": 0.46,
+  "athena.worst.lit": "yes",
+  "athena.worst.distance_m": 648,
+  "athena.worst.tunnel": false,
+  "athena.streets": [
+   "George Street",
+   "UNSW campus"
+  ],
+  "athena.transit_lines": [
+   "L3"
+  ],
+  "extra_min": 2.9,
+  "risk_reduction_pct": 25.9,
+  "avoided_streets": [
+   "Central concourse",
+   "Devonshire St tunnel",
+   "Chalmers Street"
+  ],
+  "added_streets": [
+   "George Street"
+  ],
+  "confidence": "high"
+ },
+ "explanation": {
+  "headline": "Lower risk route with fewer transfers",
+  "claims": [
+   {
+    "text": "The Athena route has a lower risk of 0.449 compared to 0.606 for the fastest route.",
+    "facts": [
+     "athena.risk",
+     "fastest.risk"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "You will avoid the Devonshire St tunnel and have 0 transfers instead of 1.",
+    "facts": [
+     "avoided_streets",
+     "athena.transfers",
+     "fastest.transfers"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "This route takes 46.4 minutes, which is 2.9 minutes longer than the fastest option.",
+    "facts": [
+     "athena.duration_min",
+     "extra_min"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ]
+ },
+ "critic_verdict": "approve",
+ "fact_only": {
+  "headline": "Athena's route is lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +2.9 min and has 25.9% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ]
+   },
+   {
+    "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.72).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit",
+     "fastest.worst.risk"
+    ]
+   }
+  ]
+ },
+ "trace": [
+  {
+   "step": 1,
+   "agent": "data",
+   "model": null,
+   "ms": 1,
+   "detail": "9 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+   "tool": "sample.json"
+  },
+  {
+   "step": 2,
+   "agent": "route-metrics",
+   "model": null,
+   "ms": null,
+   "detail": "fastest risk=0.606 athena risk=0.449 extra=2.9 min reduction=25.9%"
+  },
+  {
+   "step": 3,
+   "agent": "route-analyst",
+   "model": "scx-gemma-4-31B-it",
+   "ms": 4500,
+   "detail": "draft 1: 3 claims",
+   "prompt": "explainer.v1@a21f47c518b0",
+   "tokens_in": 671,
+   "tokens_out": 221,
+   "cost_usd": 0.00045097
+  },
+  {
+   "step": 4,
+   "agent": "evidence-critic",
+   "model": "scx-gpt-oss-120b",
+   "ms": 560,
+   "detail": "approve draft 1 (All three claims are fully supported by the provided facts.)",
+   "verdict": "approve",
+   "prompt": "critic.v1@4e9b2778becc",
+   "tokens_in": 721,
+   "tokens_out": 296,
+   "cost_usd": 0.00031603
+  },
+  {
+   "step": 5,
+   "agent": "usage",
+   "model": null,
+   "ms": null,
+   "detail": "2 model calls this request",
+   "calls": 2,
+   "tokens_in": 1392,
+   "tokens_out": 517,
+   "cost_usd": 0.000767
+  }
+ ],
+ "models": [
+  "scx-gemma-4-31B-it",
+  "scx-gpt-oss-120b"
+ ],
+ "usage": {
+  "calls": 2,
+  "tokens_in": 1392,
+  "tokens_out": 517,
+  "cost_usd": 0.000767
+ }
+}

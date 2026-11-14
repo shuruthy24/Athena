@@ -1,0 +1,161 @@
+{
+ "trace_id": "9f0cc38301564359",
+ "case": {
+  "case_id": "unsw-townhall-18-transit-q1",
+  "question": "Is the Athena option worth the extra time?",
+  "trip": {
+   "origin": "unsw",
+   "destination": "townhall",
+   "band": "18",
+   "mode": "transit"
+  }
+ },
+ "trip_used": {
+  "origin": "unsw",
+  "destination": "townhall",
+  "band": "18",
+  "mode": "transit"
+ },
+ "trip_overridden": false,
+ "facts": {
+  "fastest.duration_min": 34.5,
+  "fastest.walk_m": 1057,
+  "fastest.transfers": 1,
+  "fastest.lit_share_pct": 100.0,
+  "fastest.unknown_share_pct": 0.0,
+  "fastest.risk": 0.266,
+  "fastest.mean_risk": 0.255,
+  "fastest.worst.name": "UNSW campus",
+  "fastest.worst.risk": 0.28,
+  "fastest.worst.lit": "yes",
+  "fastest.worst.distance_m": 675,
+  "fastest.worst.tunnel": false,
+  "fastest.streets": [
+   "UNSW campus",
+   "Chalmers Street",
+   "Devonshire St tunnel",
+   "Central concourse"
+  ],
+  "fastest.transit_lines": [
+   "Bus",
+   "T2"
+  ],
+  "athena.duration_min": 36.4,
+  "athena.walk_m": 728,
+  "athena.transfers": 0,
+  "athena.lit_share_pct": 100.0,
+  "athena.unknown_share_pct": 0.0,
+  "athena.risk": 0.268,
+  "athena.mean_risk": 0.258,
+  "athena.worst.name": "UNSW campus",
+  "athena.worst.risk": 0.28,
+  "athena.worst.lit": "yes",
+  "athena.worst.distance_m": 648,
+  "athena.worst.tunnel": false,
+  "athena.streets": [
+   "UNSW campus",
+   "George Street"
+  ],
+  "athena.transit_lines": [
+   "L3"
+  ],
+  "extra_min": 1.9,
+  "risk_reduction_pct": -0.8,
+  "avoided_streets": [
+   "Chalmers Street",
+   "Devonshire St tunnel",
+   "Central concourse"
+  ],
+  "added_streets": [
+   "George Street"
+  ],
+  "confidence": "high"
+ },
+ "explanation": {
+  "headline": "Route Trade-off: Speed vs. Simplicity",
+  "claims": [
+   {
+    "text": "The fastest route takes 34.5 minutes, while Athena's route takes 36.4 minutes.",
+    "facts": [
+     "fastest.duration_min",
+     "athena.duration_min"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena's route requires 0 transfers and 728 meters of walking.",
+    "facts": [
+     "athena.transfers",
+     "athena.walk_m"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena's route avoids Chalmers Street, Devonshire St tunnel, and Central concourse.",
+    "facts": [
+     "avoided_streets"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ]
+ },
+ "critic_verdict": "approve",
+ "fact_only": {
+  "headline": "Athena's route is not lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +1.9 min and has -0.8% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ]
+   }
+  ]
+ },
+ "trace": [
+  {
+   "step": 1,
+   "agent": "data",
+   "model": null,
+   "ms": 2,
+   "detail": "9 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+   "tool": "sample.json"
+  },
+  {
+   "step": 2,
+   "agent": "route-metrics",
+   "model": null,
+   "ms": null,
+   "detail": "fastest risk=0.266 athena risk=0.268 extra=1.9 min reduction=-0.8%"
+  },
+  {
+   "step": 3,
+   "agent": "cache",
+   "model": null,
+   "ms": null,
+   "detail": "explanation cache hit (approve); no model call",
+   "key": "b150a8ad72dc"
+  },
+  {
+   "step": 4,
+   "agent": "usage",
+   "model": null,
+   "ms": null,
+   "detail": "0 model calls this request",
+   "calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd": 0
+  }
+ ],
+ "models": [],
+ "usage": {
+  "calls": 0,
+  "tokens_in": 0,
+  "tokens_out": 0,
+  "cost_usd": 0
+ }
+}
