@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 
 from . import analysis as _analysis
 from .analysis import close, compare, fallback_explanation, flatten_facts, numbers_in
+from .cache import ExplanationCache, cache_key
 from .config import Settings
 from .data.source import PLACES, LocalSource, ZetarisSource
 from .llm import LLMError, parse_json
@@ -80,6 +81,7 @@ class Athena:
         self.prompts = {role: load_prompt(role) for role in PROMPT_ROLES}
         self.prompts["moderator"] = load_prompt("moderator", 1)
         self._prompt_windows = prompt_windows([p.body for p in self.prompts.values()])
+        self.cache = ExplanationCache()
         self.classifier = None
         if settings.report_classifier != "moderator-v1":
             from .classify import build_classifier
@@ -167,6 +169,12 @@ class Athena:
 
         for sec in decision.secondary:  # multi-intent: e.g. a report plus a route request
             trace.step("scout-intent", f"secondary intent={sec['intent']} score={sec['score']}")
+        model_steps = [t for t in trace.steps if t.get("model")]
+        costs = [t.get("cost_usd") for t in model_steps]
+        trace.step("usage", f"{len(model_steps)} model calls this request",
+                   calls=len(model_steps), tokens_in=sum(t.get("tokens_in") or 0 for t in model_steps),
+                   tokens_out=sum(t.get("tokens_out") or 0 for t in model_steps),
+                   cost_usd=None if any(c is None for c in costs) else round(sum(costs), 8))
         resp["trace"] = trace.steps
         resp["events"] = trace.events
         resp["total_ms"] = trace.total_ms()
@@ -207,7 +215,16 @@ class Athena:
         trace.step("route-metrics", f"fastest risk={cmp['fastest']['risk']} athena risk={cmp['athena']['risk']} "
                    f"extra={cmp['extra_min']} min reduction={cmp['risk_reduction_pct']}%")
 
-        headline, claims, verdict = self._draft_and_check(decision, message, cmp, facts, trace)
+        key = cache_key([self._prompt_tag("explainer"), self._prompt_tag("critic")],
+                        [self._model_for(decision, "llm.draft"), self._model_for(decision, "llm.critique")],
+                        self.s.max_revisions, facts)
+        hit = self.cache.get(key)
+        if hit:
+            headline, claims, verdict = hit["headline"], json.loads(json.dumps(hit["claims"])), hit["verdict"]
+            trace.step("cache", f"explanation cache hit ({verdict}); no model call", key=key[:12])
+        else:
+            headline, claims, verdict = self._draft_and_check(decision, message, cmp, facts, trace)
+            self.cache.put(key, {"headline": headline, "claims": claims, "verdict": verdict})
         confidence = cmp["confidence"] if verdict != "fallback-error" else "low"
         confidence_note = {
             "sample": "Sample data (pre-existing hand-made routes); not live OTP results.",

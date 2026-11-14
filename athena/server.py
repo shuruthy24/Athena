@@ -201,7 +201,8 @@ def health() -> dict:
     a = athena()
     s = get_settings()
     out = {"version": __version__, "sample_mode": s.sample_mode, "data_backend": s.data_backend,
-           "scout_registry": a.scout.registry_version, "scout_self_test_ms": round(a.scout.self_test_ms, 3)}
+           "scout_registry": a.scout.registry_version, "scout_self_test_ms": round(a.scout.self_test_ms, 3),
+           "report_classifier": s.report_classifier, "explanation_cache": a.cache.stats()}
     if s.sample_mode:
         out.update(zetaris="skipped (sample mode)", gateway="skipped (sample mode)")
         return out
