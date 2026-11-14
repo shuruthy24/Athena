@@ -83,9 +83,10 @@ class MockHandler(BaseHTTPRequestHandler):
             if MockHandler.fail_next:
                 code = MockHandler.fail_next.pop(0)
                 return self._send(code, {"error": {"message": f"mock {code}"}})
-            system = body["messages"][0]["content"]
             payload = json.loads(body["messages"][1]["content"])
-            task = re.search(r"TASK:\s*(\w+)", system).group(1)
+            # Prompts carry no TASK marker any more; the user payload's shape says which role is calling.
+            task = ("analyst" if "question" in payload else "critic" if "claims" in payload
+                    else "moderator" if "text" in payload else "other")
             if task == "analyst":
                 # The analyst receives the flat facts, not the comparison object (same as a live call).
                 f = payload["facts"]
@@ -98,9 +99,11 @@ class MockHandler(BaseHTTPRequestHandler):
                 content = json.dumps({"headline": head, "claims": claims})
             elif task == "critic":
                 content = "Here is my verdict:\n```json\n" + json.dumps({"verdict": "approve", "unsupported": [], "notes": "ok"}) + "\n```"
-            else:
+            elif task == "moderator":
                 t = payload["text"].lower()
                 content = json.dumps({"prejudiced": "ethnic" in t, "category": "lighting", "plausible": True, "reason": "mock"})
+            else:
+                content = json.dumps({"ok": True})
             return self._send(200, {
                 "id": f"chatcmpl-{uuid.uuid4().hex[:8]}", "object": "chat.completion", "created": 0,
                 "model": body.get("model", MODEL),

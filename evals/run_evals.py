@@ -169,7 +169,7 @@ def eval_reports(athena: Athena, live_llm=None) -> dict:
     reports = json.loads((ROOT / "data/reports.json").read_text())["rows"]
     streets = {s["name"]: s for s in json.loads((ROOT / "data/streets.json").read_text())["rows"]}
     rows, correct, calls = [], 0, 0
-    from athena.agents import MODERATOR_SYSTEM
+    moderator_prompt = athena.prompts["moderator"]
     llm = live_llm or SampleLLM()
     model = athena.s.moderator_model if live_llm else SampleLLM.MODEL
     for r in reports:
@@ -178,8 +178,8 @@ def eval_reports(athena: Athena, live_llm=None) -> dict:
         if d.risk["level"] == "block":
             action, reason = "reject", "injection"
         else:
-            reply = llm.chat(model, MODERATOR_SYSTEM, json.dumps({"text": d.redacted_prompt, "street": r["street"]}),
-                             role="moderator")
+            reply = llm.chat(model, moderator_prompt.body,
+                             json.dumps({"text": d.redacted_prompt, "street": r["street"]}), role="moderator")
             calls += 1
             mod = parse_json(reply.text)
             v = verify_report(d.redacted_prompt, d.parameters.get("street"), mod, streets)
@@ -188,7 +188,8 @@ def eval_reports(athena: Athena, live_llm=None) -> dict:
         correct += ok
         rows.append({"id": r["id"], "expected": r["expected_action"], "got": action, "reason": reason, "ok": ok,
                      "intent": d.intent})
-    return {"n": len(reports), "accuracy": correct / len(reports), "model": model, "calls": calls, "rows": rows}
+    return {"n": len(reports), "accuracy": correct / len(reports), "model": model, "calls": calls,
+            "prompt": f"{moderator_prompt.id}@{moderator_prompt.sha}", "rows": rows}
 
 
 def eval_routes() -> dict:

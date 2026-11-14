@@ -26,6 +26,7 @@ from .analysis import close, compare, fallback_explanation, flatten_facts, numbe
 from .config import Settings
 from .data.source import PLACES, LocalSource, ZetarisSource
 from .llm import LLMError, parse_json
+from .prompts import load as load_prompt
 from .scout import ContractError, Scout
 from .telemetry import Trace
 
@@ -45,34 +46,16 @@ HELP = {"emergency": "000", "emergency_note": "Call 000 for police, fire or ambu
         "staffed_stations": STAFFED,
         "note": "Station staffing hours vary; check before relying on a station being staffed."}
 
-ANALYST_SYSTEM = """TASK: analyst
-You are Athena's Route Analyst. You explain the trade-off between the FASTEST route and ATHENA's lower-risk
-route for a night trip in Sydney, using ONLY the facts provided.
-Rules:
-- Output ONE JSON object: {"headline": string, "claims": [{"text": string, "facts": [fact keys]}]}
-- 2 to 4 claims. Every claim cites the exact fact keys it relies on. Every number must come from a cited fact.
-- Never say "safe", "safer", "safest" or "guaranteed". Say "lower risk". Do not invent streets or numbers.
-- If any unknown_share_pct is above 15, add a claim saying part of the route has unknown lighting.
-- Plain English for a woman deciding how to get home; short sentences."""
 
-CRITIC_SYSTEM = """TASK: critic
-You are Athena's Evidence Critic. For each claim, decide whether the cited facts fully support it.
-Output ONE JSON object: {"verdict": "approve" | "revise", "unsupported": [claim indexes], "notes": string}
-A claim is unsupported if it states anything not in its cited facts, exaggerates, implies the route is safe,
-or reverses a direction (for example says lower risk when risk_reduction_pct is not positive)."""
-
-MODERATOR_SYSTEM = """TASK: moderator
-You moderate anonymous night-safety reports about Sydney streets before they can affect route scores.
-Output ONE JSON object: {"prejudiced": bool, "category": "lighting|isolation|harassment|infrastructure|positive|other",
-"plausible": bool, "reason": string}
-prejudiced = the report targets people by ethnicity, race, religion, gender identity, disability or similar.
-plausible = the report describes a concrete, observable street condition."""
+PROMPT_ROLES = ("explainer", "critic", "moderator")
 
 
 class Athena:
     def __init__(self, settings: Settings, llm, source=None, scout: Scout | None = None):
         self.s = settings
         self.llm = llm
+        # Prompts are versioned files (prompts/<role>.v<N>.md); traces record which version ran.
+        self.prompts = {role: load_prompt(role) for role in PROMPT_ROLES}
         self.live_source = source if isinstance(source, ZetarisSource) else None
         self.local_source = source if isinstance(source, LocalSource) else LocalSource(schema=settings.zetaris_schema)
         self._zetaris_ok = self.live_source is not None
@@ -95,6 +78,10 @@ class Athena:
     def _verify(self, decision, capability: str, trace: Trace) -> None:
         self.scout.verify(decision.contract, capability)
         trace.event("contract.verified", contractId=decision.contract["contractId"], engine=capability)
+
+    def _prompt_tag(self, role: str) -> str:
+        p = self.prompts[role]
+        return f"{p.id}@{p.sha}"
 
     def _data_mode(self) -> str:
         if self.live_source is not None:
@@ -242,8 +229,8 @@ class Athena:
     def _draft_once(self, decision, payload: dict):
         """One analyst call. The client owns the single permitted retry (AGENTS.md section 2), so a failure
         here goes straight to the fact-only fallback."""
-        return self.llm.chat(self._model_for(decision, "llm.draft"), ANALYST_SYSTEM, json.dumps(payload),
-                             role="explainer")
+        return self.llm.chat(self._model_for(decision, "llm.draft"), self.prompts["explainer"].body,
+                             json.dumps(payload), role="explainer")
 
     def _draft_and_check(self, decision, message, cmp, facts, trace) -> tuple[str, list[dict], str]:
         feedback = None
@@ -262,7 +249,7 @@ class Athena:
                 claims = [c for c in draft.get("claims", []) if isinstance(c, dict)][:4]
                 headline = str(draft.get("headline", ""))[:200]
                 trace.step("route-analyst", f"draft {attempt}: {len(claims)} claims", model=r.model, ms=r.ms,
-                           **r.usage())
+                           prompt=self._prompt_tag("explainer"), **r.usage())
             except (LLMError, ValueError) as exc:
                 trace.step("route-analyst", f"draft {attempt} failed: {exc}; using fact-only explanation")
                 headline, claims = fallback_explanation(cmp)
@@ -272,9 +259,9 @@ class Athena:
                 rule_results.append({"index": -1, "supported": False, "problems": ["headline uses banned wording"]})
             llm_unsupported, llm_note, critic_usage = [], "", {}
             try:
-                cr = self.llm.chat(self._model_for(decision, "llm.critique"), CRITIC_SYSTEM,
+                cr = self.llm.chat(self._model_for(decision, "llm.critique"), self.prompts["critic"].body,
                                    json.dumps({"facts": facts, "claims": claims}), role="critic")
-                critic_usage = cr.usage()
+                critic_usage = {"prompt": self._prompt_tag("critic"), **cr.usage()}
                 cv = parse_json(cr.text)
                 llm_unsupported = [int(i) for i in cv.get("unsupported", []) if str(i).lstrip("-").isdigit()]
                 llm_note = str(cv.get("notes", ""))[:160]
@@ -306,11 +293,11 @@ class Athena:
             trace.step("guard", f"redacted {[r['kind'] for r in decision.risk['redactions']]} before any model call")
         self._verify(decision, "llm.moderate", trace)
         try:
-            r = self.llm.chat(self._model_for(decision, "llm.moderate"), MODERATOR_SYSTEM,
+            r = self.llm.chat(self._model_for(decision, "llm.moderate"), self.prompts["moderator"].body,
                               json.dumps({"text": text, "street": p.get("street")}), role="moderator")
             mod = parse_json(r.text)
             trace.step("report-moderator", f"category={mod.get('category')} prejudiced={mod.get('prejudiced')}",
-                       model=r.model, ms=r.ms, **r.usage())
+                       model=r.model, ms=r.ms, prompt=self._prompt_tag("moderator"), **r.usage())
         except (LLMError, ValueError) as exc:
             mod = {"prejudiced": False, "category": "other", "plausible": True, "reason": "moderator unavailable"}
             trace.step("report-moderator", f"model unavailable ({exc}); sent to human review")

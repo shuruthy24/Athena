@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT))
 
 from athena.config import get_settings  # noqa: E402
 from athena.llm import GatewayLLM, parse_json  # noqa: E402
+from athena.prompts import load  # noqa: E402
 
 
 def main() -> int:
@@ -55,8 +56,7 @@ def main() -> int:
         def text_req(model=model):
             nonlocal calls
             calls += 1
-            r = llm.chat(model, 'Reply with only this JSON object: {"ok": true}', "{}", max_tokens=200,
-                         role="stack-check")
+            r = llm.chat(model, load("stack_check").body, "{}", max_tokens=200, role="stack_check")
             parse_json(r.text)
             return {"requested": model, "served_by": r.model, "ms": round(r.ms), "tokens_in": r.input_tokens,
                     "tokens_out": r.output_tokens, "cost_usd": r.cost_usd, "attempts": r.attempts}
