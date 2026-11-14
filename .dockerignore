@@ -1,0 +1,20 @@
+# Never in the image
+.env
+.env.*
+!.env.example
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+runs/
+data/raw/
+# Not needed to serve
+tests/
+evals/traces/
+evals/ab/
+samples/
+docs/submission/img/
+.dvc/
+*.dvc

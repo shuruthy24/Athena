@@ -2,10 +2,10 @@
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 PORT ?= 8001
 
-.PHONY: help install data ingest dvc-track labels train test eval eval-live check checksums secrets serve hooks
+.PHONY: help install data ingest dvc-track labels train test eval eval-live check checksums secrets serve docker load-test hooks
 
 help:
-	@echo "make install | ingest | data | dvc-track | labels | train | test | eval | eval-live | check | serve | hooks"
+	@echo "make install | ingest | data | dvc-track | labels | train | test | eval | eval-live | check | serve | docker | load-test | hooks"
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
@@ -62,6 +62,13 @@ check: test eval checksums secrets
 
 serve:
 	$(PYTHON) -m uvicorn athena.server:app --host 127.0.0.1 --port $(PORT)
+
+# Container and load test (docs/deploy.md). BASE_URL is the deployed URL for the evidence in ops.json.
+docker:
+	docker build -t athena .
+
+load-test:
+	$(PYTHON) scripts/load_test.py --base-url $(or $(BASE_URL),http://127.0.0.1:$(PORT))
 
 # Plain git hook, no extra package needed. pre-commit users can use .pre-commit-config.yaml instead.
 hooks:

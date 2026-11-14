@@ -93,3 +93,15 @@ def test_live_mode_without_gateway_key_fails_loudly(monkeypatch):
     importlib.reload(server)
     with pytest.raises(KeyError):
         server.build_athena()
+
+
+def test_rate_limit_is_per_client_not_shared(monkeypatch):
+    c = client_with_env(monkeypatch, SAMPLE_MODE="true")
+    msg = {"message": "Why is the Athena route better tonight?",
+           "trip": {"origin": "unsw", "destination": "townhall", "band": "22", "mode": "walk"}}
+    first = [c.post("/api/ask", json=msg, headers={"X-Forwarded-For": "203.0.113.1"}).json()["intent"]
+             for _ in range(31)]
+    assert first[:30] == ["route.explain"] * 30 and first[30] == "blocked"   # one client is still limited
+    other = c.post("/api/ask", json=msg, headers={"X-Forwarded-For": "203.0.113.2"}).json()
+    assert other["intent"] == "route.explain"                                # another client is not
+    assert "203.0.113" not in str(other)                                     # no IP in the response

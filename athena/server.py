@@ -11,7 +11,10 @@ import os
 from functools import lru_cache
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+import hashlib
+import hmac
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -64,12 +67,23 @@ class AskRequest(BaseModel):
     session: dict | None = Field(default=None, description="last_intent, recent_intents, home")
 
 
+def client_id(request: Request) -> str:
+    """Pseudonymous per-client id for Scout's rate limit: the first X-Forwarded-For hop (set by the hosting
+    proxy) or the socket address, keyed-hashed with SCOUT_SECRET so no IP address is stored or logged.
+    Without this every visitor shared one 'anon' bucket and a busy room was rate-limited together."""
+    fwd = request.headers.get("x-forwarded-for", "")
+    ip = fwd.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    digest = hmac.new(get_settings().scout_secret.encode(), ip.encode(), hashlib.sha256).hexdigest()
+    return f"client-{digest[:12]}"
+
+
 @app.post("/api/ask")
-def ask(req: AskRequest) -> dict:
+def ask(req: AskRequest, request: Request) -> dict:
     trip = {k: v for k, v in (req.trip.model_dump() if req.trip else {}).items() if v}
     session = {k: v for k, v in (req.session or {}).items() if k in ("last_intent", "recent_intents", "home")}
     try:
-        return athena().handle(req.message, trip=trip, session=session)
+        return athena().handle(req.message, trip=trip, session=session,
+                               user={"id": client_id(request), "role": "traveller"})
     except Exception as exc:  # noqa: BLE001 - return a clean error; details stay in the server log
         log.exception("ask failed")
         raise HTTPException(status_code=500, detail=f"Athena could not complete this request ({exc.__class__.__name__}).") from exc
