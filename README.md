@@ -20,10 +20,10 @@ that say "not run yet" are waiting for a live run or human labels (see [Status](
 | Evidence critic rules (276 generated claims) | precision 1.000, recall 1.000 | `offline.json` |
 | Route outcome vs fastest (18 trips, hand-made sample) | median risk-indicator reduction 36.3%, median extra 0.8 min | `offline.json` |
 | Report labeller agreement | not run yet (`make labels`) | `label_agreement.json` |
-| Explainer model comparison | not run yet (`python evals/compare_models.py`) | `model_comparison.json` |
+| Explainer model comparison | 3 models; best first-draft pass rate 1.000 (scx-gemma-4-31B-it) | `model_comparison.json` |
 | Report classifier, dev split | not run yet (`python evals/eval_classifier.py`) | `classifier_dev.json` |
 | Report classifier, test split | not run yet (`python evals/eval_classifier.py`) | `classifier_test.json` |
-| Assertions on real explanation traces | not run yet (`python evals/assertions.py evals/traces/<run>`) | `assertions.json` |
+| Assertions on real explanation traces | 36/36 traces pass every assertion | `assertions.json` |
 | LLM judge audit (held-out human labels) | not run yet (`python evals/judge.py audit ...`) | `judge_audit.json` |
 | Blind A/B: LLM vs fact-only explanation | not run yet (`python evals/ab.py`) | `ab.json` |
 | Deployed service | not run yet (`make load-test BASE_URL=...` after deploying) | `ops.json` |
