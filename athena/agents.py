@@ -48,6 +48,26 @@ HELP = {"emergency": "000", "emergency_note": "Call 000 for police, fire or ambu
 
 
 PROMPT_ROLES = ("explainer", "critic", "moderator")
+LEAK_WINDOW = 40  # characters of normalised system-prompt text that may not appear in user-facing output
+
+
+def _norm_text(text: str) -> str:
+    return " ".join(str(text).lower().split())
+
+
+def prompt_windows(bodies: list[str], size: int = LEAK_WINDOW, stride: int = 10) -> set[str]:
+    out: set[str] = set()
+    for body in bodies:
+        t = _norm_text(body)
+        out.update(t[i:i + size] for i in range(0, max(1, len(t) - size + 1), stride))
+    return out
+
+
+def leaks_prompt(text: str, windows: set[str], size: int = LEAK_WINDOW) -> bool:
+    """True when output repeats a stretch of a system prompt. Prompts are public (week 8: assume leakage),
+    but the app still never echoes them back as an answer."""
+    t = _norm_text(text)
+    return any(t[i:i + size] in windows for i in range(0, max(0, len(t) - size + 1)))
 
 
 class Athena:
@@ -59,6 +79,7 @@ class Athena:
         # through a prompted classifier chosen with REPORT_CLASSIFIER.
         self.prompts = {role: load_prompt(role) for role in PROMPT_ROLES}
         self.prompts["moderator"] = load_prompt("moderator", 1)
+        self._prompt_windows = prompt_windows([p.body for p in self.prompts.values()])
         self.classifier = None
         if settings.report_classifier != "moderator-v1":
             from .classify import build_classifier
@@ -266,6 +287,9 @@ class Athena:
             rule_results = self.check_claims(claims, facts)
             if BANNED.search(headline):
                 rule_results.append({"index": -1, "supported": False, "problems": ["headline uses banned wording"]})
+            for i, t in [(-1, headline)] + [(i, str(c.get("text", ""))) for i, c in enumerate(claims)]:
+                if leaks_prompt(t, self._prompt_windows):
+                    rule_results.append({"index": i, "supported": False, "problems": ["repeats system prompt text"]})
             llm_unsupported, llm_note, critic_usage = [], "", {}
             try:
                 cr = self.llm.chat(self._model_for(decision, "llm.critique"), self.prompts["critic"].body,

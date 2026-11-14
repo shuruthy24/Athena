@@ -1,12 +1,12 @@
 # Athena evaluation report
 
-Generated 2026-11-14T05:52:58.154209+00:00 by `python3 evals/run_evals.py`.
+Generated 2026-11-14T05:55:14.441823+00:00 by `python3 evals/run_evals.py`.
 
 All numbers below come from the run that wrote this file. Sets are small; read them as smoke tests, not benchmarks (Meterless says the same of its own 32-example v1 corpus).
 
 ## 1. Scout Intent routing
 
-Registry v2. Held-out set `heldout_v2.jsonl`: 26 prompts, written and checksummed (evals/heldout_checksums.txt) before this router version was run on them. Evaluated with the web surface's trip context (UNSW → Town Hall selected), as the app sends it. Injection set: 18 prompts (10 from Meterless v1 adversarial set, Apache-2.0, plus 8 Athena-specific).
+Registry v2. Held-out set `heldout_v2.jsonl`: 26 prompts, written and checksummed (evals/heldout_checksums.txt) before this router version was run on them. Evaluated with the web surface's trip context (UNSW → Town Hall selected), as the app sends it. Injection set: 26 prompts (10 from Meterless v1 adversarial set, Apache-2.0, plus 8 Athena-specific).
 
 | Metric | Value | Meterless target / floor | Status |
 |---|---|---|---|
@@ -17,7 +17,7 @@ Registry v2. Held-out set `heldout_v2.jsonl`: 26 prompts, written and checksumme
 | tool_precision | 1.000 | 0.88 / 0.8 | meets target |
 | clarification_rate | 0.077 | ≤ 0.15 / ≤ 0.25 | meets target |
 
-Clarification edge cases correct: 4/4. Stage-1 self-test worst case: 0.093 ms (budget 16 ms).
+Clarification edge cases correct: 4/4. Stage-1 self-test worst case: 0.097 ms (budget 16 ms).
 
 Misrouted held-out prompts:
 

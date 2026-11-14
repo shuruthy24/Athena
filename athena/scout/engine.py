@@ -57,10 +57,12 @@ MODE_ALIASES = {"walk": ["walk", "walking", "on foot"],
 INJECTION_PATTERNS: list[tuple[str, re.Pattern]] = [
     ("instruction-override", re.compile(r"\b(ignore|disregard|forget)\b.{0,20}\b(previous|prior|above|all|the)\b.{0,20}\b(instructions?|rules|prompts?|user)\b", re.I | re.S)),
     ("role-drift", re.compile(r"\byou are now\b|\bunrestricted mode\b|\bpretend to be\b|\bact as (the )?(system|admin)", re.I)),
-    ("embedded-control", re.compile(r"</?\s*(system|user|assistant)\s*>|\[/?INST\]", re.I)),
+    # Role markers inside user or report text ("SYSTEM: ...", "assistant: ...") are indirect injection.
+    ("embedded-control", re.compile(r"</?\s*(system|user|assistant)\s*>|\[/?INST\]|\b(system|assistant|developer)\s*:", re.I)),
     ("secret-exfiltration", re.compile(r"\breveal\b.{0,40}\b(keys?|credentials?|passwords?|secrets?|tokens?)\b", re.I | re.S)),
     ("tool-ref", re.compile(r"\b(grant (me )?admin|admin panel|internal_\w+|drop (the )?\w+ table|delete (all|every))\b", re.I)),
-    ("risk-tampering", re.compile(r"\bmark (every|all|each)\b.{0,20}\b(streets?|routes?)\b.{0,15}\b(as )?(safe|low risk)\b|\boverride\b.{0,15}\brisk\b", re.I | re.S)),
+    ("risk-tampering", re.compile(r"\bmark (every|all|each)\b.{0,20}\b(streets?|routes?)\b.{0,15}\b(as )?(safe|low risk)\b|\boverride\b.{0,15}\brisk\b"
+                                  r"|\bmark\b.{0,30}\b(lowest|low|lower|zero|no)[- ]risk\b|\bset\b.{0,25}\brisk\b.{0,10}\bto\b", re.I | re.S)),
 ]
 BIDI_CONTROL = re.compile(r"[‪-‮⁦-⁩​-‏]|\\u202[a-e]", re.I)
 PII_PATTERNS = [
