@@ -379,12 +379,12 @@ class Scout:
         "zetaris.query": [{"tool": "zetaris.sql", "local": False, "latency_ms": 800},
                           {"tool": "sample.json", "local": True, "latency_ms": 2}],
         "route.compare": [{"tool": "athena.route_metrics", "local": True, "latency_ms": 2}],
-        "llm.draft": [{"tool": "nightshift.chat", "local": False, "latency_ms": 2500, "profile": "nemotron-fast"},
+        "llm.draft": [{"tool": "gateway.chat", "local": False, "latency_ms": 2500, "profile": "gateway-explainer"},
                       {"tool": "sample.llm", "local": True, "latency_ms": 1, "profile": "sample-offline"}],
         "llm.critique": [{"tool": "critic.rules", "local": True, "latency_ms": 1, "profile": "local-rules"},
-                         {"tool": "nightshift.chat", "local": False, "latency_ms": 2500, "profile": "nemotron-critic"},
+                         {"tool": "gateway.chat", "local": False, "latency_ms": 2500, "profile": "gateway-critic"},
                          {"tool": "sample.llm", "local": True, "latency_ms": 1, "profile": "sample-offline"}],
-        "llm.moderate": [{"tool": "nightshift.chat", "local": False, "latency_ms": 2500, "profile": "nemotron-fast"},
+        "llm.moderate": [{"tool": "gateway.chat", "local": False, "latency_ms": 2500, "profile": "gateway-moderator"},
                          {"tool": "sample.llm", "local": True, "latency_ms": 1, "profile": "sample-offline"}],
         "guard.redact": [{"tool": "scout.redactor", "local": True, "latency_ms": 1}],
         "report.queue": [{"tool": "reports.jsonl", "local": True, "latency_ms": 1}],
@@ -536,13 +536,14 @@ def band_of(score: float) -> str:
 
 
 def default_model_profiles() -> list[dict]:
-    fast = os.environ.get("FAST_MODEL", os.environ.get("METERLESS_MODEL", "meterless/auto"))
-    critic = os.environ.get("CRITIC_MODEL", os.environ.get("METERLESS_MODEL", "meterless/auto"))
-    return [
-        {"id": "nemotron-fast", "provider": "meterless-nightshift", "model": fast,
-         "capabilities": ["json"], "dataClasses": ["public", "redacted-user-text"]},
-        {"id": "nemotron-critic", "provider": "meterless-nightshift", "model": critic,
-         "capabilities": ["json"], "dataClasses": ["public", "redacted-user-text"]},
+    """One gateway profile per model role (AGENTS.md section 6); models come from the environment."""
+    from ..config import DEFAULT_MODELS
+    e = os.environ.get
+    gateway = [{"id": f"gateway-{role}", "provider": "comp3110-gateway",
+                "model": e(f"{role.upper()}_MODEL", DEFAULT_MODELS[role]),
+                "capabilities": ["json"], "dataClasses": ["public", "redacted-user-text"]}
+               for role in ("explainer", "critic", "moderator")]
+    return gateway + [
         {"id": "sample-offline", "provider": "local", "model": "sample-offline-stub",
          "capabilities": ["json"], "dataClasses": ["public", "redacted-user-text", "pii"]},
         {"id": "local-rules", "provider": "local", "model": None,

@@ -1,12 +1,16 @@
-"""Model access through Meterless Nightshift (the required primary AI provider).
+"""Model access through the COMP3110 LiteLLM gateway.
 
-Nightshift exposes an OpenAI-compatible Runtime: Authorization: Bearer <runtime token>, headers
-meterless-app and meterless-scope, GET /v1/models and POST /v1/chat/completions. The NVIDIA key lives
-only in Nightshift's Providers/Keys page; this app never sees it. Every call returns the model that
-actually handled it (the response's "model" field) so the trace can prove which Nemotron model ran.
+GatewayLLM uses the OpenAI Python SDK the way Tech 1 does: base_url from COMP3110_MODEL_BASE_URL and
+api_key from COMP3110_API_KEY (read by the caller with os.environ[...], so a missing value fails
+loudly). Every call is non-streaming at temperature 0 and returns the model that actually served it,
+token usage, latency and an estimated cost from athena.pricing.
 
-SampleLLM is an offline stand-in used only in SAMPLE_MODE. It is labelled "sample-offline-stub" in every
-trace so it can never be mistaken for Nemotron output.
+Retry rule (AGENTS.md section 2): at most one retry per logical call, counted across every layer.
+The retry lives here, only for transient failures (connection, timeout, 429, 5xx, empty completion),
+and goes to the fallback model when one is configured. Callers must not retry again.
+
+SampleLLM is an offline stand-in used only in SAMPLE_MODE. It is labelled "sample-offline-stub" in
+every trace so it can never be mistaken for model output.
 """
 from __future__ import annotations
 
@@ -16,7 +20,7 @@ import re
 import time
 from dataclasses import dataclass
 
-import requests
+from .pricing import estimate_cost_usd
 
 log = logging.getLogger("athena.llm")
 
@@ -30,10 +34,21 @@ class LLMReply:
     text: str
     model: str
     ms: float
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    cost_usd: float | None = None
+    requested_model: str | None = None
+    attempts: int = 1
+
+    def usage(self) -> dict:
+        """Fields added to a trace step for this call."""
+        return {"tokens_in": self.input_tokens, "tokens_out": self.output_tokens,
+                "cost_usd": None if self.cost_usd is None else round(self.cost_usd, 8)}
 
 
 def parse_json(text: str) -> dict:
-    """Extract the first JSON object from a model reply (handles code fences and leading prose)."""
+    """Lenient parser for the app path: extract the first JSON object from a model reply (handles code
+    fences and leading prose). The judge uses the strict parser in evals/judge.py instead."""
     text = re.sub(r"```(?:json)?", "", text)
     start = text.find("{")
     if start < 0:
@@ -49,61 +64,91 @@ def parse_json(text: str) -> dict:
     raise LLMError("unterminated JSON object in model reply")
 
 
-class NightshiftLLM:
-    provider = "meterless-nightshift"
+class GatewayLLM:
+    provider = "comp3110-gateway"
 
-    def __init__(self, base_url: str, token: str, app: str = "athena", timeout_s: float = 60.0,
-                 session: requests.Session | None = None):
-        if not token:
-            raise LLMError("METERLESS_RUNTIME_TOKEN is not set")
-        self.base_url = base_url.rstrip("/")
-        self.headers = {"Authorization": f"Bearer {token}", "meterless-app": app, "meterless-scope": "user",
-                        "Content-Type": "application/json", "Accept": "application/json"}
-        self.timeout_s = timeout_s
-        self.http = session or requests.Session()
+    def __init__(self, base_url: str, api_key: str, timeout_s: float = 60.0, fallback_model: str | None = None,
+                 client=None):
+        if not base_url:
+            raise LLMError("COMP3110_MODEL_BASE_URL is empty")
+        if not api_key:
+            raise LLMError("COMP3110_API_KEY is empty")
+        self.fallback_model = fallback_model or None
+        if client is None:
+            from openai import OpenAI
+            # max_retries=0: the SDK must not add hidden retries on top of the one counted below.
+            client = OpenAI(base_url=base_url, api_key=api_key, timeout=timeout_s, max_retries=0)
+        self.client = client
 
     def models(self) -> list[str]:
-        r = self.http.get(f"{self.base_url}/models", headers=self.headers, timeout=10)
-        if r.status_code != 200 or "json" not in r.headers.get("content-type", ""):
-            raise LLMError(f"model discovery failed: HTTP {r.status_code} {r.headers.get('content-type')}")
-        return [m["id"] for m in r.json().get("data", [])]
-
-    def chat(self, model: str, system: str, user: str, temperature: float = 0.2, max_tokens: int = 1600) -> LLMReply:
-        """One chat call. Hosted endpoints occasionally return 5xx or an empty completion under load,
-        so a single retry runs before giving up; the caller's fallback handles a second failure."""
-        t0 = time.perf_counter()
-        last = ""
-        for attempt in (1, 2):
-            try:
-                r = self.http.post(f"{self.base_url}/chat/completions", headers=self.headers, timeout=self.timeout_s,
-                                   json={"model": model, "temperature": temperature, "max_tokens": max_tokens,
-                                         "messages": [{"role": "system", "content": system},
-                                                      {"role": "user", "content": user}]})
-            except requests.RequestException as exc:
-                raise LLMError(f"Nightshift unreachable: {exc.__class__.__name__}") from exc
-            if r.status_code in (500, 502, 503, 504) and attempt == 1:
-                last = f"HTTP {r.status_code}"
-                log.warning("nightshift %s; retrying once", last)
-                time.sleep(1.5)
-                continue
-            break
-        ms = (time.perf_counter() - t0) * 1000
-        if r.status_code != 200:
-            raise LLMError(f"Nightshift HTTP {r.status_code}: {r.text[:160]}")
-        if "json" not in r.headers.get("content-type", ""):
-            raise LLMError("Nightshift returned a non-JSON page (is the Runtime port forwarded correctly?)")
-        body = r.json()
         try:
-            msg = body["choices"][0]["message"]
-            text = msg.get("content") or msg.get("reasoning_content") or ""
-        except (KeyError, IndexError) as exc:
-            raise LLMError("Nightshift reply had no choices") from exc
-        if not text.strip():
-            raise LLMError(f"Nightshift returned an empty completion from {body.get('model') or model}"
-                           + (f" (after {last})" if last else ""))
-        served_by = body.get("model") or model
-        log.info("nightshift model=%s ms=%d", served_by, ms)
-        return LLMReply(text=text, model=served_by, ms=ms)
+            return [m.id for m in self.client.models.list().data]
+        except Exception as exc:  # noqa: BLE001 - report the class only; messages can echo request details
+            raise LLMError(f"model discovery failed: {exc.__class__.__name__}") from exc
+
+    def _once(self, model: str, system: str, user: str, temperature: float, max_tokens: int):
+        return self.client.chat.completions.create(
+            model=model,
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=False,
+        )
+
+    @staticmethod
+    def _transient(exc: Exception) -> bool:
+        from openai import APIConnectionError, APIStatusError, APITimeoutError, RateLimitError
+        if isinstance(exc, (APIConnectionError, APITimeoutError, RateLimitError)):
+            return True
+        return isinstance(exc, APIStatusError) and exc.status_code >= 500
+
+    def chat(self, model: str, system: str, user: str, temperature: float = 0.0, max_tokens: int = 1600,
+             role: str | None = None) -> LLMReply:
+        """One logical call: a first attempt, then at most one retry on a transient failure."""
+        t0 = time.perf_counter()
+        attempts, last = 0, ""
+        for attempt_model in (model, self.fallback_model or model):
+            attempts += 1
+            try:
+                response = self._once(attempt_model, system, user, temperature, max_tokens)
+            except Exception as exc:  # noqa: BLE001
+                from openai import OpenAIError
+                if not isinstance(exc, OpenAIError):
+                    raise
+                last = exc.__class__.__name__ + (f" {exc.status_code}" if hasattr(exc, "status_code") else "")
+                if attempts == 1 and self._transient(exc):
+                    log.warning("gateway %s on %s (role=%s); one retry on %s", last, attempt_model, role,
+                                self.fallback_model or model)
+                    continue
+                raise LLMError(f"gateway call failed: {last}") from exc
+            try:
+                msg = response.choices[0].message
+            except (AttributeError, IndexError) as exc:
+                raise LLMError("gateway reply had no choices") from exc
+            text = msg.content or getattr(msg, "reasoning_content", None) or ""
+            served = response.model or attempt_model
+            if not text.strip():
+                last = f"empty completion from {served}"
+                if attempts == 1:
+                    log.warning("gateway %s (role=%s); one retry", last, role)
+                    continue
+                raise LLMError(f"gateway returned an {last}")
+            usage = response.usage
+            tin = getattr(usage, "prompt_tokens", None) if usage else None
+            tout = getattr(usage, "completion_tokens", None) if usage else None
+            ms = (time.perf_counter() - t0) * 1000
+            log.info("gateway role=%s requested=%s served=%s ms=%d tokens=%s/%s", role, attempt_model, served, ms,
+                     tin, tout)
+            # Price by the model that served the call; fall back to the requested route's price.
+            cost = estimate_cost_usd(served, tin, tout)
+            if cost is None:
+                cost = estimate_cost_usd(attempt_model, tin, tout)
+            return LLMReply(text=text, model=served, ms=ms, input_tokens=tin, output_tokens=tout, cost_usd=cost,
+                            requested_model=attempt_model, attempts=attempts)
+        raise LLMError(f"gateway call failed after one retry: {last}")
+
+
+ROLE_TO_TASK = {"explainer": "analyst", "analyst": "analyst", "critic": "critic", "moderator": "moderator"}
 
 
 class SampleLLM:
@@ -114,10 +159,13 @@ class SampleLLM:
     def models(self) -> list[str]:
         return [self.MODEL]
 
-    def chat(self, model: str, system: str, user: str, temperature: float = 0.0, max_tokens: int = 700) -> LLMReply:
+    def chat(self, model: str, system: str, user: str, temperature: float = 0.0, max_tokens: int = 700,
+             role: str | None = None) -> LLMReply:
         t0 = time.perf_counter()
-        task = re.search(r"TASK:\s*(\w+)", system)
-        task = task.group(1) if task else "unknown"
+        task = ROLE_TO_TASK.get(role or "")
+        if task is None:  # legacy prompts carry a "TASK: <name>" line
+            m = re.search(r"TASK:\s*(\w+)", system)
+            task = m.group(1) if m else "unknown"
         payload = parse_json(user)
         if task == "analyst":
             from .analysis import fallback_explanation
@@ -136,4 +184,5 @@ class SampleLLM:
                    "reason": "offline stub keyword rules"}
         else:
             out = {}
-        return LLMReply(text=json.dumps(out), model=self.MODEL, ms=(time.perf_counter() - t0) * 1000)
+        return LLMReply(text=json.dumps(out), model=self.MODEL, ms=(time.perf_counter() - t0) * 1000,
+                        input_tokens=0, output_tokens=0, cost_usd=0.0, requested_model=model)

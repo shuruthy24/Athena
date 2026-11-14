@@ -1,0 +1,9 @@
+# Secrets scan before every commit (AGENTS.md section 2). Without the pre-commit package, run `make hooks`.
+repos:
+  - repo: local
+    hooks:
+      - id: scan-secrets
+        name: scan staged files for credentials
+        entry: python3 scripts/scan_secrets.py --staged
+        language: system
+        pass_filenames: false

@@ -22,15 +22,17 @@ class ScriptedLLM(SampleLLM):
     """Sample LLM whose analyst drafts are replaced by a script, to exercise the revise and fallback paths."""
     def __init__(self, drafts):
         self.drafts = list(drafts)
+        self.analyst_calls = 0
 
-    def chat(self, model, system, user, temperature=0.0, max_tokens=700):
-        if "TASK: analyst" in system:
+    def chat(self, model, system, user, temperature=0.0, max_tokens=700, role=None):
+        if role == "explainer":
+            self.analyst_calls += 1
             d = self.drafts.pop(0) if self.drafts else None
             if d == "error":
-                raise LLMError("Nightshift unreachable")
+                raise LLMError("gateway unreachable")
             if d is not None:
                 return LLMReply(text=json.dumps(d), model="scripted", ms=1)
-        return super().chat(model, system, user, temperature, max_tokens)
+        return super().chat(model, system, user, temperature, max_tokens, role=role)
 
 
 def test_route_explain_sample_mode_approves_grounded_claims(athena):
@@ -65,10 +67,30 @@ def test_critic_rejecting_every_draft_falls_back_to_facts(monkeypatch):
 
 def test_model_outage_degrades_to_fact_only_explanation(monkeypatch):
     monkeypatch.setenv("SAMPLE_MODE", "true")
-    # Two errors: the analyst retries once with a trimmed payload before giving up.
-    a = Athena(get_settings(), ScriptedLLM(["error", "error"]), LocalSource())
+    # The client owns the single retry, so one failed draft goes straight to the fact-only fallback.
+    llm = ScriptedLLM(["error"])
+    a = Athena(get_settings(), llm, LocalSource())
     r = a.handle("Why is the Athena route better tonight?", trip=TRIP)
     assert r["critic_verdict"] == "fallback-error" and r["confidence"] == "low" and r["claims"]
+    assert llm.analyst_calls == 1
+
+
+def test_each_role_uses_its_own_model(monkeypatch):
+    monkeypatch.setenv("SAMPLE_MODE", "true")
+    for k, v in dict(EXPLAINER_MODEL="m-explain", CRITIC_MODEL="m-critic", MODERATOR_MODEL="m-moderate").items():
+        monkeypatch.setenv(k, v)
+    seen = []
+
+    class Recorder(SampleLLM):
+        def chat(self, model, system, user, temperature=0.0, max_tokens=700, role=None):
+            seen.append((role, model))
+            return super().chat(model, system, user, temperature, max_tokens, role=role)
+
+    a = Athena(get_settings(), Recorder(), LocalSource())
+    a.handle("Why is the Athena route better tonight?", trip=TRIP)
+    a.handle("Report: two street lights out on Anzac Parade", trip=TRIP)
+    assert ("explainer", "m-explain") in seen and ("critic", "m-critic") in seen
+    assert ("moderator", "m-moderate") in seen
 
 
 def test_unknown_lighting_is_unknown_not_unlit():

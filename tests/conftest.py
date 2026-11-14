@@ -12,17 +12,19 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 JWT = "aaaaaaaa1.bbbbbbbb2.cccccccc3"
-API_KEY = "test-api-key-not-real"
-RUNTIME_TOKEN = "test-runtime-token"
-MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b"
+API_KEY = "test-api-key-not-real"          # Zetaris mock
+GATEWAY_KEY = "test-gateway-key-not-real"   # COMP3110 gateway mock
+MODEL = "scx-gpt-oss-120b"
 STEP_COLS = ["variant", "duration_min", "walk_m", "transfers", "leg", "leg_mode", "line", "step", "street", "distance_m"]
 STREET_COLS = ["name", "highway", "lit", "tunnel", "risk_18", "risk_22", "risk_01", "venues_18", "venues_22", "venues_01"]
 
 
 class MockHandler(BaseHTTPRequestHandler):
-    """Mock of the two live services: Zetaris REST (API key refused, login works) and the Nightshift Runtime."""
+    """Mock of the two live services: Zetaris REST (API key refused, login works) and the COMP3110 LiteLLM
+    gateway (OpenAI-compatible /v1/models and /v1/chat/completions, with token usage)."""
     calls: list = []
     analyst_bad_first = True
+    fail_next: list = []        # HTTP status codes to return for the next chat calls (retry tests)
 
     def log_message(self, *a):
         pass
@@ -37,9 +39,11 @@ class MockHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/v1/models":
-            if self.headers.get("Authorization") != f"Bearer {RUNTIME_TOKEN}":
-                return self._send(401, {"error": "unauthorized"})
-            return self._send(200, {"object": "list", "data": [{"id": "meterless/auto"}, {"id": MODEL}]})
+            if self.headers.get("Authorization") != f"Bearer {GATEWAY_KEY}":
+                return self._send(401, {"error": {"message": "unauthorized"}})
+            return self._send(200, {"object": "list", "data": [
+                {"id": m, "object": "model", "created": 0, "owned_by": "litellm"}
+                for m in (MODEL, "scx-Meta-Llama-3.3-70B-Instruct", "aws-nova-lite-v1")]})
         self._send(404, {})
 
     def do_POST(self):
@@ -74,8 +78,11 @@ class MockHandler(BaseHTTPRequestHandler):
                 return self._send(200, {"headers": STREET_COLS, "data": [[None if r[c] is None else str(r[c]) for c in STREET_COLS] for r in rows]})
             return self._send(200, {"headers": ["1"], "data": [["1"]]})
         if self.path == "/v1/chat/completions":
-            if self.headers.get("Authorization") != f"Bearer {RUNTIME_TOKEN}" or self.headers.get("meterless-app") != "athena":
-                return self._send(401, {"error": "unauthorized"})
+            if self.headers.get("Authorization") != f"Bearer {GATEWAY_KEY}":
+                return self._send(401, {"error": {"message": "unauthorized"}})
+            if MockHandler.fail_next:
+                code = MockHandler.fail_next.pop(0)
+                return self._send(code, {"error": {"message": f"mock {code}"}})
             system = body["messages"][0]["content"]
             payload = json.loads(body["messages"][1]["content"])
             task = re.search(r"TASK:\s*(\w+)", system).group(1)
@@ -94,7 +101,12 @@ class MockHandler(BaseHTTPRequestHandler):
             else:
                 t = payload["text"].lower()
                 content = json.dumps({"prejudiced": "ethnic" in t, "category": "lighting", "plausible": True, "reason": "mock"})
-            return self._send(200, {"model": MODEL, "choices": [{"message": {"role": "assistant", "content": content}}]})
+            return self._send(200, {
+                "id": f"chatcmpl-{uuid.uuid4().hex[:8]}", "object": "chat.completion", "created": 0,
+                "model": body.get("model", MODEL),
+                "choices": [{"index": 0, "finish_reason": "stop",
+                             "message": {"role": "assistant", "content": content}}],
+                "usage": {"prompt_tokens": 1000, "completion_tokens": 200, "total_tokens": 1200}})
         self._send(404, {})
 
 

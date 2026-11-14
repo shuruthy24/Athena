@@ -1,10 +1,10 @@
-"""HTTP API in sample mode, and the full live code path against mock Zetaris + Nightshift servers."""
+"""HTTP API in sample mode, and the full live code path against mock Zetaris + COMP3110 gateway servers."""
 import importlib
 
 import pytest
 from fastapi.testclient import TestClient
 
-from conftest import API_KEY, MODEL, RUNTIME_TOKEN, MockHandler
+from conftest import API_KEY, GATEWAY_KEY, MODEL, MockHandler
 
 
 def client_with_env(monkeypatch, **env):
@@ -33,14 +33,17 @@ def test_api_validates_input(monkeypatch):
     assert c.post("/api/ask", json={"message": "hi", "trip": {"origin": "mars"}}).status_code == 422
 
 
+def gateway_env(mock_server, **extra):
+    return dict(SAMPLE_MODE="false", COMP3110_MODEL_BASE_URL=f"{mock_server}/v1", COMP3110_API_KEY=GATEWAY_KEY,
+                EXPLAINER_MODEL=MODEL, CRITIC_MODEL=MODEL, MODERATOR_MODEL=MODEL, FALLBACK_MODEL="", **extra)
+
+
 def test_live_path_with_mock_services(monkeypatch, mock_server):
     MockHandler.calls.clear()
-    c = client_with_env(
-        monkeypatch, SAMPLE_MODE="false",
+    c = client_with_env(monkeypatch, **gateway_env(
+        mock_server, DATA_BACKEND="zetaris",
         ZETARIS_REST_URL=f"{mock_server}/api/v1.0", ZETARIS_BASE_URL=mock_server, ZETARIS_ORG_ID="1",
-        ZETARIS_API_KEY=API_KEY, ZETARIS_USERNAME="tester@example.com", ZETARIS_PASSWORD="Correct1!",
-        METERLESS_BASE_URL=f"{mock_server}/v1", METERLESS_RUNTIME_TOKEN=RUNTIME_TOKEN,
-        FAST_MODEL=MODEL, CRITIC_MODEL=MODEL)
+        ZETARIS_API_KEY=API_KEY, ZETARIS_USERNAME="tester@example.com", ZETARIS_PASSWORD="Correct1!"))
     r = c.post("/api/ask", json={"message": "Why is the Athena route better tonight?",
                                  "trip": {"origin": "unsw", "destination": "townhall", "band": "22", "mode": "walk"}}).json()
     assert r["data_mode"] == "zetaris"
@@ -51,20 +54,42 @@ def test_live_path_with_mock_services(monkeypatch, mock_server):
     verdicts = [t.get("verdict") for t in r["trace"] if t["agent"] == "evidence-critic"]
     assert verdicts == ["revise", "approve"]  # mock analyst says "safe" first; critic sends it back
     chat = [x for x in MockHandler.calls if x["path"] == "/v1/chat/completions"]
-    assert all(x["headers"]["meterless-scope"] == "user" for x in chat)
+    assert chat and all(x["body"]["temperature"] == 0 and x["body"]["stream"] is False for x in chat)
+    model_steps = [t for t in r["trace"] if t["model"]]
+    assert all(t["tokens_in"] == 1000 and t["tokens_out"] == 200 and t["cost_usd"] > 0 for t in model_steps)
     assert any(x["path"] == "/api/auth/login" for x in MockHandler.calls)
     h = c.get("/api/health").json()
-    assert h["zetaris"] == "ok" and h["nightshift"] == "ok" and MODEL in h["nightshift_models"]
+    assert h["zetaris"] == "ok" and h["gateway"] == "ok" and MODEL in h["gateway_models"]
 
 
 def test_live_path_zetaris_down_replans_to_sample(monkeypatch, mock_server):
-    c = client_with_env(
-        monkeypatch, SAMPLE_MODE="false",
+    c = client_with_env(monkeypatch, **gateway_env(
+        mock_server, DATA_BACKEND="zetaris",
         ZETARIS_REST_URL="http://127.0.0.1:9/api/v1.0", ZETARIS_BASE_URL="http://127.0.0.1:9", ZETARIS_TIMEOUT_S="1",
-        ZETARIS_API_KEY=API_KEY, ZETARIS_USERNAME="u", ZETARIS_PASSWORD="p",
-        METERLESS_BASE_URL=f"{mock_server}/v1", METERLESS_RUNTIME_TOKEN=RUNTIME_TOKEN, FAST_MODEL=MODEL, CRITIC_MODEL=MODEL)
+        ZETARIS_API_KEY=API_KEY, ZETARIS_USERNAME="u", ZETARIS_PASSWORD="p"))
     r = c.post("/api/ask", json={"message": "Why is the Athena route better tonight?",
                                  "trip": {"origin": "unsw", "destination": "townhall"}}).json()
     assert any("re-planning" in t["detail"] for t in r["trace"])
     assert any(e["event"] == "scout.replan" for e in r["events"])
     assert r["routes"]
+
+
+def test_files_backend_needs_no_zetaris(monkeypatch, mock_server):
+    MockHandler.calls.clear()
+    c = client_with_env(monkeypatch, **gateway_env(mock_server, DATA_BACKEND="files"))
+    r = c.post("/api/ask", json={"message": "Why is the Athena route better tonight?",
+                                 "trip": {"origin": "unsw", "destination": "townhall", "band": "22", "mode": "walk"}}).json()
+    assert r["routes"] and r["data_mode"] == "sample"
+    assert not any(x["path"].startswith("/api/") for x in MockHandler.calls)  # no Zetaris traffic
+    h = c.get("/api/health").json()
+    assert h["data_backend"] == "files" and h["zetaris"].startswith("off") and h["gateway"] == "ok"
+
+
+def test_live_mode_without_gateway_key_fails_loudly(monkeypatch):
+    monkeypatch.setenv("SAMPLE_MODE", "false")
+    monkeypatch.delenv("COMP3110_API_KEY", raising=False)
+    monkeypatch.setenv("COMP3110_MODEL_BASE_URL", "http://127.0.0.1:9/v1")
+    import athena.server as server
+    importlib.reload(server)
+    with pytest.raises(KeyError):
+        server.build_athena()

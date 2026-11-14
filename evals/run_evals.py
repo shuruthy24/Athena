@@ -1,9 +1,11 @@
 """Run Athena's offline evaluations and write the evidence files.
 
-  python3 evals/run_evals.py            # deterministic parts (no Zetaris/Nightshift needed)
-  python3 evals/run_evals.py --live     # also runs report moderation through Nemotron via Nightshift
+  python3 evals/run_evals.py            # deterministic parts (no gateway calls)
+  python3 evals/run_evals.py --live     # also moderates the 14 reports through the COMP3110 gateway
 
-Outputs: docs/evidence/evaluation_report.md and evals/results.json
+Outputs: evals/results/offline.json and evals/results/offline_report.md (or live.json / live_report.md
+with --live). The hackathon evidence in evals/results.json and docs/evidence/ is frozen and never
+overwritten (AGENTS.md section 2).
 
 Evaluations:
  1. Scout Intent routing on a HELD-OUT set written before the router was run against it, plus the
@@ -19,8 +21,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import statistics
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -44,6 +48,9 @@ THRESHOLDS = {  # Meterless scout-intent evals/config/thresholds.yaml (v1)
     "clarification_rate": {"target_max": 0.15, "hard_max": 0.25},
 }
 UI_CONTEXT = {"trip": {"origin": "unsw", "destination": "townhall", "band": "22", "mode": "walk"}}
+# The held-out files are frozen and checksummed, so tool renames are mapped here instead of editing them:
+# the Nightshift model tool became the COMP3110 gateway tool in the course rework.
+TOOL_RENAMES = {"nightshift.chat": "gateway.chat"}
 
 
 def load_jsonl(p: Path) -> list[dict]:
@@ -75,7 +82,8 @@ def eval_scout(streets: list[str], heldout_file: str = "heldout_v2.jsonl") -> di
         planned = [t["tool"] for t in d.tool_plan]
         if not d.needs_clarification and d.risk["level"] != "block":
             tools_n += 1
-            tools_ok += all(t in planned for t in ex["expected"]["tools"]) and (bool(planned) == bool(ex["expected"]["tools"]))
+            expected_tools = [TOOL_RENAMES.get(t, t) for t in ex["expected"]["tools"]]
+            tools_ok += all(t in planned for t in expected_tools) and (bool(planned) == bool(expected_tools))
         rows.append({"id": ex["id"], "expected": exp, "predicted": predicted, "band": d.band,
                      "score": d.confidence, "clarify": d.needs_clarification, "ok": ok1})
     inj = load_jsonl(ROOT / "evals/scout/injection.jsonl")
@@ -160,17 +168,19 @@ def eval_critic(athena: Athena) -> dict:
 def eval_reports(athena: Athena, live_llm=None) -> dict:
     reports = json.loads((ROOT / "data/reports.json").read_text())["rows"]
     streets = {s["name"]: s for s in json.loads((ROOT / "data/streets.json").read_text())["rows"]}
-    rows, correct = [], 0
+    rows, correct, calls = [], 0, 0
     from athena.agents import MODERATOR_SYSTEM
     llm = live_llm or SampleLLM()
-    model = athena.s.fast_model if live_llm else SampleLLM.MODEL
+    model = athena.s.moderator_model if live_llm else SampleLLM.MODEL
     for r in reports:
         msg = f"Report: {r['text']} on {r['street']}"
         d = athena.scout.decide(msg, context={})
         if d.risk["level"] == "block":
             action, reason = "reject", "injection"
         else:
-            reply = llm.chat(model, MODERATOR_SYSTEM, json.dumps({"text": d.redacted_prompt, "street": r["street"]}))
+            reply = llm.chat(model, MODERATOR_SYSTEM, json.dumps({"text": d.redacted_prompt, "street": r["street"]}),
+                             role="moderator")
+            calls += 1
             mod = parse_json(reply.text)
             v = verify_report(d.redacted_prompt, d.parameters.get("street"), mod, streets)
             action, reason = v["action"], v["reason"]
@@ -178,7 +188,7 @@ def eval_reports(athena: Athena, live_llm=None) -> dict:
         correct += ok
         rows.append({"id": r["id"], "expected": r["expected_action"], "got": action, "reason": reason, "ok": ok,
                      "intent": d.intent})
-    return {"n": len(reports), "accuracy": correct / len(reports), "model": model, "rows": rows}
+    return {"n": len(reports), "accuracy": correct / len(reports), "model": model, "calls": calls, "rows": rows}
 
 
 def eval_routes() -> dict:
@@ -202,22 +212,40 @@ def eval_routes() -> dict:
             "rows": rows}
 
 
+def git_sha() -> str | None:
+    try:
+        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True,
+                              check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--live", action="store_true", help="moderate reports with Nemotron through Nightshift")
+    ap.add_argument("--live", action="store_true", help="moderate the reports through the COMP3110 gateway")
+    ap.add_argument("--out-dir", default=str(ROOT / "evals/results"), help="where to write results")
     args = ap.parse_args()
     s = get_settings()
     athena = Athena(s, SampleLLM(), LocalSource())
     street_names = [r["name"] for r in LocalSource().streets()[0]]
     live_llm = None
     if args.live:
-        from athena.llm import NightshiftLLM
-        live_llm = NightshiftLLM(s.meterless_base_url, s.meterless_token, timeout_s=s.llm_timeout_s)
-    res = {"generated": datetime.now(timezone.utc).isoformat(), "scout": eval_scout(street_names),
+        from athena.llm import GatewayLLM
+        live_llm = GatewayLLM(os.environ["COMP3110_MODEL_BASE_URL"], os.environ["COMP3110_API_KEY"],
+                              timeout_s=s.llm_timeout_s, fallback_model=s.fallback_model)
+    reports = eval_reports(athena, live_llm)
+    now = datetime.now(timezone.utc).isoformat()
+    res = {"generated": now, "generated_at": now, "git_sha": git_sha(),
+           "config": {"live": args.live, "moderator_model": reports["model"]},
+           "calls_used": reports["calls"] if args.live else 0,
+           "scout": eval_scout(street_names),
            "scout_v1_set_after_changes": eval_scout(street_names, "heldout.jsonl"),
-           "critic": eval_critic(athena), "reports": eval_reports(athena, live_llm), "routes": eval_routes()}
-    (ROOT / "evals/results.json").write_text(json.dumps(res, indent=1) + "\n")
-    write_report(res)
+           "critic": eval_critic(athena), "reports": reports, "routes": eval_routes()}
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    name = "live" if args.live else "offline"
+    (out_dir / f"{name}.json").write_text(json.dumps(res, indent=1) + "\n")
+    write_report(res, out_dir / f"{name}_report.md")
     sm = res["scout"]["metrics"]
     print("scout:", {k: round(v, 3) for k, v in sm.items()})
     print("critic: precision=%.3f recall=%.3f cases=%d" % (res["critic"]["precision"], res["critic"]["recall"], res["critic"]["cases"]))
@@ -226,7 +254,7 @@ def main() -> int:
     return 0
 
 
-def write_report(res: dict) -> None:
+def write_report(res: dict, out: Path) -> None:
     sc, cr, rp, ro = res["scout"], res["critic"], res["reports"], res["routes"]
     L = [f"# Athena evaluation report", "", f"Generated {res['generated']} by `python3 evals/run_evals.py`"
          + (" --live" if rp["model"] != SampleLLM.MODEL else "") + ".", "",
@@ -274,7 +302,6 @@ def write_report(res: dict) -> None:
           "| Trip | Time | Mode | Extra min | Risk reduction % | Fastest lit % | Athena lit % |", "|---|---|---|---|---|---|---|"]
     L += [f"| {r['trip']} | {r['band']} | {r['mode']} | {r['extra_min']} | {r['risk_reduction_pct']} | {r['fastest_lit']} | {r['athena_lit']} |"
           for r in ro["rows"]]
-    out = ROOT / "docs/evidence/evaluation_report.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(L) + "\n")
 

@@ -3,14 +3,15 @@
 Every request: Scout Intent decides (signed execution contract) -> executors verify the contract for the
 capability they are about to use -> agents run -> Reporter assembles the answer with a full trace.
 
-Route questions run a draft-and-check loop:
-  Route Analyst (Nemotron fast lane) drafts 2-4 claims, each citing fact keys computed from Zetaris rows
+Route questions run a draft-and-check loop (evaluator-optimiser):
+  Route Analyst (EXPLAINER_MODEL) drafts 2-4 claims, each citing fact keys computed from street data
   Evidence Critic = deterministic rules (numbers, banned wording, street names, direction)
-                    + Nemotron critic lane (semantic support)
+                    + model critic (CRITIC_MODEL, semantic support, per-claim indexes)
   revise up to MAX_REVISIONS times, then fall back to a deterministic explanation built only from facts.
 
-Reports run Moderator (Nemotron) + Verifier (Zetaris street data, corroboration) and are queued with a
-fading risk penalty when approved.
+Reports run Moderator (MODERATOR_MODEL) + Verifier (street data, corroboration) and are queued with a
+fading risk penalty when approved. Every model call goes through the COMP3110 gateway and its trace step
+records the served model, tokens and estimated cost.
 """
 from __future__ import annotations
 
@@ -29,6 +30,7 @@ from .scout import ContractError, Scout
 from .telemetry import Trace
 
 log = logging.getLogger("athena.agents")
+ROLE_FOR_CAPABILITY = {"llm.draft": "explainer", "llm.critique": "critic", "llm.moderate": "moderator"}
 
 PLACE_NAMES = {"unsw": "UNSW Library", "townhall": "Town Hall station", "central": "Central station",
                "quay": "Circular Quay", "redfern": "Redfern station", "kingsx": "Kings Cross station",
@@ -81,16 +83,14 @@ class Athena:
             tool_availability={
                 "zetaris.sql": lambda: self.live_source is not None and self._zetaris_ok,
                 "sample.json": lambda: self.live_source is None or not self._zetaris_ok,
-                "nightshift.chat": lambda: getattr(self.llm, "provider", "") == "meterless-nightshift",
-                "sample.llm": lambda: getattr(self.llm, "provider", "") != "meterless-nightshift",
+                "gateway.chat": lambda: getattr(self.llm, "provider", "") == "comp3110-gateway",
+                "sample.llm": lambda: getattr(self.llm, "provider", "") != "comp3110-gateway",
             })
 
     # ------------------------------------------------------------------ helpers
     def _model_for(self, decision, capability: str) -> str:
-        step = next((t for t in decision.tool_plan if t["capability"] == capability and t["tool"] != "critic.rules"), None)
-        if step and step.get("profile") == "nemotron-critic":
-            return self.s.critic_model
-        return self.s.fast_model
+        """One model per role (AGENTS.md section 6): draft -> explainer, critique -> critic, moderate -> moderator."""
+        return self.s.model_for(ROLE_FOR_CAPABILITY[capability])
 
     def _verify(self, decision, capability: str, trace: Trace) -> None:
         self.scout.verify(decision.contract, capability)
@@ -234,17 +234,10 @@ class Athena:
         return out
 
     def _draft_once(self, decision, payload: dict):
-        """One analyst call. If the model errors or returns nothing, retry once with a trimmed payload
-        (long lists cut short), which is the usual cure for an empty completion on a hosted endpoint."""
-        model = self._model_for(decision, "llm.draft")
-        try:
-            return self.llm.chat(model, ANALYST_SYSTEM, json.dumps(payload))
-        except LLMError as exc:
-            log.warning("analyst draft failed (%s); retrying with a trimmed payload", exc)
-            slim = dict(payload)
-            slim.pop("comparison", None)
-            slim["facts"] = {k: (v[:4] if isinstance(v, list) else v) for k, v in payload["facts"].items()}
-            return self.llm.chat(model, ANALYST_SYSTEM, json.dumps(slim))
+        """One analyst call. The client owns the single permitted retry (AGENTS.md section 2), so a failure
+        here goes straight to the fact-only fallback."""
+        return self.llm.chat(self._model_for(decision, "llm.draft"), ANALYST_SYSTEM, json.dumps(payload),
+                             role="explainer")
 
     def _draft_and_check(self, decision, message, cmp, facts, trace) -> tuple[str, list[dict], str]:
         feedback = None
@@ -262,7 +255,8 @@ class Athena:
                 draft = parse_json(r.text)
                 claims = [c for c in draft.get("claims", []) if isinstance(c, dict)][:4]
                 headline = str(draft.get("headline", ""))[:200]
-                trace.step("route-analyst", f"draft {attempt}: {len(claims)} claims", model=r.model, ms=r.ms)
+                trace.step("route-analyst", f"draft {attempt}: {len(claims)} claims", model=r.model, ms=r.ms,
+                           **r.usage())
             except (LLMError, ValueError) as exc:
                 trace.step("route-analyst", f"draft {attempt} failed: {exc}; using fact-only explanation")
                 headline, claims = fallback_explanation(cmp)
@@ -270,10 +264,11 @@ class Athena:
             rule_results = self.check_claims(claims, facts)
             if BANNED.search(headline):
                 rule_results.append({"index": -1, "supported": False, "problems": ["headline uses banned wording"]})
-            llm_unsupported, llm_note = [], ""
+            llm_unsupported, llm_note, critic_usage = [], "", {}
             try:
                 cr = self.llm.chat(self._model_for(decision, "llm.critique"), CRITIC_SYSTEM,
-                                   json.dumps({"facts": facts, "claims": claims}))
+                                   json.dumps({"facts": facts, "claims": claims}), role="critic")
+                critic_usage = cr.usage()
                 cv = parse_json(cr.text)
                 llm_unsupported = [int(i) for i in cv.get("unsupported", []) if str(i).lstrip("-").isdigit()]
                 llm_note = str(cv.get("notes", ""))[:160]
@@ -285,12 +280,12 @@ class Athena:
                       for i in llm_unsupported if 0 <= i < len(claims)]
             if not failed:
                 trace.step("evidence-critic", f"approve draft {attempt}" + (f" ({llm_note})" if llm_note else ""),
-                           model=critic_model, ms=critic_ms, verdict="approve")
+                           model=critic_model, ms=critic_ms, verdict="approve", **critic_usage)
                 checked = [{**c, **{k: v for k, v in rule_results[i].items() if k != "index"}} for i, c in enumerate(claims)]
                 return headline, checked, "approve"
             summary = "; ".join(f"claim {r['index']}: {', '.join(r['problems'])}" for r in failed)[:300]
             trace.step("evidence-critic", f"revise draft {attempt}: {summary}", model=critic_model, ms=critic_ms,
-                       verdict="revise")
+                       verdict="revise", **critic_usage)
             feedback = summary
         headline, claims = fallback_explanation(cmp)
         trace.step("reporter", "critic rejected every draft; using fact-only explanation", verdict="fallback")
@@ -306,10 +301,10 @@ class Athena:
         self._verify(decision, "llm.moderate", trace)
         try:
             r = self.llm.chat(self._model_for(decision, "llm.moderate"), MODERATOR_SYSTEM,
-                              json.dumps({"text": text, "street": p.get("street")}))
+                              json.dumps({"text": text, "street": p.get("street")}), role="moderator")
             mod = parse_json(r.text)
             trace.step("report-moderator", f"category={mod.get('category')} prejudiced={mod.get('prejudiced')}",
-                       model=r.model, ms=r.ms)
+                       model=r.model, ms=r.ms, **r.usage())
         except (LLMError, ValueError) as exc:
             mod = {"prejudiced": False, "category": "other", "plausible": True, "reason": "moderator unavailable"}
             trace.step("report-moderator", f"model unavailable ({exc}); sent to human review")
@@ -343,7 +338,7 @@ CONTRADICTS_LIT = re.compile(r"\bno (street )?lights?\b.{0,30}\b(at all|anywhere
 
 
 def verify_report(text: str, street: str | None, mod: dict, streets: dict[str, dict]) -> dict:
-    """Report Verifier: combine moderation with Zetaris street data. Order matters: reject > review > redact > approve."""
+    """Report Verifier: combine moderation with street data. Order matters: reject > review > redact > approve."""
     resolved = bool(street and street in streets)
     if mod.get("prejudiced"):
         return {"action": "reject", "reason": "prejudiced", "street_resolved": resolved}

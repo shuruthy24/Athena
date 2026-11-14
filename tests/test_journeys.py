@@ -239,11 +239,11 @@ def test_live_otp_rows_are_scored_like_precomputed():
 
 
 def test_journeys_over_live_zetaris(monkeypatch, mock_server):
-    from conftest import API_KEY, RUNTIME_TOKEN
-    for k, v in dict(SAMPLE_MODE="false", ZETARIS_REST_URL=f"{mock_server}/api/v1.0", ZETARIS_BASE_URL=mock_server,
-                     ZETARIS_ORG_ID="1", ZETARIS_API_KEY=API_KEY, ZETARIS_USERNAME="tester@example.com",
-                     ZETARIS_PASSWORD="Correct1!", METERLESS_BASE_URL=f"{mock_server}/v1",
-                     METERLESS_RUNTIME_TOKEN=RUNTIME_TOKEN, OTP_URL="").items():
+    from conftest import API_KEY, GATEWAY_KEY
+    for k, v in dict(SAMPLE_MODE="false", DATA_BACKEND="zetaris", ZETARIS_REST_URL=f"{mock_server}/api/v1.0",
+                     ZETARIS_BASE_URL=mock_server, ZETARIS_ORG_ID="1", ZETARIS_API_KEY=API_KEY,
+                     ZETARIS_USERNAME="tester@example.com", ZETARIS_PASSWORD="Correct1!",
+                     COMP3110_MODEL_BASE_URL=f"{mock_server}/v1", COMP3110_API_KEY=GATEWAY_KEY, OTP_URL="").items():
         monkeypatch.setenv(k, v)
     import athena.server as server
     importlib.reload(server)

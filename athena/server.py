@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from functools import lru_cache
 from typing import Literal
 
@@ -20,7 +21,7 @@ from .agents import Athena
 from .config import ROOT, get_settings
 from .data.source import LocalSource, ZetarisSource
 from .data.zetaris import ZetarisClient
-from .llm import NightshiftLLM, SampleLLM
+from .llm import GatewayLLM, SampleLLM
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 log = logging.getLogger("athena.server")
@@ -29,12 +30,16 @@ log = logging.getLogger("athena.server")
 def build_athena() -> Athena:
     s = get_settings()
     if s.sample_mode:
-        log.info("SAMPLE_MODE=true: local JSON data and offline model stub; no Zetaris or Nightshift calls")
+        log.info("SAMPLE_MODE=true: local data files and offline model stub; no gateway calls")
         return Athena(s, SampleLLM(), LocalSource(schema=s.zetaris_schema))
-    client = ZetarisClient(s.zetaris_rest_url, s.zetaris_base_url, s.zetaris_org_id, s.zetaris_api_key,
-                           s.zetaris_username, s.zetaris_password, s.zetaris_timeout_s)
-    llm = NightshiftLLM(s.meterless_base_url, s.meterless_token, timeout_s=s.llm_timeout_s)
-    return Athena(s, llm, ZetarisSource(client, s.zetaris_schema))
+    # os.environ[...] on purpose: a live run without the gateway settings must fail loudly (AGENTS.md section 2).
+    llm = GatewayLLM(os.environ["COMP3110_MODEL_BASE_URL"], os.environ["COMP3110_API_KEY"],
+                     timeout_s=s.llm_timeout_s, fallback_model=s.fallback_model)
+    if s.data_backend == "zetaris":
+        client = ZetarisClient(s.zetaris_rest_url, s.zetaris_base_url, s.zetaris_org_id, s.zetaris_api_key,
+                               s.zetaris_username, s.zetaris_password, s.zetaris_timeout_s)
+        return Athena(s, llm, ZetarisSource(client, s.zetaris_schema))
+    return Athena(s, llm, LocalSource(schema=s.zetaris_schema))
 
 
 @lru_cache(maxsize=1)
@@ -195,19 +200,23 @@ def safety_points() -> dict:
 def health() -> dict:
     a = athena()
     s = get_settings()
-    out = {"version": __version__, "sample_mode": s.sample_mode, "scout_registry": a.scout.registry_version,
-           "scout_self_test_ms": round(a.scout.self_test_ms, 3)}
+    out = {"version": __version__, "sample_mode": s.sample_mode, "data_backend": s.data_backend,
+           "scout_registry": a.scout.registry_version, "scout_self_test_ms": round(a.scout.self_test_ms, 3)}
     if s.sample_mode:
-        out.update(zetaris="skipped (sample mode)", nightshift="skipped (sample mode)")
+        out.update(zetaris="skipped (sample mode)", gateway="skipped (sample mode)")
         return out
-    out["zetaris"] = "ok" if a.live_source and a.live_source.client.ping() else "unreachable"
-    out["zetaris_auth"] = a.live_source.client.auth_method if a.live_source else None
+    if s.data_backend == "zetaris":
+        out["zetaris"] = "ok" if a.live_source and a.live_source.client.ping() else "unreachable"
+        out["zetaris_auth"] = a.live_source.client.auth_method if a.live_source else None
+    else:
+        out["zetaris"] = "off (DATA_BACKEND=files)"
     try:
-        out["nightshift_models"] = a.llm.models()[:8]
-        out["nightshift"] = "ok"
+        out["gateway_models"] = a.llm.models()[:12]
+        out["gateway"] = "ok"
     except Exception as exc:  # noqa: BLE001
-        out["nightshift"] = f"unreachable ({exc.__class__.__name__})"
-    out["fast_model"], out["critic_model"] = s.fast_model, s.critic_model
+        out["gateway"] = f"unreachable ({exc.__class__.__name__})"
+    out["models"] = {"explainer": s.explainer_model, "critic": s.critic_model, "moderator": s.moderator_model,
+                     "judge": s.judge_model, "fallback": s.fallback_model or None}
     return out
 
 

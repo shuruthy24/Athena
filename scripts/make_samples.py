@@ -1,7 +1,8 @@
 """Run the sample inputs through the agent (SAMPLE_MODE by default) and save the outputs.
 
   python3 scripts/make_samples.py            # sample mode -> samples/outputs_sample_mode/
-  python3 scripts/make_samples.py --live     # live Zetaris + Nightshift -> samples/outputs_live/
+  python3 scripts/make_samples.py --live     # live COMP3110 gateway -> samples/outputs_gateway/
+samples/outputs_live/ holds the hackathon's live Zetaris + Nightshift runs and is left unchanged.
 """
 import argparse
 import json
@@ -20,7 +21,7 @@ os.environ["SAMPLE_MODE"] = "false" if args.live else "true"
 from athena.server import build_athena  # noqa: E402
 
 inputs = json.loads((ROOT / "samples/inputs.json").read_text())
-out_dir = ROOT / "samples" / ("outputs_live" if args.live else "outputs_sample_mode")
+out_dir = ROOT / "samples" / ("outputs_gateway" if args.live else "outputs_sample_mode")
 out_dir.mkdir(parents=True, exist_ok=True)
 athena = build_athena()
 for case in inputs:
