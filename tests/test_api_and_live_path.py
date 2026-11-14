@@ -1,10 +1,10 @@
-"""HTTP API in sample mode, and the full live code path against mock Zetaris + COMP3110 gateway servers."""
+"""HTTP API in sample mode, and the full live code path against a mock COMP3110 gateway server."""
 import importlib
 
 import pytest
 from fastapi.testclient import TestClient
 
-from conftest import API_KEY, GATEWAY_KEY, MODEL, MockHandler
+from conftest import GATEWAY_KEY, MODEL, MockHandler
 
 
 TRIP = {"origin": "unsw", "destination": "townhall", "band": "22", "mode": "walk"}
@@ -22,7 +22,7 @@ def client_with_env(monkeypatch, **env):
 def test_sample_mode_api(monkeypatch):
     c = client_with_env(monkeypatch, SAMPLE_MODE="true")
     h = c.get("/api/health").json()
-    assert h["sample_mode"] is True and h["zetaris"].startswith("skipped")
+    assert h["sample_mode"] is True and h["gateway"].startswith("skipped")
     r = c.post("/api/explain", json=TRIP)
     assert r.status_code == 200 and r.json()["critic_verdict"] == "approve"
     rep = c.post("/api/report", json={"street": "Anzac Parade", "band": "22", "text": "two street lights out"})
@@ -48,16 +48,11 @@ def gateway_env(mock_server, **extra):
                 EXPLAINER_MODEL=MODEL, CRITIC_MODEL=MODEL, MODERATOR_MODEL=MODEL, FALLBACK_MODEL="", **extra)
 
 
-def test_live_path_with_mock_services(monkeypatch, mock_server):
+def test_live_path_with_mock_gateway(monkeypatch, mock_server):
     MockHandler.calls.clear()
-    c = client_with_env(monkeypatch, **gateway_env(
-        mock_server, DATA_BACKEND="zetaris",
-        ZETARIS_REST_URL=f"{mock_server}/api/v1.0", ZETARIS_BASE_URL=mock_server, ZETARIS_ORG_ID="1",
-        ZETARIS_API_KEY=API_KEY, ZETARIS_USERNAME="tester@example.com", ZETARIS_PASSWORD="Correct1!"))
+    c = client_with_env(monkeypatch, **gateway_env(mock_server))
     r = c.post("/api/explain", json=TRIP).json()
-    assert r["data_mode"] == "zetaris"
-    data_step = next(t for t in r["trace"] if t["agent"] == "data")
-    assert "Zetaris REST (auth=login)" in data_step["detail"]  # API key refused -> login fallback
+    assert r["routes"] and r["data_mode"] == "sample"
     models = {t["model"] for t in r["trace"] if t["agent"] in ("route-analyst", "evidence-critic")}
     assert models == {MODEL}
     verdicts = [t.get("verdict") for t in r["trace"] if t["agent"] == "evidence-critic"]
@@ -66,30 +61,9 @@ def test_live_path_with_mock_services(monkeypatch, mock_server):
     assert chat and all(x["body"]["temperature"] == 0 and x["body"]["stream"] is False for x in chat)
     model_steps = [t for t in r["trace"] if t["model"]]
     assert all(t["tokens_in"] == 1000 and t["tokens_out"] == 200 and t["cost_usd"] > 0 for t in model_steps)
-    assert any(x["path"] == "/api/auth/login" for x in MockHandler.calls)
+    assert not any(x["path"].startswith("/api/") for x in MockHandler.calls)  # the gateway is the only service called
     h = c.get("/api/health").json()
-    assert h["zetaris"] == "ok" and h["gateway"] == "ok" and MODEL in h["gateway_models"]
-
-
-def test_live_path_zetaris_down_replans_to_sample(monkeypatch, mock_server):
-    c = client_with_env(monkeypatch, **gateway_env(
-        mock_server, DATA_BACKEND="zetaris",
-        ZETARIS_REST_URL="http://127.0.0.1:9/api/v1.0", ZETARIS_BASE_URL="http://127.0.0.1:9", ZETARIS_TIMEOUT_S="1",
-        ZETARIS_API_KEY=API_KEY, ZETARIS_USERNAME="u", ZETARIS_PASSWORD="p"))
-    r = c.post("/api/explain", json=TRIP).json()
-    assert any("falling back to local files" in t["detail"] for t in r["trace"])
-    assert any(e["event"] == "data.fallback" for e in r["events"])
-    assert r["routes"]
-
-
-def test_files_backend_needs_no_zetaris(monkeypatch, mock_server):
-    MockHandler.calls.clear()
-    c = client_with_env(monkeypatch, **gateway_env(mock_server, DATA_BACKEND="files"))
-    r = c.post("/api/explain", json=TRIP).json()
-    assert r["routes"] and r["data_mode"] == "sample"
-    assert not any(x["path"].startswith("/api/") for x in MockHandler.calls)  # no Zetaris traffic
-    h = c.get("/api/health").json()
-    assert h["data_backend"] == "files" and h["zetaris"].startswith("off") and h["gateway"] == "ok"
+    assert h["gateway"] == "ok" and MODEL in h["gateway_models"] and "zetaris" not in h
 
 
 def test_live_mode_without_gateway_key_fails_loudly(monkeypatch):

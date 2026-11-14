@@ -1,8 +1,8 @@
 """Live OpenTripPlanner source.
 
-Implements the same three methods as `LocalSource` and `ZetarisSource` (`route_legs`, `leg_streets`,
+Implements the same three methods as `LocalSource` (`route_legs`, `leg_streets`,
 `streets`), so `JourneyPlanner` scores live routes with exactly the same safety methodology. Street
-attributes always come from the configured street source (Zetaris), never from OTP.
+attributes always come from the configured street source (the data files), never from OTP.
 
 OTP 2.x serves a GraphQL endpoint at /otp/gtfs/v1. The query below is the same `planConnection` shape
 our pipeline used to generate the precomputed alternatives, so the rows are interchangeable.

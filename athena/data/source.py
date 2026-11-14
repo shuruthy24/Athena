@@ -1,5 +1,5 @@
-"""Data sources with one interface: LocalSource (default, DATA_BACKEND=files) and ZetarisSource (optional
-adapter, DATA_BACKEND=zetaris).
+"""Data source: LocalSource reads the data files. The `sql` it reports with each result is the equivalent
+query over the same table shape, kept as evidence of what was selected.
 
 LocalSource reads data/processed/*.parquet when `make data` has produced a complete rebuild (streets and
 OTP routes together, see data/processed/manifest.json), otherwise the hand-made sample in data/*.json.
@@ -16,7 +16,6 @@ import time
 from pathlib import Path
 
 from ..config import ROOT
-from .zetaris import ZetarisClient
 
 PLACES = ("unsw", "townhall", "central", "quay", "redfern", "kingsx", "newtown")
 BANDS = ("18", "22", "01")
@@ -135,67 +134,3 @@ class LocalSource:
         rows = self._rows("streets.json")
         return rows, {"sql": streets_sql(self.schema), "executed_by": self._label(),
                       "rows": len(rows), "ms": round((time.perf_counter() - t0) * 1000, 2)}
-
-
-class ZetarisSource:
-    name = "zetaris.sql"
-    freshness = {"source": "precomputed", "live": False,
-                 "note": "Route alternatives precomputed with OpenTripPlanner and served from Zetaris; "
-                         "times are scheduled, not live."}
-
-    def __init__(self, client: ZetarisClient, schema: str = "athena"):
-        self.client = client
-        self.schema = schema
-
-    def route_legs(self, origin, destination, band, mode):
-        rows, ev = self._run(legs_sql(self.schema, origin, destination, band, mode))
-        for r in rows:
-            for k in NUMERIC_LEG:
-                if r.get(k) is not None:
-                    r[k] = float(r[k])
-            for k in INT_LEG:
-                if r.get(k) is not None:
-                    r[k] = int(float(r[k]))
-        return rows, ev
-
-    def leg_streets(self, origin, destination, band, mode):
-        rows, ev = self._run(leg_streets_sql(self.schema, origin, destination, band, mode))
-        for r in rows:
-            for k in ("leg", "step", "itinerary"):
-                if r.get(k) is not None:
-                    r[k] = int(float(r[k]))
-            if r.get("distance_m") is not None:
-                r["distance_m"] = float(r["distance_m"])
-        return rows, ev
-
-    def _run(self, sql: str):
-        t0 = time.perf_counter()
-        rows = self.client.run_sql(sql)
-        return rows, {"sql": sql, "executed_by": f"Zetaris REST (auth={self.client.auth_method})",
-                      "rows": len(rows), "ms": round((time.perf_counter() - t0) * 1000, 1)}
-
-    def route_steps(self, origin, destination, band, mode):
-        rows, ev = self._run(steps_sql(self.schema, origin, destination, band, mode))
-        for r in rows:  # Zetaris may return numerics as strings
-            for k in ("duration_min", "walk_m", "distance_m"):
-                if r.get(k) is not None:
-                    r[k] = float(r[k])
-            for k in ("transfers", "leg", "step"):
-                if r.get(k) is not None:
-                    r[k] = int(float(r[k]))
-        return rows, ev
-
-    def streets(self):
-        rows, ev = self._run(streets_sql(self.schema))
-        for r in rows:
-            for k in ("risk_18", "risk_22", "risk_01"):
-                if r.get(k) is not None:
-                    r[k] = float(r[k])
-            if isinstance(r.get("tunnel"), str):
-                r["tunnel"] = r["tunnel"].lower() == "true"
-            if r.get("lit") in ("", "null", "None"):
-                r["lit"] = None
-            for k in ("venues_18", "venues_22", "venues_01"):
-                if r.get(k) not in (None, ""):
-                    r[k] = int(float(r[k]))
-        return rows, ev

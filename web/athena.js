@@ -110,7 +110,7 @@ function createMap(container, {center = [151.218, -33.895], zoom = 12.4, noteEl}
   map.addControl(new maplibregl.NavigationControl({showCompass: false}), "top-right");
   map.addControl(new maplibregl.GeolocateControl({positionOptions: {enableHighAccuracy: true}}), "top-right");
   map.addControl(new maplibregl.AttributionControl({compact: true,
-    customAttribution: 'Routes: OpenTripPlanner · Street data: Athena / Zetaris · <a href="https://openfreemap.org">OpenFreeMap</a> <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>'}));
+    customAttribution: 'Routes: OpenTripPlanner · Street data: Athena · <a href="https://openfreemap.org">OpenFreeMap</a> <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>'}));
   const ready = new Promise(r => map.on("load", r));
   ready.then(() => {
     document.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");

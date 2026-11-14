@@ -23,7 +23,7 @@ Set these in the host's **secret store**, never in the image, the repo or a scre
 | --- | --- |
 | `COMP3110_MODEL_BASE_URL` | `https://lllm.cs3110.cse.academy/v1` |
 | `COMP3110_API_KEY` | your course key (secret) |
-| `SCOUT_SECRET` | a long random string (secret); hashes client ids for the rate limit |
+| `RATE_LIMIT_SECRET` | a long random string (secret); hashes client ids for the rate limit |
 | `EXPLAINER_MODEL`, `CRITIC_MODEL`, `MODERATOR_MODEL`, `JUDGE_MODEL` | the models chosen from `evals/results/model_comparison.json` |
 | `FALLBACK_MODEL` | optional single-retry route, e.g. the Bedrock one if SCX is rate-limiting |
 | `REPORT_CLASSIFIER` | the classifier chosen from `evals/results/classifier_dev.json` (default `moderator-v1`) |
@@ -35,7 +35,7 @@ is worth avoiding.
 
 - **Render** (Web Service from the repo's Dockerfile): add the variables above under Environment, set the
   health check path to `/api/health`.
-- **Fly.io**: `fly launch --no-deploy` (it reads the Dockerfile), `fly secrets set COMP3110_API_KEY=... SCOUT_SECRET=...`,
+- **Fly.io**: `fly launch --no-deploy` (it reads the Dockerfile), `fly secrets set COMP3110_API_KEY=... RATE_LIMIT_SECRET=...`,
   `fly deploy`. Set `min_machines_running = 1` so it does not sleep during the demo.
 - **Hugging Face Docker Space**: create a Docker Space, push the repo, add the secrets under Settings, and
   set `PORT=7860` (Spaces expect that port).

@@ -239,25 +239,6 @@ def test_live_otp_rows_are_scored_like_precomputed():
     assert session.calls[0][1]["variables"]["modes"] == {"direct": ["WALK"]}
 
 
-def test_journeys_over_live_zetaris(monkeypatch, mock_server):
-    from conftest import API_KEY, GATEWAY_KEY
-    for k, v in dict(SAMPLE_MODE="false", DATA_BACKEND="zetaris", ZETARIS_REST_URL=f"{mock_server}/api/v1.0",
-                     ZETARIS_BASE_URL=mock_server, ZETARIS_ORG_ID="1", ZETARIS_API_KEY=API_KEY,
-                     ZETARIS_USERNAME="tester@example.com", ZETARIS_PASSWORD="Correct1!",
-                     COMP3110_MODEL_BASE_URL=f"{mock_server}/v1", COMP3110_API_KEY=GATEWAY_KEY, OTP_URL="").items():
-        monkeypatch.setenv(k, v)
-    import athena.server as server
-    importlib.reload(server)
-    server.athena.cache_clear()
-    r = TestClient(server.app).get("/api/journeys", params={"origin": "unsw", "destination": "townhall",
-                                                            "band": "22", "mode": "transit", "sort": "fastest"}).json()
-    assert r["coverage"] and "Zetaris" in r["freshness"]["note"]
-    assert all("Zetaris" in e["executed_by"] for e in r["evidence"])
-    sample = plan("transit", "fastest")
-    assert [(j["total_min"], j["safety"]["risk"]) for j in r["journeys"]] == \
-           [(j["total_min"], j["safety"]["risk"]) for j in sample["journeys"]]
-
-
 @pytest.mark.parametrize("t,band", [("08:00", "18"), ("18:00", "18"), ("19:59", "18"), ("20:00", "22"),
                                     ("23:29", "22"), ("23:30", "01"), ("01:00", "01"), ("04:59", "01")])
 def test_any_time_maps_to_closest_profile(t, band):

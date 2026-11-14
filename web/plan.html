@@ -429,7 +429,7 @@ function detailHTML(j){
         <div id="rp-out" aria-live="polite"></div>
       </form></details>
     <div class="actions"><button class="btn primary" type="button" id="zoom">Zoom to route</button></div>
-    <details class="data"><summary>Data behind this route (Zetaris queries)</summary><pre>${esc(d.evidence.map(e => `-- ${e.executed_by} · ${e.rows} rows · ${e.ms} ms\n${e.sql}`).join("\n\n"))}</pre></details>
+    <details class="data"><summary>Data behind this route (equivalent SQL)</summary><pre>${esc(d.evidence.map(e => `-- ${e.executed_by} · ${e.rows} rows · ${e.ms} ms\n${e.sql}`).join("\n\n"))}</pre></details>
   </div>`;
 }
 // Help locations within 600 m of a route, nearest first.

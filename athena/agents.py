@@ -22,10 +22,10 @@ import time
 from datetime import datetime, timezone
 
 from . import analysis as _analysis
-from .analysis import close, compare, fallback_explanation, flatten_facts, numbers_in
+from .analysis import NEGATED_LOWER_RISK, close, compare, fallback_explanation, flatten_facts, numbers_in
 from .cache import ExplanationCache, cache_key
 from .config import Settings
-from .data.source import PLACES, LocalSource, ZetarisSource, validate_trip
+from .data.source import PLACES, LocalSource, validate_trip
 from .llm import LLMError, parse_json
 from .prompts import load as load_prompt
 from .guard import inspect_text
@@ -88,10 +88,8 @@ class Athena:
             from .classify.tfidf import train_rows
             self.classifier = build_classifier(settings.report_classifier, llm=llm,
                                                model=settings.moderator_model, train_rows=train_rows())
-        self.live_source = source if isinstance(source, ZetarisSource) else None
-        self.local_source = source if isinstance(source, LocalSource) else LocalSource(schema=settings.zetaris_schema)
-        self._zetaris_ok = self.live_source is not None
-        street_rows, _ = self.local_source.streets()
+        self.source = source if source is not None else LocalSource()
+        street_rows, _ = self.source.streets()
         self.known_streets = [r["name"] for r in street_rows]
 
     # ------------------------------------------------------------------ helpers
@@ -100,12 +98,7 @@ class Athena:
         return f"{p.id}@{p.sha}"
 
     def _data_mode(self) -> str:
-        if self.live_source is not None:
-            return "zetaris"
-        return "files" if getattr(self.local_source, "processed", False) else "sample"
-
-    def _source(self):
-        return self.live_source if self.live_source is not None and self._zetaris_ok else self.local_source
+        return "files" if getattr(self.source, "processed", False) else "sample"
 
     @staticmethod
     def _finish(trace: Trace, resp: dict, request: dict) -> dict:
@@ -135,21 +128,11 @@ class Athena:
     def _route(self, p: dict, message: str, trace: Trace) -> dict:
         if p["origin"] not in PLACES or p["destination"] not in PLACES:
             return {"answer": "I don't recognise that trip yet.", "confidence": None}
-        source = self._source()
-        try:
-            steps, ev1 = source.route_steps(p["origin"], p["destination"], p["band"], p["mode"])
-            streets, ev2 = source.streets()
-            trace.step("data", f"{len(steps)} route rows + {len(streets)} street rows via {ev1['executed_by']}",
-                       ms=ev1["ms"] + ev2["ms"], tool=source.name)
-        except Exception as exc:  # noqa: BLE001 - degrade with a re-plan, never crash the request
-            trace.step("data", f"Zetaris query failed ({exc.__class__.__name__}); falling back to local files", tool=source.name)
-            trace.event("data.fallback", reason="zetaris unavailable")
-            self._zetaris_ok = False
-            steps, ev1 = self.local_source.route_steps(p["origin"], p["destination"], p["band"], p["mode"])
-            streets, ev2 = self.local_source.streets()
-            trace.step("data", f"fallback: {len(steps)} route rows from sample data", ms=ev1["ms"] + ev2["ms"],
-                       tool="sample.json")
-            self._zetaris_ok = True  # try Zetaris again on the next request
+        source = self.source
+        steps, ev1 = source.route_steps(p["origin"], p["destination"], p["band"], p["mode"])
+        streets, ev2 = source.streets()
+        trace.step("data", f"{len(steps)} route rows + {len(streets)} street rows via {ev1['executed_by']}",
+                   ms=ev1["ms"] + ev2["ms"], tool=source.name)
         evidence = [ev1, ev2]
         if not steps:
             return {"answer": f"Athena has no routes for {PLACE_NAMES[p['origin']]} to {PLACE_NAMES[p['destination']]} "
@@ -174,8 +157,7 @@ class Athena:
         confidence_note = {
             "sample": "Sample data (pre-existing hand-made routes); not live OTP results.",
             "files": "Routes precomputed with OpenTripPlanner and streets from OpenStreetMap (data/processed); "
-                     "times are scheduled, not live.",
-            "zetaris": "Route data served by Zetaris."}[self._data_mode()]
+                     "times are scheduled, not live."}[self._data_mode()]
         trip_label = f"{PLACE_NAMES[p['origin']]} → {PLACE_NAMES[p['destination']]}, {BAND_NAMES[p['band']]}, {p['mode']}"
         return {
             "answer": headline, "claims": claims, "confidence": confidence, "confidence_note": confidence_note,
@@ -213,7 +195,8 @@ class Athena:
             red = facts.get("risk_reduction_pct") or 0
             if FASTEST_LOWER.search(text) and red > 0:
                 problems.append("says the fastest route is lower risk, but Athena's route is lower risk")
-            elif LOWER_RISK.search(text) and not FASTEST_LOWER.search(text) and red <= 0:
+            elif LOWER_RISK.search(text) and not FASTEST_LOWER.search(text) and red <= 0 \
+                    and not NEGATED_LOWER_RISK.search(text):
                 problems.append("claims lower risk but risk is not lower")
             out.append({"index": i, "supported": not problems, "problems": problems})
         return out
@@ -295,10 +278,7 @@ class Athena:
             mod = self._classify(redacted, street, trace)
         else:
             mod = self._moderate_v1(redacted, street, trace)
-        try:
-            streets, ev = self._source().streets()
-        except Exception:  # noqa: BLE001
-            streets, ev = self.local_source.streets()
+        streets, ev = self.source.streets()
         resp = {**base, **self._finish_report(street, band, redacted, mod, streets, ev, trace)}
         return self._finish(trace, resp, {"street": street, "band": band})
 

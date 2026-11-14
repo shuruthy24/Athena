@@ -1,4 +1,4 @@
-"""Route comparison: turns Zetaris rows into the facts every explanation must be grounded in.
+"""Route comparison: turns route and street rows into the facts every explanation must be grounded in.
 
 Scoring mirrors the pre-existing Athena web app so the agent and the map agree:
   route risk = 0.55 x distance-weighted mean street risk + 0.45 x worst stretch
@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -145,8 +146,14 @@ def fallback_explanation(cmp: dict) -> tuple[str, list[dict]]:
     if cmp["same_route"]:
         return ("Athena and the fastest option are the same route for this trip and time.", [
             {"text": f"Both options take {a['duration_min']} min.", "facts": ["athena.duration_min"]}])
-    if cmp["risk_reduction_pct"] is not None:
-        claims.append({"text": f"Athena's route takes {cmp['extra_min']:+} min and has {cmp['risk_reduction_pct']}% lower route risk than the fastest route.",
+    red = cmp["risk_reduction_pct"]
+    if red is not None and red > 0:
+        claims.append({"text": f"Athena's route takes {cmp['extra_min']:+} min and has {red}% lower route risk than the fastest route.",
+                       "facts": ["extra_min", "risk_reduction_pct"]})
+    elif red is not None:
+        # Not lower risk: say so plainly. (It used to print "-0.8% lower route risk".)
+        risk = (f"{abs(red)}% higher than" if red < 0 else "the same as")
+        claims.append({"text": f"Athena's route takes {cmp['extra_min']:+} min and its route risk is {risk} the fastest route.",
                        "facts": ["extra_min", "risk_reduction_pct"]})
     if f.get("worst") and cmp["avoided_streets"] and f["worst"]["name"] in cmp["avoided_streets"]:
         lit = {"yes": "lit", "no": "unlit", None: "of unknown lighting"}[f["worst"]["lit"]]
@@ -160,8 +167,31 @@ def fallback_explanation(cmp: dict) -> tuple[str, list[dict]]:
     return f"{head} for this trip.", claims
 
 
+# Says outright that Athena's route is not lower risk (or is higher, or the same). Used by the in-loop rule
+# that must not flag such a sentence as "claims lower risk", and by the omission assertion.
+NEGATED_LOWER_RISK = re.compile(
+    r"\b(not|isn'?t|no|never)\b[^.]{0,25}\b(lower|less|reduc\w*)\b[^.]{0,15}\brisk"
+    r"|\brisk\b[^.]{0,25}\b(not|isn'?t|no)\b[^.]{0,10}\b(lower|less|reduced)\b", re.I)
+NO_RISK_BENEFIT = re.compile(
+    NEGATED_LOWER_RISK.pattern
+    + r"|\b(no|not any)\b[^.]{0,15}\brisk (reduction|benefit|advantage|saving)"
+    + r"|\b(higher|greater|increased)\b[^.]{0,12}\brisk\b"
+    + r"|\brisk\b[^.]{0,25}\b(higher|greater|the same|unchanged)\b"
+    + r"|\bsame (route|risk)\b", re.I)
+
+
+def risk_benefit_missing(facts: dict) -> bool:
+    """True when Athena's route is NOT lower risk, so any explanation has to say so."""
+    red = facts.get("risk_reduction_pct")
+    return red is not None and red <= 0
+
+
+def says_no_risk_benefit(headline: str, claims: list[dict]) -> bool:
+    texts = [headline or ""] + [str(c.get("text", "")) for c in claims]
+    return any(NO_RISK_BENEFIT.search(t) for t in texts)
+
+
 def numbers_in(text: str) -> list[float]:
-    import re
     # ignore line names and times like T2, L3, 10pm, 1am
     cleaned = re.sub(r"\b[A-Z]+\d+\b|\b\d{1,2}\s?(am|pm)\b|\b\d{1,2}:\d{2}\b", " ", text, flags=re.I)
     return [float(x) for x in re.findall(r"(?<![\w.])[+-]?\d+(?:\.\d+)?", cleaned)]

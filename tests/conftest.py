@@ -1,5 +1,4 @@
 import json
-import re
 import sys
 import threading
 import uuid
@@ -11,17 +10,13 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-JWT = "aaaaaaaa1.bbbbbbbb2.cccccccc3"
-API_KEY = "test-api-key-not-real"          # Zetaris mock
 GATEWAY_KEY = "test-gateway-key-not-real"   # COMP3110 gateway mock
 MODEL = "scx-gpt-oss-120b"
-STEP_COLS = ["variant", "duration_min", "walk_m", "transfers", "leg", "leg_mode", "line", "step", "street", "distance_m"]
-STREET_COLS = ["name", "highway", "lit", "tunnel", "risk_18", "risk_22", "risk_01", "venues_18", "venues_22", "venues_01"]
 
 
 class MockHandler(BaseHTTPRequestHandler):
-    """Mock of the two live services: Zetaris REST (API key refused, login works) and the COMP3110 LiteLLM
-    gateway (OpenAI-compatible /v1/models and /v1/chat/completions, with token usage)."""
+    """Mock of the COMP3110 LiteLLM gateway (OpenAI-compatible /v1/models and /v1/chat/completions, with
+    token usage)."""
     calls: list = []
     analyst_bad_first = True
     fail_next: list = []        # HTTP status codes to return for the next chat calls (retry tests)
@@ -49,34 +44,6 @@ class MockHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
         MockHandler.calls.append({"path": self.path, "headers": dict(self.headers), "body": body})
-        if self.path == "/api/auth/login":
-            if body.get("password") != "Correct1!":
-                return self._send(401, {"msg": "bad credentials"})
-            return self._send(200, {"idToken": JWT})
-        if self.path == "/api/v1.0/sql-editor/sqls/run":
-            uuid.UUID(self.headers["X-Request-ID"])
-            assert self.headers["X-Org-ID"] == "1"
-            auth = self.headers.get("Authorization", "")
-            if auth == f"Bearer {API_KEY}":
-                return self._send(400, {"msg": "Not Allowed"})
-            if auth != f"Bearer {JWT}":
-                return self._send(401, {"msg": "unauthorized"})
-            sql = body["sql"]
-            m = re.match(r"SELECT (.+?) FROM \w+\.(route_legs|leg_streets) WHERE trip = '([^']+)' AND band = '(\d+)' AND mode = '(\w+)'", sql)
-            if m:  # journey-planner tables: return exactly the selected columns, as strings like Zetaris does
-                cols, table, trip, band, mode = [x.strip() for x in m.group(1).split(",")], *m.groups()[1:]
-                rows = [r for r in json.loads((ROOT / f"data/{table}.json").read_text())["rows"]
-                        if r["trip"] == trip and r["band"] == band and r["mode"] == mode]
-                return self._send(200, {"headers": cols, "data": [[None if r[c] is None else str(r[c]) for c in cols] for r in rows]})
-            if "route_steps" in sql:
-                trip, band, mode = re.search(r"trip = '([^']+)' AND band = '(\d+)' AND mode = '(\w+)'", sql).groups()
-                rows = [r for r in json.loads((ROOT / "data/route_steps.json").read_text())["rows"]
-                        if r["trip"] == trip and r["band"] == band and r["mode"] == mode]
-                return self._send(200, {"headers": STEP_COLS, "data": [[None if r[c] is None else str(r[c]) for c in STEP_COLS] for r in rows]})
-            if "streets" in sql:
-                rows = json.loads((ROOT / "data/streets.json").read_text())["rows"]
-                return self._send(200, {"headers": STREET_COLS, "data": [[None if r[c] is None else str(r[c]) for c in STREET_COLS] for r in rows]})
-            return self._send(200, {"headers": ["1"], "data": [["1"]]})
         if self.path == "/v1/chat/completions":
             if self.headers.get("Authorization") != f"Bearer {GATEWAY_KEY}":
                 return self._send(401, {"error": {"message": "unauthorized"}})

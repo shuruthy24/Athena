@@ -24,8 +24,7 @@ from pydantic import BaseModel, Field
 from . import __version__
 from .agents import Athena
 from .config import ROOT, get_settings
-from .data.source import LocalSource, ZetarisSource
-from .data.zetaris import ZetarisClient
+from .data.source import LocalSource
 from .llm import GatewayLLM, SampleLLM
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -35,16 +34,12 @@ log = logging.getLogger("athena.server")
 def build_athena() -> Athena:
     s = get_settings()
     if s.sample_mode:
-        log.info("SAMPLE_MODE=true: local data files and offline model stub; no gateway calls")
-        return Athena(s, SampleLLM(), LocalSource(schema=s.zetaris_schema))
+        log.info("SAMPLE_MODE=true: offline model stub; no gateway calls")
+        return Athena(s, SampleLLM(), LocalSource())
     # os.environ[...] on purpose: a live run without the gateway settings must fail loudly (AGENTS.md section 2).
     llm = GatewayLLM(os.environ["COMP3110_MODEL_BASE_URL"], os.environ["COMP3110_API_KEY"],
                      timeout_s=s.llm_timeout_s, fallback_model=s.fallback_model)
-    if s.data_backend == "zetaris":
-        client = ZetarisClient(s.zetaris_rest_url, s.zetaris_base_url, s.zetaris_org_id, s.zetaris_api_key,
-                               s.zetaris_username, s.zetaris_password, s.zetaris_timeout_s)
-        return Athena(s, llm, ZetarisSource(client, s.zetaris_schema))
-    return Athena(s, llm, LocalSource(schema=s.zetaris_schema))
+    return Athena(s, llm, LocalSource())
 
 
 @lru_cache(maxsize=1)
@@ -82,11 +77,11 @@ _hits: dict[str, deque] = defaultdict(deque)
 
 def client_id(request: Request) -> str:
     """Pseudonymous per-client id for the rate limit: the first X-Forwarded-For hop (set by the hosting
-    proxy) or the socket address, keyed-hashed with SCOUT_SECRET so no IP address is stored or logged.
+    proxy) or the socket address, keyed-hashed with RATE_LIMIT_SECRET so no IP address is stored or logged.
     Without this every visitor shared one bucket and a busy room was rate-limited together."""
     fwd = request.headers.get("x-forwarded-for", "")
     ip = fwd.split(",")[0].strip() or (request.client.host if request.client else "unknown")
-    digest = hmac.new(get_settings().scout_secret.encode(), ip.encode(), hashlib.sha256).hexdigest()
+    digest = hmac.new(get_settings().rate_limit_secret.encode(), ip.encode(), hashlib.sha256).hexdigest()
     return f"client-{digest[:12]}"
 
 
@@ -133,10 +128,10 @@ def places() -> dict[str, dict]:
 def planner_source():
     """Live OTP when OTP_URL is set and reachable, otherwise the precomputed alternatives."""
     s = get_settings()
-    base = athena().live_source or athena().local_source
+    base = athena().source
     if s.otp_url:
         from .data.otp import OTPSource
-        otp = OTPSource(s.otp_url, base, places(), s.zetaris_schema, s.otp_timeout_s)
+        otp = OTPSource(s.otp_url, base, places(), timeout_s=s.otp_timeout_s)
         if otp.ping():
             log.info("journey planning: live OpenTripPlanner at %s", s.otp_url)
             return otp
@@ -173,16 +168,16 @@ def journeys(origin: str, destination: str, band: str = "22", mode: str = "trans
     src = planner_source()
     args = (origin, destination, band, mode, sort)
     try:
-        result = JourneyPlanner(src, get_settings().zetaris_schema).plan(*args, depart=time)
+        result = JourneyPlanner(src).plan(*args, depart=time)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     except Exception as exc:  # noqa: BLE001 - fall back to precomputed rather than failing the request
+        base = athena().source
         log.warning("journey planning failed on %s (%s); falling back", getattr(src, "name", "?"), exc)
-        fallback = athena().live_source or athena().local_source
-        if fallback is src:
+        if base is src:
             raise HTTPException(502, f"Journey planning is unavailable ({exc.__class__.__name__}).") from exc
         try:
-            result = JourneyPlanner(fallback, get_settings().zetaris_schema).plan(*args, depart=time)
+            result = JourneyPlanner(base).plan(*args, depart=time)
             result["degraded"] = f"Live routing unavailable ({exc.__class__.__name__}); showing precomputed alternatives."
         except Exception as exc2:  # noqa: BLE001
             raise HTTPException(502, f"Journey planning is unavailable ({exc2.__class__.__name__}).") from exc2
@@ -200,13 +195,13 @@ def journeys(origin: str, destination: str, band: str = "22", mode: str = "trans
 
 @app.get("/api/street-safety")
 def street_safety(band: str = "22", time: str | None = None) -> dict:
-    """GeoJSON for the safety overlay: street geometry joined to the risk values Zetaris serves."""
+    """GeoJSON for the safety overlay: street geometry joined to Athena's street risk values."""
     band = resolve_band(band, time)
     geo = json.loads((ROOT / "web" / "streets.geojson").read_text())
     try:
         rows, ev = planner_source().streets()
     except Exception:  # noqa: BLE001
-        rows, ev = athena().local_source.streets()
+        rows, ev = athena().source.streets()
     attrs = {r["name"]: r for r in rows}
     features, seen = [], set()
     for f in geo["features"]:
@@ -248,16 +243,11 @@ def safety_points() -> dict:
 def health() -> dict:
     a = athena()
     s = get_settings()
-    out = {"version": __version__, "sample_mode": s.sample_mode, "data_backend": s.data_backend,
-           "report_classifier": s.report_classifier, "explanation_cache": a.cache.stats()}
+    out = {"version": __version__, "sample_mode": s.sample_mode, "report_classifier": s.report_classifier, "explanation_cache": a.cache.stats()}
     if s.sample_mode:
-        out.update(zetaris="skipped (sample mode)", gateway="skipped (sample mode)")
+        out.update(gateway="skipped (sample mode)")
         return out
-    if s.data_backend == "zetaris":
-        out["zetaris"] = "ok" if a.live_source and a.live_source.client.ping() else "unreachable"
-        out["zetaris_auth"] = a.live_source.client.auth_method if a.live_source else None
-    else:
-        out["zetaris"] = "off (DATA_BACKEND=files)"
+    out["data"] = getattr(a.source, "name", "files")
     try:
         out["gateway_models"] = a.llm.models()[:12]
         out["gateway"] = "ok"

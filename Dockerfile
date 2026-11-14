@@ -1,14 +1,13 @@
 # Athena for COMP3110: one container, data baked in, the course gateway as the only external call.
 #   make data && make train      (optional: processed Parquet and the TF-IDF classifier, if you use them)
 #   docker build -t athena .
-#   docker run -p 8000:8000 -e COMP3110_MODEL_BASE_URL=... -e COMP3110_API_KEY=... -e SCOUT_SECRET=... athena
-# On a host, set COMP3110_API_KEY and SCOUT_SECRET in its secret store, never in this file or the image.
+#   docker run -p 8000:8000 -e COMP3110_MODEL_BASE_URL=... -e COMP3110_API_KEY=... -e RATE_LIMIT_SECRET=... athena
+# On a host, set COMP3110_API_KEY and RATE_LIMIT_SECRET in its secret store, never in this file or the image.
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=8000 \
-    DATA_BACKEND=files
+    PORT=8000
 
 WORKDIR /app
 COPY requirements.txt .

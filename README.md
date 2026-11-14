@@ -116,7 +116,7 @@ evals/             offline evals, model comparison, classifier eval, assertions,
 data/              sample data the app serves until `make data`; labelling/ sheet and guide; reports/ splits
 scripts/           stack check, traces, load test, secrets scan, results table, hackathon export tools
 docs/              design, metrics, model card, deploy; submission/ and evidence/ are the frozen hackathon record
-tests/             pytest suite with mock gateway and Zetaris servers
+tests/             pytest suite with a mock gateway server
 ```
 
 ## Data, licences and attribution
@@ -147,4 +147,4 @@ route's detail page.
 Open Agent Hackathon 2026, Team Athena (Kaira Dumasia, Shuruthy Dhushiyandan, Andrii Rohovyi), Wildcard track
 winner, built on Zetaris, Meterless Nightshift and NVIDIA Nemotron. That submission is tagged `hackathon-final`;
 its write-up is in [docs/submission/](docs/submission/) and its evidence in [docs/evidence/](docs/evidence/).
-The course rework keeps Zetaris as an optional data adapter (`DATA_BACKEND=zetaris`).
+The course rework reads data from files only; the Zetaris adapter was removed on 15 Nov 2026 (it is still in the `hackathon-final` tag).

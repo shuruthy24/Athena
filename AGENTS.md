@@ -524,3 +524,4 @@ routing evals) are gone. The planner now calls two typed endpoints, `POST /api/e
 `athena/guard.py` keeps the report-text injection block and PII redaction. This replaces the Scout, contract and
 emergency-by-typing parts of Sections 4 to 6. That also fixes the time-word override finding.
 
+**Zetaris removed (15 Nov 2026).** `athena/data/zetaris.py`, `ZetarisSource`, `scripts/load_zetaris.py`, `DATA_BACKEND` and the `ZETARIS_*` settings are gone; data is read from files only. `SCOUT_SECRET` is now `RATE_LIMIT_SECRET`. This supersedes the Zetaris-optional notes in Sections 4, 5, 6 and 7 (Step 1) and in the Step 1 row above.

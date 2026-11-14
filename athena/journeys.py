@@ -3,7 +3,7 @@
 Two sources of candidate journeys:
 
 * **Precomputed (default).** Route alternatives our OpenTripPlanner instance produced for the covered
-  corridor, stored in Zetaris as `athena.route_legs` and `athena.leg_streets`. The geometry, stop names
+  corridor, stored as the tables `route_legs` and `leg_streets`. The geometry, stop names
   and times are OTP's own output; they are NOT live, and every response says so in `freshness`.
 * **Live OTP.** When `OTP_URL` is set, `OTPClient` queries a running OpenTripPlanner over its
   GraphQL `planConnection` API and the same scoring is applied to whatever it returns.
@@ -206,7 +206,7 @@ def dedupe(journeys: list[dict]) -> list[dict]:
 
 @dataclass
 class JourneyPlanner:
-    source: object                 # ZetarisSource, LocalSource or OTPSource
+    source: object                 # LocalSource or OTPSource
     schema: str = "athena"
 
     def plan(self, origin: str, destination: str, band: str, mode: str | list[str], sort: str = "balanced",

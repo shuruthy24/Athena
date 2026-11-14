@@ -22,7 +22,6 @@ DEFAULT_MODELS = {
     "moderator": "scx-gpt-oss-120b",
     "judge": "scx-Meta-Llama-3.3-70B-Instruct",
 }
-DATA_BACKENDS = ("files", "zetaris")
 
 
 def _bool(name: str, default: bool) -> bool:
@@ -33,7 +32,6 @@ def _bool(name: str, default: bool) -> bool:
 @dataclass(frozen=True)
 class Settings:
     sample_mode: bool
-    data_backend: str
     # Models, one per role, all through the COMP3110 gateway
     explainer_model: str
     critic_model: str
@@ -43,17 +41,8 @@ class Settings:
     llm_timeout_s: float
     # Report classifier the app uses (athena/classify); moderator-v1 = the hackathon moderator prompt
     report_classifier: str
-    # Zetaris (optional data adapter, DATA_BACKEND=zetaris)
-    zetaris_rest_url: str
-    zetaris_base_url: str
-    zetaris_org_id: str
-    zetaris_api_key: str
-    zetaris_username: str
-    zetaris_password: str
-    zetaris_schema: str
-    zetaris_timeout_s: float
-    # Rate-limit secret (name kept from the removed Scout router)
-    scout_secret: str
+    # Keys the hashed client id used by the rate limit
+    rate_limit_secret: str
     max_revisions: int
     # Journey planning
     otp_url: str
@@ -66,12 +55,8 @@ class Settings:
 
 def get_settings() -> Settings:
     e = os.environ.get
-    backend = e("DATA_BACKEND", "files").strip().lower()
-    if backend not in DATA_BACKENDS:
-        raise ValueError(f"DATA_BACKEND must be one of {', '.join(DATA_BACKENDS)}")
     return Settings(
         sample_mode=_bool("SAMPLE_MODE", False),
-        data_backend=backend,
         explainer_model=e("EXPLAINER_MODEL", DEFAULT_MODELS["explainer"]),
         critic_model=e("CRITIC_MODEL", DEFAULT_MODELS["critic"]),
         moderator_model=e("MODERATOR_MODEL", DEFAULT_MODELS["moderator"]),
@@ -79,15 +64,7 @@ def get_settings() -> Settings:
         fallback_model=e("FALLBACK_MODEL", "").strip(),
         llm_timeout_s=float(e("LLM_TIMEOUT_S", "60")),
         report_classifier=e("REPORT_CLASSIFIER", "moderator-v1").strip(),
-        zetaris_rest_url=e("ZETARIS_REST_URL", "http://localhost:8888/api/v1.0").rstrip("/"),
-        zetaris_base_url=e("ZETARIS_BASE_URL", "http://localhost:3000").rstrip("/"),
-        zetaris_org_id=e("ZETARIS_ORG_ID", "1"),
-        zetaris_api_key=e("ZETARIS_API_KEY", "").strip(),
-        zetaris_username=e("ZETARIS_USERNAME", ""),
-        zetaris_password=e("ZETARIS_PASSWORD", ""),
-        zetaris_schema=e("ZETARIS_SCHEMA", "athena"),
-        zetaris_timeout_s=float(e("ZETARIS_TIMEOUT_S", "30")),
-        scout_secret=e("SCOUT_SECRET", "dev-only-change-me"),
+        rate_limit_secret=e("RATE_LIMIT_SECRET", "dev-only-change-me"),
         max_revisions=int(e("MAX_REVISIONS", "2")),
         otp_url=e("OTP_URL", "").strip().rstrip("/"),
         otp_timeout_s=float(e("OTP_TIMEOUT_S", "20")),

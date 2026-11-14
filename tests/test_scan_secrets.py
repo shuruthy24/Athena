@@ -12,7 +12,7 @@ from scan_secrets import scan_text  # noqa: E402
 def test_placeholders_and_env_reads_pass():
     text = "\n".join([
         "COMP3110_API_KEY=YOUR_VIRTUAL_KEY",
-        "SCOUT_SECRET=change-me-to-a-long-random-string",
+        "RATE_LIMIT_SECRET=change-me-to-a-long-random-string",
         'api_key=os.environ["COMP3110_API_KEY"]',
         'GATEWAY_KEY = "test-gateway-key-not-real"',
     ])

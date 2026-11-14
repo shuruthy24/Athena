@@ -1,5 +1,5 @@
-"""Check the live stack: COMP3110 gateway model discovery, one tiny request per role model, and Zetaris only
-when DATA_BACKEND=zetaris. No secrets are printed or written.
+"""Check the live stack: COMP3110 gateway model discovery, one tiny request per role model.
+No secrets are printed or written.
 
   python3 scripts/check_stack.py     -> PASS/FAIL lines, evals/results/stack_check.json
 
@@ -62,17 +62,11 @@ def main() -> int:
                     "tokens_out": r.output_tokens, "cost_usd": r.cost_usd, "attempts": r.attempts}
         check(f"text request {model}", text_req)
 
-    if s.data_backend == "zetaris":
-        from athena.data.zetaris import ZetarisClient
-        z = ZetarisClient(s.zetaris_rest_url, s.zetaris_base_url, s.zetaris_org_id, s.zetaris_api_key,
-                          s.zetaris_username, s.zetaris_password, s.zetaris_timeout_s)
-        check("Zetaris SELECT 1 over REST", lambda: {"auth": z.run_sql("SELECT 1 AS one") and z.auth_method})
-
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     out = ROOT / "evals/results/stack_check.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None,
-                               "config": {"data_backend": s.data_backend, "models": roles,
+                               "config": {"models": roles,
                                           "fallback_model": s.fallback_model or None},
                                "calls_used": calls, "checks": rows}, indent=1) + "\n")
     passed = sum(r["ok"] for r in rows)

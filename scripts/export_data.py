@@ -1,4 +1,4 @@
-"""Export Athena's route and street data into flat tables for Zetaris.
+"""Export Athena's route and street data into flat tables.
 
 Input (pre-existing, built before the hackathon):
   web/routes.json      OTP-shaped route results (fastest vs Athena variant per trip, band, mode)
@@ -10,8 +10,7 @@ Output (new):
   data/places.json       {"rows": [...]}  origin/destination places
   data/reports.json      {"rows": [...]}  SYNTHETIC safety reports for the moderation demo/eval
 
-The {"rows": [...]} wrapper lets Zetaris register each file as a Lightning REST table and flatten
-it with LATERAL VIEW explode(rows), the same pattern as Zetaris's PokeAPI starter recipe.
+The {"rows": [...]} wrapper is the table shape LocalSource reads.
 
 Run:  python3 scripts/export_data.py
 """
