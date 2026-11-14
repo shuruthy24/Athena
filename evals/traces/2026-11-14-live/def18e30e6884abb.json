@@ -1,0 +1,214 @@
+{
+ "trace_id": "def18e30e6884abb",
+ "case": {
+  "case_id": "townhall-unsw-22-transit-q0",
+  "question": "Why is the Athena route better tonight?",
+  "trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "22",
+   "mode": "transit"
+  }
+ },
+ "trip_used": {
+  "origin": "townhall",
+  "destination": "unsw",
+  "band": "22",
+  "mode": "transit"
+ },
+ "trip_overridden": false,
+ "facts": {
+  "fastest.duration_min": 36.5,
+  "fastest.walk_m": 1057,
+  "fastest.transfers": 1,
+  "fastest.lit_share_pct": 100.0,
+  "fastest.unknown_share_pct": 0.0,
+  "fastest.risk": 0.451,
+  "fastest.mean_risk": 0.346,
+  "fastest.worst.name": "Devonshire St tunnel",
+  "fastest.worst.risk": 0.58,
+  "fastest.worst.lit": "yes",
+  "fastest.worst.distance_m": 237,
+  "fastest.worst.tunnel": true,
+  "fastest.streets": [
+   "Central concourse",
+   "Devonshire St tunnel",
+   "Chalmers Street",
+   "UNSW campus"
+  ],
+  "fastest.transit_lines": [
+   "T2",
+   "Bus"
+  ],
+  "athena.duration_min": 39.4,
+  "athena.walk_m": 728,
+  "athena.transfers": 0,
+  "athena.lit_share_pct": 100.0,
+  "athena.unknown_share_pct": 0.0,
+  "athena.risk": 0.272,
+  "athena.mean_risk": 0.265,
+  "athena.worst.name": "UNSW campus",
+  "athena.worst.risk": 0.28,
+  "athena.worst.lit": "yes",
+  "athena.worst.distance_m": 648,
+  "athena.worst.tunnel": false,
+  "athena.streets": [
+   "George Street",
+   "UNSW campus"
+  ],
+  "athena.transit_lines": [
+   "L3"
+  ],
+  "extra_min": 2.9,
+  "risk_reduction_pct": 39.7,
+  "avoided_streets": [
+   "Central concourse",
+   "Devonshire St tunnel",
+   "Chalmers Street"
+  ],
+  "added_streets": [
+   "George Street"
+  ],
+  "confidence": "high"
+ },
+ "explanation": {
+  "headline": "Athena’s route is a few minutes longer but offers lower risk",
+  "claims": [
+   {
+    "text": "The Athena route takes about 2.9 minutes longer than the fastest option.",
+    "facts": [
+     "fastest.duration_min",
+     "athena.duration_min",
+     "extra_min"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Its overall risk is 0.272 compared with 0.451 for the fastest route, a reduction of roughly 39.7%.",
+    "facts": [
+     "athena.risk",
+     "fastest.risk",
+     "risk_reduction_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena avoids a tunnel and any transfers, while the fastest route includes a tunnel and one transfer, contributing to its lower risk.",
+    "facts": [
+     "athena.transfers",
+     "fastest.transfers",
+     "athena.worst.tunnel",
+     "fastest.worst.tunnel"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ]
+ },
+ "critic_verdict": "approve",
+ "fact_only": {
+  "headline": "Athena's route is lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +2.9 min and has 39.7% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ]
+   },
+   {
+    "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.58).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit",
+     "fastest.worst.risk"
+    ]
+   }
+  ]
+ },
+ "trace": [
+  {
+   "step": 1,
+   "agent": "data",
+   "model": null,
+   "ms": 1,
+   "detail": "9 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+   "tool": "sample.json"
+  },
+  {
+   "step": 2,
+   "agent": "route-metrics",
+   "model": null,
+   "ms": null,
+   "detail": "fastest risk=0.451 athena risk=0.272 extra=2.9 min reduction=39.7%"
+  },
+  {
+   "step": 3,
+   "agent": "route-analyst",
+   "model": "scx-gpt-oss-120b",
+   "ms": 1221,
+   "detail": "draft 1: 4 claims",
+   "prompt": "explainer.v1@a21f47c518b0",
+   "tokens_in": 680,
+   "tokens_out": 728,
+   "cost_usd": 0.00057261
+  },
+  {
+   "step": 4,
+   "agent": "evidence-critic",
+   "model": "scx-gpt-oss-120b",
+   "ms": 812,
+   "detail": "revise draft 1: claim 0: number 329 not in cited facts, number 1 not in cited facts, number 57 not in cited facts",
+   "verdict": "revise",
+   "prompt": "critic.v1@4e9b2778becc",
+   "tokens_in": 860,
+   "tokens_out": 461,
+   "cost_usd": 0.00044299
+  },
+  {
+   "step": 5,
+   "agent": "route-analyst",
+   "model": "scx-gpt-oss-120b",
+   "ms": 1229,
+   "detail": "draft 2: 3 claims",
+   "prompt": "explainer.v1@a21f47c518b0",
+   "tokens_in": 707,
+   "tokens_out": 739,
+   "cost_usd": 0.0005844
+  },
+  {
+   "step": 6,
+   "agent": "evidence-critic",
+   "model": "scx-gpt-oss-120b",
+   "ms": 661,
+   "detail": "approve draft 2 (All three claims are fully supported by the cited facts.)",
+   "verdict": "approve",
+   "prompt": "critic.v1@4e9b2778becc",
+   "tokens_in": 750,
+   "tokens_out": 344,
+   "cost_usd": 0.00035082
+  },
+  {
+   "step": 7,
+   "agent": "usage",
+   "model": null,
+   "ms": null,
+   "detail": "4 model calls this request",
+   "calls": 4,
+   "tokens_in": 2997,
+   "tokens_out": 2272,
+   "cost_usd": 0.00195082
+  }
+ ],
+ "models": [
+  "scx-gpt-oss-120b"
+ ],
+ "usage": {
+  "calls": 4,
+  "tokens_in": 2997,
+  "tokens_out": 2272,
+  "cost_usd": 0.001951
+ }
+}

@@ -1,0 +1,754 @@
+{
+ "generated_at": "2026-11-14T07:44:48.743311+00:00",
+ "git_sha": "341abce",
+ "config": {
+  "models": [
+   "scx-gpt-oss-120b",
+   "scx-gemma-4-31B-it",
+   "scx-Meta-Llama-3.3-70B-Instruct"
+  ],
+  "budget": 120,
+  "cases_per_task_per_model": 40,
+  "temperature": 0,
+  "stream": false,
+  "price_source": "COMP3110 Tech 6 README pricing table (USD per 1M tokens)",
+  "explainer_cases_available": 18,
+  "moderator_dev_cases_available": 0,
+  "skipped": [
+   "moderator"
+  ]
+ },
+ "calls_used": 54,
+ "results": {
+  "explainer": {
+   "scx-gpt-oss-120b": {
+    "prompt": "explainer.v1@a21f47c518b0",
+    "n": 18,
+    "first_draft_pass_rate": 0.8333,
+    "calls": 18,
+    "tokens_in": 12476,
+    "tokens_out": 13140,
+    "cost_usd_total": 0.010373,
+    "cost_usd_per_call": 0.00057629,
+    "latency": {
+     "n": 18,
+     "mean_ms": 1212,
+     "p50_ms": 1198,
+     "p95_ms": 1532
+    },
+    "served_by": [
+     "scx-gpt-oss-120b"
+    ],
+    "retried": 0,
+    "rows": [
+     {
+      "case": "townhall|unsw|01|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1216.868555988185,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 698,
+      "tokens_out": 591,
+      "cost_usd": 0.0004921803,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|01|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1251.3530729920603,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 680,
+      "tokens_out": 810,
+      "cost_usd": 0.0006227730000000001,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|01|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1242.2631689696573,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 700,
+      "tokens_out": 727,
+      "cost_usd": 0.0005757459,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1146.9946420402266,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 699,
+      "tokens_out": 732,
+      "cost_usd": 0.0005786172000000001,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1016.0302110016346,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 680,
+      "tokens_out": 540,
+      "cost_usd": 0.00045761400000000007,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 966.9632869772613,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 701,
+      "tokens_out": 588,
+      "cost_usd": 0.0004909068,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1066.0231740330346,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 699,
+      "tokens_out": 662,
+      "cost_usd": 0.0005357982,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|transit",
+      "pass": false,
+      "problems": [
+       "number 329 not in cited facts",
+       "number 1 not in cited facts",
+       "number 57 not in cited facts"
+      ],
+      "ok_call": true,
+      "ms": 1225.3339040325955,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 680,
+      "tokens_out": 728,
+      "cost_usd": 0.0005726136,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|walk",
+      "pass": false,
+      "problems": [
+       "number 0.5 not in cited facts"
+      ],
+      "ok_call": true,
+      "ms": 1264.2158580129035,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 701,
+      "tokens_out": 838,
+      "cost_usd": 0.0006438318,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1138.3721670135856,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 698,
+      "tokens_out": 727,
+      "cost_usd": 0.0005753715,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1179.0541399968788,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 680,
+      "tokens_out": 719,
+      "cost_usd": 0.0005671083000000001,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1341.362092003692,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 700,
+      "tokens_out": 899,
+      "cost_usd": 0.0006809583000000001,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1013.4806219721213,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 699,
+      "tokens_out": 613,
+      "cost_usd": 0.0005058249000000001,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1034.0559639735147,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 680,
+      "tokens_out": 566,
+      "cost_usd": 0.0004735182,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1120.0685600051656,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 701,
+      "tokens_out": 692,
+      "cost_usd": 0.0005545236,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1531.9473649724387,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 699,
+      "tokens_out": 936,
+      "cost_usd": 0.0007034039999999999,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|transit",
+      "pass": false,
+      "problems": [
+       "number 3 not in cited facts",
+       "number 330 not in cited facts",
+       "number 1 not in cited facts",
+       "number 57 not in cited facts"
+      ],
+      "ok_call": true,
+      "ms": 1532.4464119621553,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 680,
+      "tokens_out": 872,
+      "cost_usd": 0.0006606984000000001,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1537.5013430020772,
+      "served_by": "scx-gpt-oss-120b",
+      "tokens_in": 701,
+      "tokens_out": 900,
+      "cost_usd": 0.0006817572,
+      "attempts": 1
+     }
+    ]
+   },
+   "scx-gemma-4-31B-it": {
+    "prompt": "explainer.v1@a21f47c518b0",
+    "n": 18,
+    "first_draft_pass_rate": 1.0,
+    "calls": 18,
+    "tokens_in": 12250,
+    "tokens_out": 4326,
+    "cost_usd_total": 0.00853,
+    "cost_usd_per_call": 0.00047386,
+    "latency": {
+     "n": 18,
+     "mean_ms": 5008,
+     "p50_ms": 5044,
+     "p95_ms": 5960
+    },
+    "served_by": [
+     "scx-gemma-4-31B-it"
+    ],
+    "retried": 0,
+    "rows": [
+     {
+      "case": "townhall|unsw|01|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5219.307575956918,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 682,
+      "tokens_out": 238,
+      "cost_usd": 0.0004719752000000001,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|01|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 4681.17459199857,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 671,
+      "tokens_out": 221,
+      "cost_usd": 0.00045097240000000003,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|01|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 4537.212135037407,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 688,
+      "tokens_out": 214,
+      "cost_usd": 0.0004495796,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 4665.377088997047,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 682,
+      "tokens_out": 224,
+      "cost_usd": 0.00045773160000000005,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 4309.430964000057,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 672,
+      "tokens_out": 206,
+      "cost_usd": 0.0004360484,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 3937.732174003031,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 688,
+      "tokens_out": 189,
+      "cost_usd": 0.00042414460000000004,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5495.8815179998055,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 682,
+      "tokens_out": 264,
+      "cost_usd": 0.0004984276000000001,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5959.953924000729,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 672,
+      "tokens_out": 286,
+      "cost_usd": 0.0005174404,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5025.440224970225,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 688,
+      "tokens_out": 243,
+      "cost_usd": 0.0004790842,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5107.560154981911,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 682,
+      "tokens_out": 241,
+      "cost_usd": 0.00047502740000000007,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5123.851279960945,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 671,
+      "tokens_out": 246,
+      "cost_usd": 0.0004764074000000001,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 6047.15523601044,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 688,
+      "tokens_out": 296,
+      "cost_usd": 0.0005330064000000001,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 4304.291805019602,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 682,
+      "tokens_out": 209,
+      "cost_usd": 0.0004424706,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 4698.723545996472,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 672,
+      "tokens_out": 221,
+      "cost_usd": 0.0004513094,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5558.273250004277,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 688,
+      "tokens_out": 273,
+      "cost_usd": 0.0005096062000000001,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5445.387871004641,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 682,
+      "tokens_out": 266,
+      "cost_usd": 0.0005004624,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 5062.545111984946,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 672,
+      "tokens_out": 246,
+      "cost_usd": 0.00047674440000000006,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 4966.131311957724,
+      "served_by": "scx-gemma-4-31B-it",
+      "tokens_in": 688,
+      "tokens_out": 243,
+      "cost_usd": 0.0004790842,
+      "attempts": 1
+     }
+    ]
+   },
+   "scx-Meta-Llama-3.3-70B-Instruct": {
+    "prompt": "explainer.v1@a21f47c518b0",
+    "n": 18,
+    "first_draft_pass_rate": 0.9444,
+    "calls": 18,
+    "tokens_in": 11468,
+    "tokens_out": 3772,
+    "cost_usd_total": 0.01139,
+    "cost_usd_per_call": 0.00063279,
+    "latency": {
+     "n": 18,
+     "mean_ms": 4651,
+     "p50_ms": 1584,
+     "p95_ms": 24827
+    },
+    "served_by": [
+     "scx-Meta-Llama-3.3-70B-Instruct"
+    ],
+    "retried": 0,
+    "rows": [
+     {
+      "case": "townhall|unsw|01|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1801.920632016845,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 642,
+      "tokens_out": 208,
+      "cost_usd": 0.0006337986,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|01|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1638.5246309801005,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 624,
+      "tokens_out": 229,
+      "cost_usd": 0.0006486855,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|01|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1553.897727979347,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 644,
+      "tokens_out": 233,
+      "cost_usd": 0.0006654119,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 9179.147759045009,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 643,
+      "tokens_out": 185,
+      "cost_usd": 0.0006063982,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1653.0424890224822,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 624,
+      "tokens_out": 177,
+      "cost_usd": 0.0005853963,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|18|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1524.7167859924957,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 645,
+      "tokens_out": 225,
+      "cost_usd": 0.000656268,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 2570.8627849817276,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 643,
+      "tokens_out": 187,
+      "cost_usd": 0.0006088324,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 25293.815534969326,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 624,
+      "tokens_out": 234,
+      "cost_usd": 0.000654771,
+      "attempts": 1
+     },
+     {
+      "case": "townhall|unsw|22|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 24827.108445984777,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 645,
+      "tokens_out": 234,
+      "cost_usd": 0.0006672219,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1425.3133859601803,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 642,
+      "tokens_out": 186,
+      "cost_usd": 0.0006070224,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1596.6610070317984,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 624,
+      "tokens_out": 223,
+      "cost_usd": 0.0006413829,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|01|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1543.8506320351735,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 644,
+      "tokens_out": 234,
+      "cost_usd": 0.000666629,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1391.0117009654641,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 643,
+      "tokens_out": 182,
+      "cost_usd": 0.0006027469,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1570.3911010059528,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 624,
+      "tokens_out": 190,
+      "cost_usd": 0.0006012186,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|18|walk",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1524.133205995895,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 645,
+      "tokens_out": 239,
+      "cost_usd": 0.0006733074,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|bike",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1549.0049859508872,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 643,
+      "tokens_out": 186,
+      "cost_usd": 0.0006076153,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|transit",
+      "pass": true,
+      "problems": [],
+      "ok_call": true,
+      "ms": 1417.5207400112413,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 624,
+      "tokens_out": 177,
+      "cost_usd": 0.0005853963,
+      "attempts": 1
+     },
+     {
+      "case": "unsw|townhall|22|walk",
+      "pass": false,
+      "problems": [
+       "malformed or failed call"
+      ],
+      "ok_call": true,
+      "ms": 1651.5026949928142,
+      "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+      "tokens_in": 645,
+      "tokens_out": 243,
+      "cost_usd": 0.0006781758,
+      "attempts": 1,
+      "malformed": true
+     }
+    ]
+   }
+  }
+ }
+}

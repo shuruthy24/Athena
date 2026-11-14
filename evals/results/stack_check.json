@@ -1,0 +1,76 @@
+{
+ "generated_at": "2026-11-14T07:30:39.605818+00:00",
+ "git_sha": "341abce",
+ "config": {
+  "data_backend": "files",
+  "models": {
+   "explainer": "scx-gpt-oss-120b",
+   "critic": "scx-gpt-oss-120b",
+   "moderator": "scx-gpt-oss-120b",
+   "judge": "scx-Meta-Llama-3.3-70B-Instruct"
+  },
+  "fallback_model": null
+ },
+ "calls_used": 2,
+ "checks": [
+  {
+   "check": "gateway model discovery (/models)",
+   "ok": true,
+   "models": [
+    "aws-nova-lite-v1",
+    "aws-nova-micro-v1",
+    "aws-nova-pro-v1",
+    "gpt-oss-120b-bedrock",
+    "gpt-oss-20b-bedrock",
+    "ministral-14b-bedrock",
+    "scx-GLM-5.3",
+    "scx-Meta-Llama-3.3-70B-Instruct",
+    "scx-MiniMax-M2.7",
+    "scx-gemma-4-31B-it",
+    "scx-gpt-oss-120b"
+   ]
+  },
+  {
+   "check": "explainer model listed",
+   "ok": true,
+   "model": "scx-gpt-oss-120b"
+  },
+  {
+   "check": "critic model listed",
+   "ok": true,
+   "model": "scx-gpt-oss-120b"
+  },
+  {
+   "check": "moderator model listed",
+   "ok": true,
+   "model": "scx-gpt-oss-120b"
+  },
+  {
+   "check": "judge model listed",
+   "ok": true,
+   "model": "scx-Meta-Llama-3.3-70B-Instruct"
+  },
+  {
+   "check": "text request scx-Meta-Llama-3.3-70B-Instruct",
+   "ok": true,
+   "requested": "scx-Meta-Llama-3.3-70B-Instruct",
+   "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
+   "ms": 820,
+   "tokens_in": 48,
+   "tokens_out": 5,
+   "cost_usd": 3.45447e-05,
+   "attempts": 1
+  },
+  {
+   "check": "text request scx-gpt-oss-120b",
+   "ok": true,
+   "requested": "scx-gpt-oss-120b",
+   "served_by": "scx-gpt-oss-120b",
+   "ms": 256,
+   "tokens_in": 101,
+   "tokens_out": 54,
+   "cost_usd": 5.1939e-05,
+   "attempts": 1
+  }
+ ]
+}

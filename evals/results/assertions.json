@@ -1,0 +1,52 @@
+{
+ "generated_at": "2026-11-14T07:38:53.581076+00:00",
+ "git_sha": "341abce",
+ "config": {
+  "traces": "evals/traces/2026-11-14-live"
+ },
+ "calls_used": 0,
+ "traces": 36,
+ "traces_passing_all": 36,
+ "assertions": {
+  "claims_cite_known_facts": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  },
+  "numbers_match_facts": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  },
+  "no_banned_wording": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  },
+  "streets_on_routes": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  },
+  "direction_correct": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  },
+  "claim_count": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  },
+  "unknown_lighting_disclosed": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  },
+  "model_steps_observable": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  }
+ }
+}

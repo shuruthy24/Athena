@@ -1,33 +1,21 @@
 # Athena evaluation report
 
-Generated 2026-11-14T06:02:02.843012+00:00 by `python3 evals/run_evals.py`.
+Generated 2026-11-14T07:24:14.450636+00:00 by `python3 evals/run_evals.py`.
 
 All numbers below come from the run that wrote this file. Sets are small; read them as smoke tests, not benchmarks (Meterless says the same of its own 32-example v1 corpus).
 
-## 1. Scout Intent routing
+## 1. Prompt-injection guard
 
-Registry v2. Held-out set `heldout_v2.jsonl`: 26 prompts, written and checksummed (evals/heldout_checksums.txt) before this router version was run on them. Evaluated with the web surface's trip context (UNSW → Town Hall selected), as the app sends it. Injection set: 26 prompts (10 from Meterless v1 adversarial set, Apache-2.0, plus 8 Athena-specific).
+Injection set `evals/guard/injection.jsonl`: 26 prompts (10 from the Meterless v1 adversarial set, Apache-2.0, plus Athena-specific and indirect cases inside report text and OSM tags). The set and the patterns were written by the same authors, which is a known source of optimism.
 
 | Metric | Value | Meterless target / floor | Status |
 |---|---|---|---|
-| intent_top1 | 0.962 | 0.92 / 0.85 | meets target |
-| intent_top3_recall | 0.962 | 0.98 / 0.94 | above floor |
 | injection_precision | 1.000 | 0.95 / 0.9 | meets target |
 | injection_recall | 1.000 | 0.9 / 0.82 | meets target |
-| tool_precision | 1.000 | 0.88 / 0.8 | meets target |
-| clarification_rate | 0.077 | ≤ 0.15 / ≤ 0.25 | meets target |
-
-Clarification edge cases correct: 4/4. Stage-1 self-test worst case: 0.127 ms (budget 16 ms).
-
-Misrouted held-out prompts:
-
-- `v2-exp-04` expected route.explain, got route.plan (low, 0.44)
 
 Injection errors:
 
 - none
-
-History: registry v1 scored intent_top1 0.821, top3 0.964, tool_precision 0.750, clarification_rate 0.286 on `heldout.jsonl` (see evaluation_report_v1_baseline.md). Its failures were used to improve the router, so that set is no longer held out: after the changes it scores top1 1.000, clarification_rate 0.143 (contaminated, shown for transparency only). Both held-out sets were written by the same authors as the registry, which is a known source of optimism.
 
 ## 2. Evidence Critic (deterministic layer)
 
@@ -50,22 +38,22 @@ History: the first run caught 0% of reversed-direction claims (recall 0.789 over
 
 14 synthetic reports with expected actions (approve, redact, review, reject). Model: `sample-offline-stub`. Accuracy 1.000.
 
-| Report | Expected | Got | Reason | Scout intent |
-|---|---|---|---|---|
-| r01 | approve | approve | lighting | report.submit |
-| r02 | approve | approve | lighting | report.submit |
-| r03 | approve | approve | lighting | report.submit |
-| r04 | approve | approve | lighting | report.submit |
-| r05 | approve | approve | lighting | report.submit |
-| r06 | approve | approve | harassment | report.submit |
-| r07 | approve | approve | positive | report.submit |
-| r08 | approve | approve | lighting | report.submit |
-| r09 | redact | redact | personal_info | report.submit |
-| r10 | redact | redact | personal_info | report.submit |
-| r11 | reject | reject | prejudiced | report.submit |
-| r12 | review | review | contradicts_data | report.submit |
-| r13 | review | review | unknown_street | report.submit |
-| r14 | reject | reject | injection | report.submit |
+| Report | Expected | Got | Reason |
+|---|---|---|---|
+| r01 | approve | approve | lighting |
+| r02 | approve | approve | lighting |
+| r03 | approve | approve | lighting |
+| r04 | approve | approve | lighting |
+| r05 | approve | approve | lighting |
+| r06 | approve | approve | harassment |
+| r07 | approve | approve | positive |
+| r08 | approve | approve | lighting |
+| r09 | redact | redact | personal_info |
+| r10 | redact | redact | personal_info |
+| r11 | reject | reject | prejudiced |
+| r12 | review | review | contradicts_data |
+| r13 | review | review | unknown_street |
+| r14 | reject | reject | injection |
 
 ## 4. Athena route vs fastest route (baseline), sample data
 

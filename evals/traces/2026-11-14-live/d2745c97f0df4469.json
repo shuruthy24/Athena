@@ -1,0 +1,187 @@
+{
+ "trace_id": "d2745c97f0df4469",
+ "case": {
+  "case_id": "townhall-unsw-01-transit-q1",
+  "question": "Is the Athena option worth the extra time?",
+  "trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "01",
+   "mode": "transit"
+  }
+ },
+ "trip_used": {
+  "origin": "townhall",
+  "destination": "unsw",
+  "band": "01",
+  "mode": "transit"
+ },
+ "trip_overridden": false,
+ "facts": {
+  "fastest.duration_min": 43.5,
+  "fastest.walk_m": 1057,
+  "fastest.transfers": 1,
+  "fastest.lit_share_pct": 100.0,
+  "fastest.unknown_share_pct": 0.0,
+  "fastest.risk": 0.606,
+  "fastest.mean_risk": 0.513,
+  "fastest.worst.name": "Devonshire St tunnel",
+  "fastest.worst.risk": 0.72,
+  "fastest.worst.lit": "yes",
+  "fastest.worst.distance_m": 237,
+  "fastest.worst.tunnel": true,
+  "fastest.streets": [
+   "Central concourse",
+   "Devonshire St tunnel",
+   "Chalmers Street",
+   "UNSW campus"
+  ],
+  "fastest.transit_lines": [
+   "T2",
+   "Bus"
+  ],
+  "athena.duration_min": 46.4,
+  "athena.walk_m": 728,
+  "athena.transfers": 0,
+  "athena.lit_share_pct": 100.0,
+  "athena.unknown_share_pct": 0.0,
+  "athena.risk": 0.449,
+  "athena.mean_risk": 0.44,
+  "athena.worst.name": "UNSW campus",
+  "athena.worst.risk": 0.46,
+  "athena.worst.lit": "yes",
+  "athena.worst.distance_m": 648,
+  "athena.worst.tunnel": false,
+  "athena.streets": [
+   "George Street",
+   "UNSW campus"
+  ],
+  "athena.transit_lines": [
+   "L3"
+  ],
+  "extra_min": 2.9,
+  "risk_reduction_pct": 25.9,
+  "avoided_streets": [
+   "Central concourse",
+   "Devonshire St tunnel",
+   "Chalmers Street"
+  ],
+  "added_streets": [
+   "George Street"
+  ],
+  "confidence": "high"
+ },
+ "explanation": {
+  "headline": "Athena route offers lower risk with a small extra travel time",
+  "claims": [
+   {
+    "text": "The Athena route takes about 3 minutes longer, 46.4 minutes compared with 43.5 minutes for the fastest route.",
+    "facts": [
+     "athena.duration_min",
+     "fastest.duration_min",
+     "extra_min"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "It lowers the overall risk from 0.606 to 0.449, a reduction of roughly 26%.",
+    "facts": [
+     "fastest.risk",
+     "athena.risk",
+     "risk_reduction_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena requires no transfers, while the fastest option needs one change.",
+    "facts": [
+     "athena.transfers",
+     "fastest.transfers"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena avoids the Devonshire St tunnel, which has the highest risk on the fastest path, and instead walks through well‑lit streets like George Street.",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.tunnel",
+     "athena.worst.name",
+     "athena.worst.tunnel",
+     "avoided_streets",
+     "added_streets",
+     "fastest.lit_share_pct",
+     "athena.lit_share_pct"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ]
+ },
+ "critic_verdict": "approve",
+ "fact_only": {
+  "headline": "Athena's route is lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +2.9 min and has 25.9% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ]
+   },
+   {
+    "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.72).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit",
+     "fastest.worst.risk"
+    ]
+   }
+  ]
+ },
+ "trace": [
+  {
+   "step": 1,
+   "agent": "data",
+   "model": null,
+   "ms": 1,
+   "detail": "9 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+   "tool": "sample.json"
+  },
+  {
+   "step": 2,
+   "agent": "route-metrics",
+   "model": null,
+   "ms": null,
+   "detail": "fastest risk=0.606 athena risk=0.449 extra=2.9 min reduction=25.9%"
+  },
+  {
+   "step": 3,
+   "agent": "cache",
+   "model": null,
+   "ms": null,
+   "detail": "explanation cache hit (approve); no model call",
+   "key": "b8d0fdc3d876"
+  },
+  {
+   "step": 4,
+   "agent": "usage",
+   "model": null,
+   "ms": null,
+   "detail": "0 model calls this request",
+   "calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd": 0
+  }
+ ],
+ "models": [],
+ "usage": {
+  "calls": 0,
+  "tokens_in": 0,
+  "tokens_out": 0,
+  "cost_usd": 0
+ }
+}

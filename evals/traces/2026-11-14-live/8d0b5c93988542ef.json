@@ -1,0 +1,184 @@
+{
+ "trace_id": "8d0b5c93988542ef",
+ "case": {
+  "case_id": "townhall-unsw-01-walk-q1",
+  "question": "Is the Athena option worth the extra time?",
+  "trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "01",
+   "mode": "walk"
+  }
+ },
+ "trip_used": {
+  "origin": "townhall",
+  "destination": "unsw",
+  "band": "01",
+  "mode": "walk"
+ },
+ "trip_overridden": false,
+ "facts": {
+  "fastest.duration_min": 79.2,
+  "fastest.walk_m": 6180,
+  "fastest.transfers": 0,
+  "fastest.lit_share_pct": 77.4,
+  "fastest.unknown_share_pct": 0.0,
+  "fastest.risk": 0.658,
+  "fastest.mean_risk": 0.525,
+  "fastest.worst.name": "Moore Park path",
+  "fastest.worst.risk": 0.82,
+  "fastest.worst.lit": "no",
+  "fastest.worst.distance_m": 1397,
+  "fastest.worst.tunnel": false,
+  "fastest.streets": [
+   "George Street",
+   "Bourke Street cycleway",
+   "Moore Park path",
+   "Anzac Parade",
+   "UNSW campus"
+  ],
+  "fastest.transit_lines": [],
+  "athena.duration_min": 79.7,
+  "athena.walk_m": 6214,
+  "athena.transfers": 0,
+  "athena.lit_share_pct": 100.0,
+  "athena.unknown_share_pct": 0.0,
+  "athena.risk": 0.419,
+  "athena.mean_risk": 0.386,
+  "athena.worst.name": "UNSW campus",
+  "athena.worst.risk": 0.46,
+  "athena.worst.lit": "yes",
+  "athena.worst.distance_m": 648,
+  "athena.worst.tunnel": false,
+  "athena.streets": [
+   "George Street",
+   "Liverpool Street",
+   "Oxford Street",
+   "Flinders Street",
+   "Anzac Parade",
+   "UNSW campus"
+  ],
+  "athena.transit_lines": [],
+  "extra_min": 0.5,
+  "risk_reduction_pct": 36.3,
+  "avoided_streets": [
+   "Bourke Street cycleway",
+   "Moore Park path"
+  ],
+  "added_streets": [
+   "Liverpool Street",
+   "Oxford Street",
+   "Flinders Street"
+  ],
+  "confidence": "high"
+ },
+ "explanation": {
+  "headline": "Athena route offers lower risk with minimal extra time",
+  "claims": [
+   {
+    "text": "The Athena route takes about 0.5 minute longer than the fastest option (79.7 min vs 79.2 min).",
+    "facts": [
+     "athena.duration_min",
+     "fastest.duration_min",
+     "extra_min"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "It lowers the overall risk from 0.658 to 0.419, a reduction of roughly 36 %.",
+    "facts": [
+     "fastest.risk",
+     "athena.risk",
+     "risk_reduction_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena’s path is fully lit (100 % lit) while the fastest route is only 77.4 % lit and includes an unlit worst segment, whereas Athena’s worst segment is lit.",
+    "facts": [
+     "athena.lit_share_pct",
+     "fastest.lit_share_pct",
+     "fastest.worst.lit",
+     "athena.worst.lit",
+     "fastest.worst.risk",
+     "athena.worst.risk"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ]
+ },
+ "critic_verdict": "approve",
+ "fact_only": {
+  "headline": "Athena's route is lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +0.5 min and has 36.3% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ]
+   },
+   {
+    "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.82).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit",
+     "fastest.worst.risk"
+    ]
+   },
+   {
+    "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+    "facts": [
+     "athena.lit_share_pct",
+     "fastest.lit_share_pct"
+    ]
+   }
+  ]
+ },
+ "trace": [
+  {
+   "step": 1,
+   "agent": "data",
+   "model": null,
+   "ms": 1,
+   "detail": "11 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+   "tool": "sample.json"
+  },
+  {
+   "step": 2,
+   "agent": "route-metrics",
+   "model": null,
+   "ms": null,
+   "detail": "fastest risk=0.658 athena risk=0.419 extra=0.5 min reduction=36.3%"
+  },
+  {
+   "step": 3,
+   "agent": "cache",
+   "model": null,
+   "ms": null,
+   "detail": "explanation cache hit (approve); no model call",
+   "key": "52d347cfd2bb"
+  },
+  {
+   "step": 4,
+   "agent": "usage",
+   "model": null,
+   "ms": null,
+   "detail": "0 model calls this request",
+   "calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd": 0
+  }
+ ],
+ "models": [],
+ "usage": {
+  "calls": 0,
+  "tokens_in": 0,
+  "tokens_out": 0,
+  "cost_usd": 0
+ }
+}
