@@ -1,0 +1,217 @@
+{
+ "source": "test fixture (made up, Overpass-shaped)",
+ "licence": "ODbL-1.0",
+ "attribution": "test",
+ "fetched": "2026-11-14T00:00:00+00:00",
+ "bbox": [
+  -33.93,
+  151.17,
+  -33.85,
+  151.26
+ ],
+ "elements": [
+  {
+   "type": "way",
+   "id": 101,
+   "tags": {
+    "highway": "primary",
+    "name": "George Street",
+    "lit": "yes"
+   },
+   "geometry": [
+    {
+     "lat": -33.87,
+     "lon": 151.207
+    },
+    {
+     "lat": -33.871,
+     "lon": 151.207
+    },
+    {
+     "lat": -33.872,
+     "lon": 151.207
+    }
+   ]
+  },
+  {
+   "type": "way",
+   "id": 102,
+   "tags": {
+    "highway": "primary",
+    "name": "George  Street",
+    "lit": "yes"
+   },
+   "geometry": [
+    {
+     "lat": -33.872,
+     "lon": 151.207
+    },
+    {
+     "lat": -33.873,
+     "lon": 151.207
+    }
+   ]
+  },
+  {
+   "type": "way",
+   "id": 103,
+   "tags": {
+    "highway": "footway",
+    "name": "Moore Park path",
+    "lit": "no"
+   },
+   "geometry": [
+    {
+     "lat": -33.89,
+     "lon": 151.22
+    },
+    {
+     "lat": -33.891,
+     "lon": 151.2205
+    },
+    {
+     "lat": -33.892,
+     "lon": 151.221
+    }
+   ]
+  },
+  {
+   "type": "way",
+   "id": 104,
+   "tags": {
+    "highway": "residential",
+    "name": "Quiet Lane"
+   },
+   "geometry": [
+    {
+     "lat": -33.88,
+     "lon": 151.23
+    },
+    {
+     "lat": -33.88,
+     "lon": 151.231
+    },
+    {
+     "lat": -33.88,
+     "lon": 151.232
+    }
+   ]
+  },
+  {
+   "type": "way",
+   "id": 105,
+   "tags": {
+    "highway": "footway",
+    "name": "Station Tunnel Walk",
+    "lit": "yes",
+    "tunnel": "yes"
+   },
+   "geometry": [
+    {
+     "lat": -33.883,
+     "lon": 151.206
+    },
+    {
+     "lat": -33.883,
+     "lon": 151.207
+    }
+   ]
+  },
+  {
+   "type": "way",
+   "id": 106,
+   "tags": {
+    "highway": "pedestrian",
+    "name": "Market Lane",
+    "lit": "limited"
+   },
+   "geometry": [
+    {
+     "lat": -33.874,
+     "lon": 151.209
+    },
+    {
+     "lat": -33.874,
+     "lon": 151.21
+    }
+   ]
+  },
+  {
+   "type": "way",
+   "id": 107,
+   "tags": {
+    "highway": "footway"
+   },
+   "geometry": [
+    {
+     "lat": -33.875,
+     "lon": 151.21
+    },
+    {
+     "lat": -33.875,
+     "lon": 151.211
+    }
+   ]
+  },
+  {
+   "type": "node",
+   "id": 200,
+   "lat": -33.8702,
+   "lon": 151.20711
+  },
+  {
+   "type": "node",
+   "id": 201,
+   "lat": -33.871,
+   "lon": 151.20711
+  },
+  {
+   "type": "node",
+   "id": 202,
+   "lat": -33.8718,
+   "lon": 151.20711
+  },
+  {
+   "type": "node",
+   "id": 300,
+   "lat": -33.8705,
+   "lon": 151.20725,
+   "tags": {
+    "amenity": "bar",
+    "opening_hours": "Mo-Su 16:00-02:00"
+   }
+  },
+  {
+   "type": "way",
+   "id": 301,
+   "center": {
+    "lat": -33.8712,
+    "lon": 151.2073
+   },
+   "tags": {
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Fr 11:00-21:00; Sa,Su off"
+   }
+  },
+  {
+   "type": "node",
+   "id": 302,
+   "lat": -33.8715,
+   "lon": 151.2072,
+   "tags": {
+    "shop": "convenience",
+    "opening_hours": "24/7"
+   }
+  },
+  {
+   "type": "node",
+   "id": 303,
+   "lat": -33.8706,
+   "lon": 151.2069,
+   "tags": {
+    "amenity": "cafe",
+    "opening_hours": "by appointment"
+   }
+  }
+ ]
+}

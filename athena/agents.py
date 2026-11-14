@@ -96,6 +96,11 @@ class Athena:
         self.scout.verify(decision.contract, capability)
         trace.event("contract.verified", contractId=decision.contract["contractId"], engine=capability)
 
+    def _data_mode(self) -> str:
+        if self.live_source is not None:
+            return "zetaris"
+        return "files" if getattr(self.local_source, "processed", False) else "sample"
+
     def _source(self, decision):
         tool = next((t["tool"] for t in decision.tool_plan if t["capability"] == "zetaris.query"), "sample.json")
         return self.live_source if tool == "zetaris.sql" else self.local_source
@@ -114,7 +119,7 @@ class Athena:
                    f"risk={decision.risk['level']}" + (f" clarify={decision.clarification['trigger']}" if decision.clarification else ""),
                    model=None, ms=(time.perf_counter() - t0) * 1000)
         base = {"traceId": trace.trace_id, "intent": decision.intent, "scout": decision.summary(),
-                "help": HELP, "data_mode": "sample" if self.live_source is None else "zetaris"}
+                "help": HELP, "data_mode": self._data_mode()}
 
         if decision.risk["level"] == "block":
             reason = decision.risk.get("reason") or "policy"
@@ -187,10 +192,11 @@ class Athena:
 
         headline, claims, verdict = self._draft_and_check(decision, message, cmp, facts, trace)
         confidence = cmp["confidence"] if verdict != "fallback-error" else "low"
-        if self.live_source is None:
-            confidence_note = "Sample data (pre-existing hand-made routes); not live OTP results."
-        else:
-            confidence_note = "Route data served by Zetaris."
+        confidence_note = {
+            "sample": "Sample data (pre-existing hand-made routes); not live OTP results.",
+            "files": "Routes precomputed with OpenTripPlanner and streets from OpenStreetMap (data/processed); "
+                     "times are scheduled, not live.",
+            "zetaris": "Route data served by Zetaris."}[self._data_mode()]
         trip_label = f"{PLACE_NAMES[p['origin']]} → {PLACE_NAMES[p['destination']]}, {BAND_NAMES[p['band']]}, {p['mode']}"
         return {
             "answer": headline, "claims": claims, "confidence": confidence, "confidence_note": confidence_note,

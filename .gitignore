@@ -5,3 +5,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 runs/
+# Data: raw snapshots are versioned with DVC (data/raw.dvc), derived tables are rebuilt by `make data`
+data/raw/
+data/processed/

@@ -2,18 +2,28 @@
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 PORT ?= 8001
 
-.PHONY: help install data test eval eval-live check checksums secrets serve hooks
+.PHONY: help install data ingest dvc-track test eval eval-live check checksums secrets serve hooks
 
 help:
-	@echo "make install | data | test | eval | eval-live | check | serve | hooks"
+	@echo "make install | ingest | data | dvc-track | test | eval | eval-live | check | serve | hooks"
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
 
-# raw -> processed, then pipeline.check (AGENTS.md Step 2)
+# raw -> processed, then pipeline.check (AGENTS.md Step 2). Fetch raw first with `make ingest`.
 data:
-	@if [ -f pipeline/run.py ]; then $(PYTHON) -m pipeline.run && $(PYTHON) -m pipeline.check; \
-	else echo "data: pipeline/ not built yet (AGENTS.md Step 2)"; fi
+	$(PYTHON) -m pipeline.run
+	$(PYTHON) -m pipeline.check
+
+# Writes a new dated raw snapshot (never overwrites). Needs network access to overpass-api.de.
+ingest:
+	$(PYTHON) -m pipeline.ingest osm
+	@$(PYTHON) -m pipeline.ingest gtfs
+
+# Version raw snapshots with DVC (needs `pip install dvc` and a remote; see data_sources.md).
+dvc-track:
+	dvc add data/raw
+	@echo "now: git add data/raw.dvc data/.gitignore && git commit, then dvc push"
 
 test:
 	SAMPLE_MODE=true $(PYTHON) -m pytest -q
@@ -38,8 +48,7 @@ secrets:
 	$(PYTHON) scripts/scan_secrets.py
 
 check: test eval checksums secrets
-	@if [ -f pipeline/check.py ]; then $(PYTHON) -m pipeline.check; \
-	else echo "pipeline.check: not built yet (AGENTS.md Step 2)"; fi
+	$(PYTHON) -m pipeline.check
 	@echo "make check: all green"
 
 serve:

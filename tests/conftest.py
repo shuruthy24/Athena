@@ -121,7 +121,9 @@ def mock_server():
 
 @pytest.fixture(autouse=True)
 def isolate_runs(tmp_path, monkeypatch):
-    """Keep test traces and report queues out of the real runs/ folder."""
+    """Keep test traces and report queues out of the real runs/ folder, and pin the hand-made sample data
+    so a local `make data` rebuild cannot change test results."""
+    monkeypatch.setenv("ATHENA_DATA_DIR", str(ROOT / "data"))
     import athena.analysis as analysis
     import athena.telemetry as telemetry
     q = tmp_path / "reports_queue.jsonl"

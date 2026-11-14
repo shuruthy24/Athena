@@ -1,5 +1,9 @@
-"""Data sources with one interface: ZetarisSource (live, the required data layer) and LocalSource
-(SAMPLE_MODE: reads the same tables from data/*.json so judges can run the app without credentials).
+"""Data sources with one interface: LocalSource (default, DATA_BACKEND=files) and ZetarisSource (optional
+adapter, DATA_BACKEND=zetaris).
+
+LocalSource reads data/processed/*.parquet when `make data` has produced a complete rebuild (streets and
+OTP routes together, see data/processed/manifest.json), otherwise the hand-made sample in data/*.json.
+It never mixes the two: new street names would not match the sample routes. ATHENA_DATA_DIR pins a folder.
 
 Inputs are validated against fixed vocabularies before they reach SQL, so no user text is ever
 interpolated into a query.
@@ -7,6 +11,7 @@ interpolated into a query.
 from __future__ import annotations
 
 import json
+import os
 import time
 from pathlib import Path
 
@@ -57,21 +62,49 @@ def leg_streets_sql(schema: str, origin: str, destination: str, band: str, mode:
             f"WHERE trip = '{origin}|{destination}' AND band = '{band}' AND mode = '{mode}'")
 
 
+PROCESSED = ROOT / "data" / "processed"
+
+
+def active_data_dir() -> Path:
+    """The folder LocalSource serves: ATHENA_DATA_DIR, else a complete processed rebuild, else the sample."""
+    if os.environ.get("ATHENA_DATA_DIR"):
+        return Path(os.environ["ATHENA_DATA_DIR"])
+    manifest = PROCESSED / "manifest.json"
+    if manifest.exists() and json.loads(manifest.read_text()).get("routes") == "otp":
+        return PROCESSED
+    return ROOT / "data"
+
+
+def read_table(data_dir: Path, name: str) -> list[dict]:
+    """Rows of one table: <name>.parquet if present, else the {"rows": [...]} JSON of the sample."""
+    pq_path = data_dir / f"{name}.parquet"
+    if pq_path.exists():
+        import pyarrow.parquet as pq
+        return pq.read_table(pq_path).to_pylist()
+    json_path = data_dir / f"{name}.json"
+    if json_path.exists():
+        return json.loads(json_path.read_text())["rows"]
+    raise FileNotFoundError(f"no {name}.parquet or {name}.json in {data_dir}")
+
+
 class LocalSource:
     name = "sample.json"
     freshness = {"source": "precomputed", "live": False,
                  "note": "Route alternatives precomputed with OpenTripPlanner; times are scheduled, not live."}
 
-    def __init__(self, data_dir: Path = ROOT / "data", schema: str = "athena"):
-        self.data_dir = data_dir
+    def __init__(self, data_dir: Path | None = None, schema: str = "athena"):
+        self.data_dir = Path(data_dir) if data_dir else active_data_dir()
         self.schema = schema
+        self.processed = (self.data_dir / "manifest.json").exists()
+        if self.processed:
+            self.name = "processed.parquet"
 
     def route_legs(self, origin, destination, band, mode):
         t0 = time.perf_counter()
         rows = [r for r in self._rows("route_legs.json")
                 if r["trip"] == f"{origin}|{destination}" and r["band"] == band and r["mode"] == mode]
         return rows, {"sql": legs_sql(self.schema, origin, destination, band, mode),
-                      "executed_by": "sample mode (local JSON, same table shape)", "rows": len(rows),
+                      "executed_by": self._label(), "rows": len(rows),
                       "ms": round((time.perf_counter() - t0) * 1000, 2)}
 
     def leg_streets(self, origin, destination, band, mode):
@@ -79,24 +112,28 @@ class LocalSource:
         rows = [r for r in self._rows("leg_streets.json")
                 if r["trip"] == f"{origin}|{destination}" and r["band"] == band and r["mode"] == mode]
         return rows, {"sql": leg_streets_sql(self.schema, origin, destination, band, mode),
-                      "executed_by": "sample mode (local JSON, same table shape)", "rows": len(rows),
+                      "executed_by": self._label(), "rows": len(rows),
                       "ms": round((time.perf_counter() - t0) * 1000, 2)}
 
+    def _label(self) -> str:
+        return ("processed data files (Parquet, same table shape)" if self.processed
+                else "sample mode (local JSON, same table shape)")
+
     def _rows(self, file: str) -> list[dict]:
-        return json.loads((self.data_dir / file).read_text())["rows"]
+        return read_table(self.data_dir, file.rsplit(".", 1)[0])
 
     def route_steps(self, origin, destination, band, mode):
         t0 = time.perf_counter()
         sql = steps_sql(self.schema, origin, destination, band, mode)
         rows = [r for r in self._rows("route_steps.json")
                 if r["trip"] == f"{origin}|{destination}" and r["band"] == band and r["mode"] == mode]
-        return rows, {"sql": sql, "executed_by": "sample mode (local JSON, same table shape)",
+        return rows, {"sql": sql, "executed_by": self._label(),
                       "rows": len(rows), "ms": round((time.perf_counter() - t0) * 1000, 2)}
 
     def streets(self):
         t0 = time.perf_counter()
         rows = self._rows("streets.json")
-        return rows, {"sql": streets_sql(self.schema), "executed_by": "sample mode (local JSON, same table shape)",
+        return rows, {"sql": streets_sql(self.schema), "executed_by": self._label(),
                       "rows": len(rows), "ms": round((time.perf_counter() - t0) * 1000, 2)}
 
 
