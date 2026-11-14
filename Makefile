@@ -2,10 +2,10 @@
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 PORT ?= 8001
 
-.PHONY: help install data ingest dvc-track test eval eval-live check checksums secrets serve hooks
+.PHONY: help install data ingest dvc-track labels test eval eval-live check checksums secrets serve hooks
 
 help:
-	@echo "make install | ingest | data | dvc-track | test | eval | eval-live | check | serve | hooks"
+	@echo "make install | ingest | data | dvc-track | labels | test | eval | eval-live | check | serve | hooks"
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
@@ -24,6 +24,11 @@ ingest:
 dvc-track:
 	dvc add data/raw
 	@echo "now: git add data/raw.dvc data/.gitignore && git commit, then dvc push"
+
+# After both labellers fill data/labelling/reports_to_label.csv: kappa, disagreements, then the group split.
+labels:
+	$(PYTHON) -m pipeline.agreement
+	$(PYTHON) -m pipeline.split
 
 test:
 	SAMPLE_MODE=true $(PYTHON) -m pytest -q

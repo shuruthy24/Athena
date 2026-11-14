@@ -1,7 +1,7 @@
 {
- "generated": "2026-11-14T05:38:37.503235+00:00",
- "generated_at": "2026-11-14T05:38:37.503235+00:00",
- "git_sha": "f2b98e5",
+ "generated": "2026-11-14T05:41:38.412365+00:00",
+ "generated_at": "2026-11-14T05:41:38.412365+00:00",
+ "git_sha": "70795dd",
  "config": {
   "live": false,
   "moderator_model": "sample-offline-stub"
@@ -419,7 +419,7 @@
     "source": "athena"
    }
   ],
-  "stage1_self_test_ms": 0.1368329999991147,
+  "stage1_self_test_ms": 0.09790399997200439,
   "heldout_file": "heldout_v2.jsonl",
   "registry_version": 2
  },
@@ -853,7 +853,7 @@
     "source": "athena"
    }
   ],
-  "stage1_self_test_ms": 0.12120700000650686,
+  "stage1_self_test_ms": 0.09403699993981718,
   "heldout_file": "heldout.jsonl",
   "registry_version": 2
  },
