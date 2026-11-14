@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-11-14T07:38:53.581076+00:00",
- "git_sha": "341abce",
+ "generated_at": "2026-11-14T13:28:48.262281+00:00",
+ "git_sha": "dcfd833",
  "config": {
-  "traces": "evals/traces/2026-11-14-live"
+  "traces": "evals/traces/2026-11-14-live-scx-gemma-4-31B-it"
  },
  "calls_used": 0,
  "traces": 36,
@@ -39,6 +39,11 @@
    "failures": []
   },
   "unknown_lighting_disclosed": {
+   "passed": 36,
+   "failed": 0,
+   "failures": []
+  },
+  "no_risk_benefit_disclosed": {
    "passed": 36,
    "failed": 0,
    "failures": []

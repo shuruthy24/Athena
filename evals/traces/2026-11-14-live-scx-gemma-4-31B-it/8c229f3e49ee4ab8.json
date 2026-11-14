@@ -1,0 +1,203 @@
+{
+ "trace_id": "8c229f3e49ee4ab8",
+ "case": {
+  "case_id": "unsw-townhall-18-walk-q0",
+  "question": "Why is the Athena route better tonight?",
+  "trip": {
+   "origin": "unsw",
+   "destination": "townhall",
+   "band": "18",
+   "mode": "walk"
+  }
+ },
+ "trip_used": {
+  "origin": "unsw",
+  "destination": "townhall",
+  "band": "18",
+  "mode": "walk"
+ },
+ "trip_overridden": false,
+ "facts": {
+  "fastest.duration_min": 79.2,
+  "fastest.walk_m": 6180,
+  "fastest.transfers": 0,
+  "fastest.lit_share_pct": 77.4,
+  "fastest.unknown_share_pct": 0.0,
+  "fastest.risk": 0.264,
+  "fastest.mean_risk": 0.218,
+  "fastest.worst.name": "Moore Park path",
+  "fastest.worst.risk": 0.32,
+  "fastest.worst.lit": "no",
+  "fastest.worst.distance_m": 1397,
+  "fastest.worst.tunnel": false,
+  "fastest.streets": [
+   "UNSW campus",
+   "Anzac Parade",
+   "Moore Park path",
+   "Bourke Street cycleway",
+   "George Street"
+  ],
+  "fastest.transit_lines": [],
+  "athena.duration_min": 79.7,
+  "athena.walk_m": 6214,
+  "athena.transfers": 0,
+  "athena.lit_share_pct": 100.0,
+  "athena.unknown_share_pct": 0.0,
+  "athena.risk": 0.181,
+  "athena.mean_risk": 0.165,
+  "athena.worst.name": "Anzac Parade",
+  "athena.worst.risk": 0.2,
+  "athena.worst.lit": "yes",
+  "athena.worst.distance_m": 2999,
+  "athena.worst.tunnel": false,
+  "athena.streets": [
+   "UNSW campus",
+   "Anzac Parade",
+   "Flinders Street",
+   "Oxford Street",
+   "Liverpool Street",
+   "George Street"
+  ],
+  "athena.transit_lines": [],
+  "extra_min": 0.5,
+  "risk_reduction_pct": 31.4,
+  "avoided_streets": [
+   "Moore Park path",
+   "Bourke Street cycleway"
+  ],
+  "added_streets": [
+   "Flinders Street",
+   "Oxford Street",
+   "Liverpool Street"
+  ],
+  "confidence": "high"
+ },
+ "explanation": {
+  "headline": "Athena's route offers a lower risk for a very small time difference",
+  "claims": [
+   {
+    "text": "Athena's route is lower risk, reducing risk by 31.4%.",
+    "facts": [
+     "risk_reduction_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "The fastest route is 79.2 minutes, while Athena's route takes 79.7 minutes.",
+    "facts": [
+     "fastest.duration_min",
+     "athena.duration_min"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena's route has 100.0% lighting, whereas the fastest route has 77.4% lighting.",
+    "facts": [
+     "athena.lit_share_pct",
+     "fastest.lit_share_pct"
+    ],
+    "supported": true,
+    "problems": []
+   },
+   {
+    "text": "Athena's route avoids the Moore Park path and Bourke Street cycleway.",
+    "facts": [
+     "avoided_streets"
+    ],
+    "supported": true,
+    "problems": []
+   }
+  ]
+ },
+ "critic_verdict": "approve",
+ "fact_only": {
+  "headline": "Athena's route is lower risk for this trip.",
+  "claims": [
+   {
+    "text": "Athena's route takes +0.5 min and has 31.4% lower route risk than the fastest route.",
+    "facts": [
+     "extra_min",
+     "risk_reduction_pct"
+    ]
+   },
+   {
+    "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.32).",
+    "facts": [
+     "fastest.worst.name",
+     "fastest.worst.lit",
+     "fastest.worst.risk"
+    ]
+   },
+   {
+    "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+    "facts": [
+     "athena.lit_share_pct",
+     "fastest.lit_share_pct"
+    ]
+   }
+  ]
+ },
+ "trace": [
+  {
+   "step": 1,
+   "agent": "data",
+   "model": null,
+   "ms": 4,
+   "detail": "11 route rows + 12 street rows via sample mode (local JSON, same table shape)",
+   "tool": "sample.json"
+  },
+  {
+   "step": 2,
+   "agent": "route-metrics",
+   "model": null,
+   "ms": null,
+   "detail": "fastest risk=0.264 athena risk=0.181 extra=0.5 min reduction=31.4%"
+  },
+  {
+   "step": 3,
+   "agent": "route-analyst",
+   "model": "scx-gemma-4-31B-it",
+   "ms": 5503,
+   "detail": "draft 1: 4 claims",
+   "prompt": "explainer.v2@5d76dad8919a",
+   "tokens_in": 765,
+   "tokens_out": 268,
+   "cost_usd": 0.00053047
+  },
+  {
+   "step": 4,
+   "agent": "evidence-critic",
+   "model": "scx-gpt-oss-120b",
+   "ms": 707,
+   "detail": "approve draft 1 (All four claims are fully supported by the cited facts.)",
+   "verdict": "approve",
+   "prompt": "critic.v1@4e9b2778becc",
+   "tokens_in": 765,
+   "tokens_out": 321,
+   "cost_usd": 0.00033956
+  },
+  {
+   "step": 5,
+   "agent": "usage",
+   "model": null,
+   "ms": null,
+   "detail": "2 model calls this request",
+   "calls": 2,
+   "tokens_in": 1530,
+   "tokens_out": 589,
+   "cost_usd": 0.00087003
+  }
+ ],
+ "models": [
+  "scx-gemma-4-31B-it",
+  "scx-gpt-oss-120b"
+ ],
+ "usage": {
+  "calls": 2,
+  "tokens_in": 1530,
+  "tokens_out": 589,
+  "cost_usd": 0.00087
+ }
+}
