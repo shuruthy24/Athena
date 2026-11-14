@@ -237,7 +237,8 @@ def main() -> int:
     reports = eval_reports(athena, live_llm)
     now = datetime.now(timezone.utc).isoformat()
     res = {"generated": now, "generated_at": now, "git_sha": git_sha(),
-           "config": {"live": args.live, "moderator_model": reports["model"]},
+           "config": {"live": args.live, "moderator_model": reports["model"],
+                      "data_source": "hand-made sample" if not LocalSource().processed else "processed (OSM + OTP)"},
            "calls_used": reports["calls"] if args.live else 0,
            "scout": eval_scout(street_names),
            "scout_v1_set_after_changes": eval_scout(street_names, "heldout.jsonl"),

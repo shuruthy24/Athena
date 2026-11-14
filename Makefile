@@ -2,10 +2,10 @@
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 PORT ?= 8001
 
-.PHONY: help install data ingest dvc-track labels train test eval eval-live check checksums secrets serve docker load-test hooks
+.PHONY: help install data ingest dvc-track labels train test eval eval-live check checksums secrets serve docker load-test readme hooks
 
 help:
-	@echo "make install | ingest | data | dvc-track | labels | train | test | eval | eval-live | check | serve | docker | load-test | hooks"
+	@echo "make install | ingest | data | dvc-track | labels | train | test | eval | eval-live | check | serve | docker | load-test | readme | hooks"
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
@@ -58,7 +58,12 @@ secrets:
 
 check: test eval checksums secrets
 	$(PYTHON) -m pipeline.check
+	$(PYTHON) scripts/results_table.py --check
 	@echo "make check: all green"
+
+# Regenerate the README results table from evals/results/.
+readme:
+	$(PYTHON) scripts/results_table.py --write
 
 serve:
 	$(PYTHON) -m uvicorn athena.server:app --host 127.0.0.1 --port $(PORT)

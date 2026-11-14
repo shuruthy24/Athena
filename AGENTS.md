@@ -71,7 +71,9 @@ anonymous street reports and shows emergency help.
 | Serve behind an API, latency, batching, caching, quantisation, sovereignty, cost of serving (wk 9) | One Docker image, deployed. Load test p50/p95, cost per request, response cache. |
 | Demo Day (wk 10–11) | Golden path that works on the deployed URL, a backup video, numbers for the talk from `evals/results/`. |
 
-## 4. Current repo (snapshot of 14 Nov 2026, `504d6e0`, verified in Step 0)
+## 4. Repo before the rework (snapshot of 14 Nov 2026, `504d6e0`, verified in Step 0)
+
+This is the starting point the steps below changed; section 12 records what each step built.
 
 ```
 athena/
@@ -483,10 +485,11 @@ make serve       # uvicorn athena.server:app --port 8001
 
 ## 10. Cloud-session notes
 
-Claude Code cloud sessions run behind an egress allowlist. As of 14 Nov: package registries and
-GitHub branch pushes work; `overpass-api.de`, `lllm.cs3110.cse.academy` and
-`opendata.transport.nsw.gov.au` are blocked until added to the environment; tag pushes are refused
-(push tags from a laptop). The gateway key goes in the environment's secret store, never in chat.
+Claude Code cloud sessions run behind an egress allowlist. The personal environment "Athena" allows
+`lllm.cs3110.cse.academy` (reachable; it needs the course key) and lists `overpass-api.de`, which still
+failed to connect on 14 Nov. Package registries and GitHub branch pushes work; tag pushes are refused, so
+push `hackathon-final` from a laptop. There is no Docker daemon in the cloud session. The gateway key
+goes in the environment's secret store or a local `.env`, never in chat.
 
 ## 11. Definition of done
 
@@ -497,3 +500,25 @@ GitHub branch pushes work; `overpass-api.de`, `lllm.cs3110.cse.academy` and
       `evals/release.md` exist.
 - [ ] Every number in docs and slides traces to a file in `evals/results/`.
 - [ ] No key, `.env`, raw personal data or unlicensed dataset in git.
+
+## 12. Progress (14 Nov 2026, branch `comp3110`)
+
+Built by a coding agent and tested offline; `make check` green (193 tests). Live runs, labels and
+deployment were deliberately left to the team.
+
+| Step | Built | Left for the team |
+| --- | --- | --- |
+| 1 Course stack | GatewayLLM (OpenAI SDK, one retry, fallback route, tokens and cost), per-role models, `DATA_BACKEND=files`, Makefile, secrets scan, `check_stack.py` | add the course key; `python scripts/check_stack.py`; one live `/api/ask` |
+| 2 Data pipeline | `pipeline/` ingest, clean, features, street risk rule (new: the hackathon values had no formula, team to review weights), trips, run, check; schemas; `data_sources.md` | `make ingest` (needs Overpass), GTFS download, OTP precompute, `make data`, DVC remote |
+| 3 Report dataset | guide, empty sheet, kappa, leak-free group split with frozen checksum, synthetic variants | write and label 150+ reports, `make labels`, optionally `pipeline.synth` |
+| 4 Prompts and models | prompts as versioned files, trace prompt tags, `evals/compare_models.py` | run the comparison, set the per-role models |
+| 5 Report classifier | majority, keyword, TF-IDF (logreg, SVM), zero-shot and 5-shot behind one interface; dev-only eval; test guard | run on dev, choose, run test once, set `REPORT_CLASSIFIER` |
+| 6 Explanation evals | trace runner, blank `analysis.csv`, assertions, strict judge and audit, blind A/B, release memo template | run traces, error analysis, judge labels, audit, A/B, memo |
+| 7 Security | indirect injection cases and Scout fixes, prompt-echo guard, leakage and data-position tests | none beyond re-running after prompt changes |
+| 8 Product surface | explanation cache, per-request usage step | none |
+| 9 Deploy | Dockerfile, per-client rate limit (bug fix), `load_test.py`, `docs/deploy.md` | build, deploy, `make load-test BASE_URL=...` |
+| 10 Docs | `docs/design.md` (NOT READY until the evidence exists), `docs/metrics.md`, `docs/model_card.md`, README with generated results table | update READY/NOT READY from `evals/release.md` |
+
+Findings for the error analysis: Scout reads time words in the question ("tonight" is the 10 pm band),
+which can override the band picked in the planner (traces record `trip_used` and `trip_overridden`).
+
