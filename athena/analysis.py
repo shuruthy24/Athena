@@ -41,24 +41,36 @@ def report_penalties(band: str, now: datetime | None = None, path: Path | None =
     return out
 
 
+STREET_MODES = ("WALK", "BICYCLE")
+
+
 def variant_metrics(steps: list[dict], streets: dict[str, dict], band: str, penalties: dict[str, float]) -> dict:
     if not steps:
         return {}
     first = steps[0]
-    scored_m = lit_m = unknown_m = 0.0
+    scored_m = lit_m = unknown_m = known_m = 0.0
     weighted = 0.0
     worst = None
     legs, names = [], []
     for s in sorted(steps, key=lambda r: r["step"]):
-        if not s.get("street"):
+        d = float(s["distance_m"])
+        if s.get("street"):                               # a named street: its row in the streets table
+            label, st = s["street"], streets.get(s["street"])
+            penalty = penalties.get(s["street"], 0.0)
+            names.append(s["street"])
+        elif "seg_label" in s:                            # an unnamed way matched by location: its own data
+            label, penalty = s["seg_label"], 0.0
+            st = {"lit": s.get("seg_lit"), f"risk_{band}": s.get(f"seg_risk_{band}"), "tunnel": s.get("seg_tunnel")}
+        elif s.get("leg_mode") in STREET_MODES:           # walk/bike with no data at all: unknown
+            scored_m += d
+            unknown_m += d
+            continue
+        else:                                             # transit: reported, not scored
             legs.append({"mode": s["leg_mode"], "line": s.get("line"), "distance_m": s["distance_m"]})
             continue
-        names.append(s["street"])
-        d = float(s["distance_m"])
-        st = streets.get(s["street"])
         risk = None if not st or st.get(f"risk_{band}") is None else float(st[f"risk_{band}"])
         if risk is not None:
-            risk = min(1.0, risk + penalties.get(s["street"], 0.0))
+            risk = min(1.0, risk + penalty)
         lit = st.get("lit") if st else None
         scored_m += d
         if lit == "yes":
@@ -68,12 +80,10 @@ def variant_metrics(steps: list[dict], streets: dict[str, dict], band: str, pena
         if risk is None:
             continue
         weighted += d * risk
+        known_m += d
         if worst is None or risk > worst["risk"]:
-            worst = {"name": s["street"], "risk": round(risk, 2), "lit": lit, "distance_m": round(d),
-                     "tunnel": bool(st.get("tunnel")) if st else False,
-                     "report_penalty": round(penalties.get(s["street"], 0.0), 3)}
-    known_m = scored_m - sum(float(s["distance_m"]) for s in steps
-                             if s.get("street") and (s["street"] not in streets or streets[s["street"]].get(f"risk_{band}") is None))
+            worst = {"name": label, "risk": round(risk, 2), "lit": lit, "distance_m": round(d),
+                     "tunnel": bool(st.get("tunnel")) if st else False, "report_penalty": round(penalty, 3)}
     mean = weighted / known_m if known_m else None
     risk = None if mean is None else round(0.55 * mean + 0.45 * (worst["risk"] if worst else mean), 3)
     return {

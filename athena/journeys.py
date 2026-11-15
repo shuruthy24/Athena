@@ -81,12 +81,17 @@ def score_streets(rows: list[dict], streets: dict[str, dict], band: str,
     detail = []
     for r in rows:
         name = r.get("street")
-        if not name:
-            continue
         d = float(r.get("distance_m") or 0)
-        st = streets.get(name)
+        if not name and "seg_label" not in r:  # no way matched, or a name not in the streets table: unknown
+            scored += d
+            unknown += d
+            continue
+        if name:
+            st, penalty = streets.get(name), penalties.get(name, 0.0)
+        else:  # an unnamed way matched by location (pipeline/match.py): its own data, labelled by type
+            name, penalty = r["seg_label"], 0.0
+            st = {"lit": r.get("seg_lit"), f"risk_{band}": r.get(f"seg_risk_{band}"), "tunnel": r.get("seg_tunnel")}
         raw = None if not st or st.get(f"risk_{band}") is None else float(st[f"risk_{band}"])
-        penalty = penalties.get(name, 0.0)
         risk = None if raw is None else min(1.0, raw + penalty)
         lit_tag = st.get("lit") if st else None
         scored += d
@@ -94,7 +99,7 @@ def score_streets(rows: list[dict], streets: dict[str, dict], band: str,
             lit += d
         elif lit_tag is None:
             unknown += d
-        detail.append({"street": name, "distance_m": round(d), "risk": risk, "lit": lit_tag,
+        detail.append({"street": name, "named": bool(r.get("street")), "distance_m": round(d), "risk": risk, "lit": lit_tag,
                        "report_penalty": round(penalty, 3) or None,
                        "tunnel": bool(st.get("tunnel")) if st else None})
         if risk is None:

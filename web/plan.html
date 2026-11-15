@@ -345,7 +345,7 @@ function openDetail(id){
   $("report").onsubmit = e => { e.preventDefault(); sendReport(j); };
 }
 function streetNames(j){
-  return [...new Set((j.legs || []).flatMap(l => (l.safety?.streets || []).map(st => st.street)))];
+  return [...new Set((j.legs || []).flatMap(l => (l.safety?.streets || []).filter(st => st.named !== false).map(st => st.street)))];
 }
 async function explainTrip(j){
   const btn = $("explain"), out = $("explain-out");

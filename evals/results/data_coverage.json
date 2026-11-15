@@ -1,0 +1,69 @@
+{
+ "runs": {
+  "option2-unknown-scored": {
+   "generated_at": "2026-11-15T01:25:47.440468+00:00",
+   "git_sha": "6c3e831",
+   "calls_used": 0,
+   "trips": 376,
+   "trips_without_risk_comparison": 145,
+   "trips_same_route": 108,
+   "median_risk_reduction_pct": 4.8,
+   "median_extra_min": 5.6,
+   "median_athena_unknown_lighting_pct": 96.4,
+   "step_distance_matched_pct": 43.8,
+   "streets": 2926,
+   "streets_lit_unknown": 2445,
+   "streets_lit_from_lamps": 79,
+   "raw": null
+  },
+  "option3-location-match": {
+   "generated_at": "2026-11-15T01:35:29.339321+00:00",
+   "git_sha": "6c3e831",
+   "calls_used": 0,
+   "trips": 376,
+   "trips_without_risk_comparison": 0,
+   "trips_same_route": 139,
+   "median_risk_reduction_pct": 4.4,
+   "median_extra_min": 4.55,
+   "median_athena_unknown_lighting_pct": 91.5,
+   "step_distance_matched_pct": 0.0,
+   "walk_bike_distance_by_location": {
+    "named_pct": 46.0,
+    "unnamed_pct": 53.8,
+    "unmatched_pct": 0.2
+   },
+   "segments": {
+    "segments": 36852,
+    "named": 11196,
+    "unnamed": 25656,
+    "named_without_street": 0,
+    "unnamed_lit_unknown": 22173
+   },
+   "streets": 2926,
+   "streets_lit_unknown": 2445,
+   "streets_lit_from_lamps": 79,
+   "sources": {
+    "osm": {
+     "file": "osm_2026-11-15T0130.json",
+     "sha256": "0dc877ce6d9eb809d0074cbafebd5ccc77ea0e3738ffa8f1726a5d730937d32a",
+     "fetched": "2026-11-15T01:30:55.651498+00:00",
+     "licence": "ODbL-1.0",
+     "attribution": "© OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)"
+    },
+    "otp": {
+     "file": "otp_trips_2026-11-15.json",
+     "sha256": "002a849c29cf1eedc793078671a388dd76c357bab11e6b2e4bbe7ea1fc7f3981"
+    }
+   }
+  }
+ },
+ "generated_at": "2026-11-15T01:35:29.339321+00:00",
+ "git_sha": "6c3e831",
+ "calls_used": 0,
+ "config": {
+  "labels": [
+   "option2-unknown-scored",
+   "option3-location-match"
+  ]
+ }
+}

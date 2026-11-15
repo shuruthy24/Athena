@@ -25,6 +25,9 @@ ATTRIBUTION = "© OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetma
 # Named streets and paths people walk or ride on; motorways and construction are excluded.
 STREET_HIGHWAYS = ("primary|secondary|tertiary|unclassified|residential|living_street|service|pedestrian|"
                    "footway|path|cycleway|steps|track|primary_link|secondary_link|tertiary_link")
+# Unnamed ways people walk or ride on (Option 3): footpaths, sidewalks, cycleways, lanes, steps. OTP routes along
+# them ("path", "sidewalk"), so without them about half of each walk had no data.
+UNNAMED_WALKWAYS = "footway|path|cycleway|steps|pedestrian|service|track|living_street|residential|unclassified"
 # Places likely to be open and staffed at night: the "activity" signal for each time band.
 VENUE_AMENITIES = "bar|pub|restaurant|fast_food|cafe|nightclub|cinema|theatre|fuel|pharmacy|police|hospital"
 
@@ -33,7 +36,8 @@ def overpass_query(bbox=BBOX) -> str:
     b = ",".join(str(v) for v in bbox)
     return (
         "[out:json][timeout:180];\n"
-        f'way["highway"~"^({STREET_HIGHWAYS})$"]["name"]({b})->.streets;\n'
+        f'(way["highway"~"^({STREET_HIGHWAYS})$"]["name"]({b}); '
+        f'way["highway"~"^({UNNAMED_WALKWAYS})$"][!"name"]({b});)->.streets;\n'
         f'node["highway"="street_lamp"]({b})->.lamps;\n'
         f'(nw["amenity"~"^({VENUE_AMENITIES})$"]({b}); nw["shop"="convenience"]({b});)->.venues;\n'
         ".streets out geom tags;\n.lamps out skel;\n.venues out center tags;"
@@ -41,8 +45,13 @@ def overpass_query(bbox=BBOX) -> str:
 
 
 def snapshot_path(source: str, ext: str, day: str | None = None) -> Path:
-    day = day or datetime.now(timezone.utc).date().isoformat()
-    return RAW / f"{source}_{day}.{ext}"
+    """data/raw/<source>_<date>.<ext>; a second snapshot on the same day gets the time too
+    (<date>T<HHMM>, which sorts after the date-only name, so it counts as the newest)."""
+    now = datetime.now(timezone.utc)
+    path = RAW / f"{source}_{day or now.date().isoformat()}.{ext}"
+    if day is None and path.exists():
+        path = RAW / f"{source}_{now:%Y-%m-%dT%H%M}.{ext}"
+    return path
 
 
 def fetch_osm(out: Path | None = None, session=None) -> Path:

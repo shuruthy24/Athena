@@ -1,7 +1,8 @@
 """`make data`: rebuild data/processed/ from the newest raw snapshots, with no manual steps.
 
   data/raw/osm_<date>.json        -> streets.parquet       (pipeline.features)
-  data/raw/otp_trips_<date>.json  -> route_legs / leg_streets / route_steps .parquet  (pipeline.trips)
+  data/raw/otp_trips_<date>.json  -> route_legs / leg_streets / route_steps .parquet  (pipeline.trips; walk and
+                                     bike legs matched to OSM ways by location, pipeline.match)
   data/places.json                -> places.parquet        (configuration, not a source snapshot)
   manifest.json                   which raw files (with sha256) built which tables, and the row counts
 
@@ -17,7 +18,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .features import build_streets
+from .features import build_segments, build_streets
 from .trips import build_trip_tables
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,7 +58,9 @@ def build(raw: Path = RAW, out: Path = PROCESSED, places_file: Path = ROOT / "da
                 "routes": "sample"}
     otp = latest("otp_trips", raw)
     if otp is not None:
-        legs, leg_streets, steps, trip_stats = build_trip_tables(json.loads(otp.read_text()), streets)
+        segments, segment_stats = build_segments(snapshot, streets)
+        manifest["stats"]["segments"] = segment_stats
+        legs, leg_streets, steps, trip_stats = build_trip_tables(json.loads(otp.read_text()), streets, segments)
         write_parquet(legs, out / "route_legs.parquet")
         write_parquet(leg_streets, out / "leg_streets.parquet")
         write_parquet(steps, out / "route_steps.parquet")

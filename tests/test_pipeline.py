@@ -73,7 +73,7 @@ def test_street_features(streets):
 
 def test_unknown_lighting_stays_unknown(streets):
     s, _ = streets
-    assert s["Quiet Lane"]["lit"] is None and s["Quiet Lane"]["risk_22"] is None
+    assert s["Quiet Lane"]["lit"] is None and s["Quiet Lane"]["lit_source"] is None   # still reported as unknown
     assert s["Market Lane"]["lit"] is None  # lit=limited is not read as either yes or no
 
 
@@ -83,7 +83,9 @@ def test_risk_rule_orders_streets_sensibly(streets):
     assert s["Moore Park path"]["risk_01"] > s["Moore Park path"]["risk_18"]
     assert street_risk("footway", "yes", True, 0, "22") > street_risk("footway", "yes", False, 0, "22")
     assert street_risk("primary", "no", False, 10, "18") > street_risk("primary", "yes", False, 10, "18")
-    assert street_risk("primary", None, False, 10, "18") is None
+    # Unknown lighting is scored halfway: above lit, below unlit (Option 2), never as unlit.
+    lit, unknown, unlit = (street_risk("footway", v, False, 0, "22") for v in ("yes", None, "no"))
+    assert lit < unknown < unlit and round(unknown - lit, 2) == round(unlit - unknown, 2) == 0.15
 
 
 # ---------------------------------------------------------------- trips
@@ -150,11 +152,27 @@ def test_full_build_passes_check_and_is_served(raw_dir, tmp_path):
     assert src.processed and len(steps) == 2 and "Parquet" in ev["executed_by"]
 
 
-def test_check_fails_when_a_route_street_is_missing(raw_dir, tmp_path):
+def test_unknown_otp_street_names_become_unknown_steps(raw_dir, tmp_path):
     raw, places = raw_dir
     (raw / "otp_trips_2026-11-14.json").write_text(json.dumps(_otp_snapshot("George Street", "Nowhere Road")))
     out = tmp_path / "processed"
+    manifest = build(raw=raw, out=out, places_file=places)
+    assert "Nowhere Road" not in {r["street"] for r in read_table(out, "route_steps")}
+    assert "Nowhere Road" in manifest["stats"]["trips"]["top_unmatched_names"]
+    assert manifest["stats"]["trips"]["step_distance_matched_pct"] < 100
+    assert all(ok for _, ok, _ in run_checks(out))
+
+
+def test_check_fails_when_a_route_street_is_missing(raw_dir, tmp_path):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    raw, places = raw_dir
+    (raw / "otp_trips_2026-11-14.json").write_text(json.dumps(_otp_snapshot("George Street", "George Street")))
+    out = tmp_path / "processed"
     build(raw=raw, out=out, places_file=places)
+    rows = read_table(out, "route_steps")
+    rows[0]["street"] = "Nowhere Road"                       # a table edited by hand, outside the pipeline
+    pq.write_table(pa.Table.from_pylist(rows), out / "route_steps.parquet")
     failed = {name for name, ok, _ in run_checks(out) if not ok}
     assert "every route_steps street is in streets" in failed
 
@@ -173,3 +191,48 @@ def test_overpass_query_and_raw_files_are_never_overwritten(tmp_path):
     existing.write_text("{}")
     with pytest.raises(FileExistsError):
         fetch_osm(out=existing, session=object())
+
+
+def test_street_names_differing_only_in_case_are_one_street():
+    geom = [{"lat": -33.87, "lon": 151.207}, {"lat": -33.871, "lon": 151.207}]
+    ways = [{"type": "way", "id": i, "tags": {"highway": "tertiary", "name": n}, "geometry": geom}
+            for i, n in [(1, "Gadigal Avenue"), (2, "Gadigal Avenue"), (3, "Gadigal avenue"), (4, "Other Street")]]
+    rows, _ = build_streets({"elements": ways})
+    assert sorted(r["name"] for r in rows) == ["Gadigal Avenue", "Other Street"]   # most common spelling kept
+    assert next(r for r in rows if r["name"] == "Gadigal Avenue")["osm_ways"] == 3
+
+
+def test_unnamed_walk_steps_count_as_unknown_not_dropped():
+    from athena.analysis import variant_metrics
+    from athena.journeys import score_streets
+    streets = {"Lit Street": {"name": "Lit Street", "lit": "yes", "risk_22": 0.2}}
+    step = {"step": 0, "leg": 0, "leg_mode": "WALK", "duration_min": 10, "distance_m": 100.0, "street": "Lit Street"}
+    named_only = variant_metrics([step], streets, "22", {})
+    assert named_only["unknown_share_pct"] == 0
+    with_path = variant_metrics([step, {**step, "step": 1, "street": None}], streets, "22", {})
+    assert with_path["unknown_share_pct"] == 50.0 and with_path["scored_m"] == 200 and not with_path["transit_legs"]
+    assert with_path["risk"] == named_only["risk"]                       # unknown distance does not change risk
+    bus = variant_metrics([step, {**step, "step": 1, "street": None, "leg_mode": "BUS"}], streets, "22", {})
+    assert bus["unknown_share_pct"] == 0 and bus["transit_legs"]          # transit legs are still not scored
+    j = score_streets([{"street": "Lit Street", "distance_m": 100}, {"street": None, "distance_m": 100}], streets, "22", {})
+    assert j["unknown_share_pct"] == 50.0 and j["known_m"] == 100
+
+
+def test_lamps_only_ever_infer_lit_yes():
+    from pipeline.features import infer_lit
+    assert infer_lit(3, 1.5) == "yes"
+    assert infer_lit(1, 5.0) is None          # one lamp is not enough evidence
+    assert infer_lit(4, 0.4) is None          # too sparse for the length
+    assert infer_lit(0, 0.0) is None          # no mapped lamps stays unknown, never "no"
+    assert infer_lit(0, None) is None
+
+
+def test_lit_inference_agreement_and_criteria():
+    import evals.eval_lit_inference as E
+    yes = [{"name": f"Y{i}", "lit_osm": "yes", "lamps": 3, "lights_per_100m": 2.0} for i in range(30)]
+    res = E.agreement(yes + [{"name": "U", "lit_osm": None, "lamps": 3, "lights_per_100m": 2.0}])
+    assert res["precision"] == 1.0 and res["passed"] and res["untagged_that_would_become_lit"] == 1
+    dark = [{"name": f"N{i}", "lit_osm": "no", "lamps": 3, "lights_per_100m": 2.0} for i in range(10)]
+    bad = E.agreement(yes + dark)                # lamps "say lit" on 10 streets OSM tags as unlit
+    assert bad["precision"] == 0.75 and not bad["passed"] and bad["false_positive_lit_but_osm_no"] == 10
+    assert not E.agreement(yes[:5])["passed"]    # too few streets to judge
