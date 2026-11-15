@@ -38,8 +38,10 @@ test:
 	SAMPLE_MODE=true $(PYTHON) -m pytest -q
 
 # Offline evals: no model calls. Writes evals/results/offline.json; never touches the hackathon evidence.
+# Pinned to the hand-made sample data so it stays a fixed regression gate; a local `make data` rebuild is
+# measured separately (see data/processed/manifest.json).
 eval:
-	SAMPLE_MODE=true $(PYTHON) evals/run_evals.py
+	SAMPLE_MODE=true ATHENA_DATA_DIR=data $(PYTHON) evals/run_evals.py
 
 # Budgeted live evals through the COMP3110 gateway (needs COMP3110_MODEL_BASE_URL and COMP3110_API_KEY).
 eval-live:

@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import threading
 import uuid
@@ -9,6 +10,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+# Pin the hand-made sample data for the whole session, before any test module is imported: some modules build
+# a LocalSource at import time, and a local `make data` rebuild must not change test results.
+os.environ["ATHENA_DATA_DIR"] = str(ROOT / "data")
 
 GATEWAY_KEY = "test-gateway-key-not-real"   # COMP3110 gateway mock
 MODEL = "scx-gpt-oss-120b"

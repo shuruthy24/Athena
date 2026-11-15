@@ -149,23 +149,31 @@ def eval_reports(athena: Athena, live_llm=None) -> dict:
 
 
 def eval_routes() -> dict:
+    """Fastest vs Athena route on every trip, band and mode in the data the app serves (the sample, or the
+    processed OTP rebuild after `make data`). Trips where neither route has any street with risk data have
+    no risk reduction; they are counted, not dropped silently."""
     src = LocalSource()
     streets, _ = src.streets()
+    combos = sorted({(r["trip"], r["band"], r["mode"]) for r in src._rows("route_steps.json")})
     rows = []
-    for trip in ("unsw|townhall", "townhall|unsw"):
+    for trip, band, mode in combos:
         o, dst = trip.split("|")
-        for band in ("18", "22", "01"):
-            for mode in ("walk", "bike", "transit"):
-                steps, _ = src.route_steps(o, dst, band, mode)
-                c = compare(steps, streets, band, use_reports=False)
-                rows.append({"trip": trip, "band": band, "mode": mode, "extra_min": c["extra_min"],
-                             "risk_reduction_pct": c["risk_reduction_pct"], "fastest_risk": c["fastest"]["risk"],
-                             "athena_risk": c["athena"]["risk"], "fastest_lit": c["fastest"]["lit_share_pct"],
-                             "athena_lit": c["athena"]["lit_share_pct"]})
-    red = [r["risk_reduction_pct"] for r in rows]
-    ext = [r["extra_min"] for r in rows]
-    return {"n": len(rows), "median_risk_reduction_pct": statistics.median(red), "min_risk_reduction_pct": min(red),
-            "max_risk_reduction_pct": max(red), "median_extra_min": statistics.median(ext), "max_extra_min": max(ext),
+        steps, _ = src.route_steps(o, dst, band, mode)
+        c = compare(steps, streets, band, use_reports=False)
+        rows.append({"trip": trip, "band": band, "mode": mode, "extra_min": c["extra_min"],
+                     "risk_reduction_pct": c["risk_reduction_pct"], "fastest_risk": c["fastest"]["risk"],
+                     "athena_risk": c["athena"]["risk"], "fastest_lit": c["fastest"]["lit_share_pct"],
+                     "athena_lit": c["athena"]["lit_share_pct"],
+                     "athena_unknown": c["athena"]["unknown_share_pct"], "same_route": c["same_route"]})
+    red = [r["risk_reduction_pct"] for r in rows if r["risk_reduction_pct"] is not None]
+    ext = [r["extra_min"] for r in rows if r["extra_min"] is not None]
+    unk = [r["athena_unknown"] for r in rows if r["athena_unknown"] is not None]
+    return {"data": src.name, "n": len(rows), "n_without_risk": len(rows) - len(red),
+            "n_same_route": sum(1 for r in rows if r["same_route"]),
+            "median_risk_reduction_pct": statistics.median(red) if red else None,
+            "min_risk_reduction_pct": min(red) if red else None, "max_risk_reduction_pct": max(red) if red else None,
+            "median_extra_min": statistics.median(ext) if ext else None, "max_extra_min": max(ext) if ext else None,
+            "median_athena_unknown_pct": statistics.median(unk) if unk else None,
             "rows": rows}
 
 
