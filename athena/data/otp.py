@@ -21,8 +21,10 @@ log = logging.getLogger("athena.otp")
 
 PLAN_QUERY = """
 query plan($from: PlanLabeledLocationInput!, $to: PlanLabeledLocationInput!,
-           $dateTime: PlanDateTimeInput, $modes: PlanModesInput, $first: Int) {
-  planConnection(origin: $from, destination: $to, dateTime: $dateTime, modes: $modes, first: $first) {
+           $dateTime: PlanDateTimeInput, $modes: PlanModesInput, $preferences: PlanPreferencesInput,
+           $first: Int) {
+  planConnection(origin: $from, destination: $to, dateTime: $dateTime, modes: $modes,
+                 preferences: $preferences, first: $first) {
     edges { node {
       start end duration numberOfTransfers walkDistance
       legs {
@@ -38,10 +40,23 @@ query plan($from: PlanLabeledLocationInput!, $to: PlanLabeledLocationInput!,
 }
 """
 MODES = {
-    "walk": {"direct": ["WALK"]},
-    "bike": {"direct": ["BICYCLE"]},
+    # directOnly: without it OTP also returns tram and bus itineraries for a "walk" or "bike" request.
+    "walk": {"directOnly": True, "direct": ["WALK"]},
+    "bike": {"directOnly": True, "direct": ["BICYCLE"]},
     "transit": {"transit": {"transit": [{"mode": "BUS"}, {"mode": "RAIL"}, {"mode": "TRAM"},
                                         {"mode": "FERRY"}, {"mode": "SUBWAY"}]}},
+}
+
+
+# A direct walk or ride comes back as one itinerary, so it is asked twice: fastest, and with OTP's own
+# safety preference (walk safetyFactor; the cycling triangle), which favours footpaths, quieter streets and
+# cycleways. Stock OTP does not read lighting; Athena scores every answer with its own rule afterwards.
+PREFERENCES = {
+    "walk": {"fastest": {"street": {"walk": {"safetyFactor": 0.0}}},
+             "safety": {"street": {"walk": {"safetyFactor": 1.0}}}},
+    "bike": {"fastest": {"street": {"bicycle": {"optimization": {"type": "SHORTEST_DURATION"}}}},
+             "safety": {"street": {"bicycle": {"optimization": {"triangle": {"safety": 0.7, "flatness": 0.1,
+                                                                             "time": 0.2}}}}}},
 }
 
 
@@ -92,24 +107,22 @@ class OTPSource:
             "modes": MODES[mode], "first": 4,
         }
         t0 = time.perf_counter()
-        try:
-            r = self.http.post(self.url, json={"query": PLAN_QUERY, "variables": variables},
-                               timeout=self.timeout_s)
-        except requests.RequestException as exc:
-            raise OTPError(f"OpenTripPlanner unreachable: {exc.__class__.__name__}") from exc
-        if r.status_code != 200:
-            raise OTPError(f"OpenTripPlanner HTTP {r.status_code}: {r.text[:140]}")
-        body = r.json()
-        if body.get("errors"):
-            raise OTPError("OpenTripPlanner: " + str(body["errors"][0].get("message"))[:140])
-        edges = (((body.get("data") or {}).get("planConnection") or {}).get("edges")) or []
+        edges, seen = [], set()
+        for pref_name, prefs in (PREFERENCES.get(mode) or {None: None}).items():
+            for edge in self._query({**variables, "preferences": prefs} if prefs else variables):
+                node = edge.get("node") or {}
+                sig = tuple((lg.get("legGeometry") or {}).get("points") for lg in node.get("legs") or [])
+                if sig in seen:            # both preferences often give the same route: keep it once
+                    continue
+                seen.add(sig)
+                edges.append({**edge, "preference": pref_name})
         ms = round((time.perf_counter() - t0) * 1000)
         legs, steps = [], []
         for idx, edge in enumerate(edges):
             node = edge.get("node") or {}
             journey = f"{origin}|{destination}|{band}|{mode}|otp|{idx}"
             head = {
-                "journey": journey, "variant": "otp", "itinerary": idx,
+                "journey": journey, "variant": "otp", "itinerary": idx, "preference": edge.get("preference"),
                 "total_min": round((node.get("duration") or 0) / 60, 1),
                 "walk_m": round(node.get("walkDistance") or 0, 1),
                 "transfers": node.get("numberOfTransfers") or 0,
@@ -141,6 +154,18 @@ class OTPSource:
         self._cache[key] = (time.time(), legs, steps)
         self._ms = ms
         return legs, steps
+
+    def _query(self, variables: dict) -> list[dict]:
+        try:
+            r = self.http.post(self.url, json={"query": PLAN_QUERY, "variables": variables}, timeout=self.timeout_s)
+        except requests.RequestException as exc:
+            raise OTPError(f"OpenTripPlanner unreachable: {exc.__class__.__name__}") from exc
+        if r.status_code != 200:
+            raise OTPError(f"OpenTripPlanner HTTP {r.status_code}: {r.text[:140]}")
+        body = r.json()
+        if body.get("errors"):
+            raise OTPError("OpenTripPlanner: " + str(body["errors"][0].get("message"))[:140])
+        return (((body.get("data") or {}).get("planConnection") or {}).get("edges")) or []
 
     def route_legs(self, origin, destination, band, mode, depart=None):
         legs, _ = self._plan(origin, destination, band, mode, depart)

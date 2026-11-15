@@ -39,7 +39,10 @@ def write_parquet(rows: list[dict], path: Path) -> None:
     import pyarrow as pa
     import pyarrow.parquet as pq
     path.parent.mkdir(parents=True, exist_ok=True)
-    pq.write_table(pa.Table.from_pylist(rows), path)
+    # Columns are the union over all rows: from_pylist alone takes them from the first row and would silently
+    # drop optional fields (seg_*, wait_*, duration_s) that only some rows carry.
+    columns = list(dict.fromkeys(k for r in rows for k in r))
+    pq.write_table(pa.Table.from_pylist([{k: r.get(k) for k in columns} for r in rows]), path)
 
 
 def build(raw: Path = RAW, out: Path = PROCESSED, places_file: Path = ROOT / "data/places.json") -> dict:
