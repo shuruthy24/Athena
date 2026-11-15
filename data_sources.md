@@ -16,15 +16,24 @@ holds them once the snapshot exists.
 | URL | https://overpass-api.de/api/interpreter |
 | Licence | ODbL 1.0, attribution "© OpenStreetMap contributors" (shown on the map pages) |
 | Area | bbox -33.93, 151.17, -33.85, 151.26 (UNSW, CBD, inner west) |
-| Retrieved | written into `data/raw/osm_<date>.json` and the manifest by `make ingest` |
-| Rows kept | streets, lamps, venues and unknown-hours counts in `manifest.json` → `stats.streets` after `make data` |
+| Retrieved | `data/raw/osm_2026-11-15T0130.json`, fetched 2026-11-15 01:30 UTC (the snapshot in use). An earlier snapshot the same day, `osm_2026-11-15.json`, has named streets only and is kept for history. |
+| Rows kept | 11,196 named ways → 2,926 streets; 25,656 unnamed ways (footways, paths, cycleways, service lanes, steps); 1,840 street lamps; 3,666 venues, 2,868 with opening hours the parser cannot read (`manifest.json` → `stats`) |
 
 Cleaning (`pipeline/features.py`, Tech 4 helpers in `pipeline/clean.py`):
-- Unnamed ways dropped (`drop_missing`); names NFC-normalised and stripped of control characters
-  (`fix_encoding`); duplicate OSM way IDs dropped; ways that share a name after whitespace normalisation
-  are combined into one street, weighted by length.
-- `lit` is read as yes/no only when at least half the street's length is tagged; `lit=limited` and
-  missing tags stay unknown and are never scored as unlit.
+- Names NFC-normalised and stripped of control characters (`fix_encoding`); duplicate OSM way IDs dropped;
+  named ways that share a name after case and whitespace normalisation are combined into one street,
+  weighted by length, keeping the most common spelling ("Gadigal Avenue" / "Gadigal avenue").
+- Unnamed ways are not streets: they are kept as segments, scored on their own and labelled by type
+  ("unnamed footway"), so routes along footpaths have data without being named in explanations.
+- `lit` is read as yes/no only when at least half the length is tagged; `lit=limited` and missing tags
+  stay unknown and are never scored as unlit.
+- Lamp inference: a street with no lit tag but at least 2 mapped lamps and at least 1 per 100 m gets
+  `lit=yes` (`lit_source=lamps`). No lamps never means unlit. Checked against OSM's own tags before use
+  (`evals/results/lit_inference.json`): 43/43 agree, but only 11 tagged streets are unlit, so the check is
+  weak. 79 streets gained a value; 2,445 of 2,926 streets and 22,173 of 25,656 unnamed ways still have
+  unknown lighting.
+- Unknown lighting is scored halfway between lit and unlit (+0.15 vs +0.30; team decision, 15 Nov 2026),
+  and is still reported as unknown in every explanation.
 - Opening hours that the small parser does not understand stay unknown, and those venues are not counted
   as open.
 - PII: OSM street, lamp and venue data describes places, not people. Free-text tags are not used.
@@ -36,11 +45,28 @@ Cleaning (`pipeline/features.py`, Tech 4 helpers in `pipeline/clean.py`):
 | Source | Transport for NSW Open Data Hub, "Timetables Complete GTFS" |
 | URL | https://opendata.transport.nsw.gov.au/ (free account needed) |
 | Licence | CC BY 4.0 |
-| Retrieved | by a team member, saved unchanged as `data/raw/gtfs_<date>.zip` (`make ingest` prints the steps) |
-| Rows kept | trips routed and failures in `data/raw/otp_trips_<date>.json` and the manifest's `stats.trips` |
+| Retrieved | 15 Nov 2026 by a team member through the Open Data Hub API (personal API token, kept in the git-ignored `.env`), saved unchanged as `data/raw/gtfs_2026-11-15.zip` (278 MB, all of NSW) |
+| Rows kept | used only to build the OpenTripPlanner graph; nothing from it is stored in `data/processed/` except the planned trips |
 
-Trips are computed once with OpenTripPlanner (`pipeline/precompute_trips.py`) for every place pair, three
-time bands (6 pm, 10 pm, 1 am) and three modes. The app never calls OTP live. Times are timetable times.
+### Precomputed trips (OpenTripPlanner)
+
+| | |
+| --- | --- |
+| Tool | OpenTripPlanner 2.7.0 (stock release jar from Maven Central), Java 21, run locally once |
+| Inputs | the GTFS above plus a Geofabrik Australia OSM extract (ODbL) clipped with osmium to 151.15, -33.95, 151.28, -33.83 |
+| Output | `data/raw/otp_trips_2026-11-15T0638.json`, planned 2026-11-15 06:38 UTC by `pipeline/precompute_trips.py` (in use). The earlier `otp_trips_2026-11-15.json` asked for walk and bike trips without "direct only" and got tram and bus itineraries back; it is kept for history. |
+| Rows kept | 378 trips (42 place pairs × 3 bands × 3 modes); 377 routed, 1 with no route, 0 errors |
+
+The app never calls OTP live; times are timetable times. Public transport trips ask OTP once (up to 4 itineraries).
+Walk and bike trips ask for direct trips only, twice: fastest, and with OTP's own safety preference (walk
+`safetyFactor` 1.0; cycling triangle safety 0.7, flatness 0.1, time 0.2), keeping distinct routes. Stock OTP does
+not read lighting, and its preference changed no walking route: walk trips have one route each.
+`pipeline/trips.py` picks, per trip, the fastest itinerary and the one with the lowest route risk (the same rule as
+the app: time-weighted, time on board at 0.10, waits at stops scored from the nearest street); in 309 of 378 they
+are the same itinerary. Walk and bike legs are matched to OSM ways by location, not by OTP's step names
+(`pipeline/match.py`: a point every 10 m snapped to the nearest way within 15 m, staying on the current way while it
+is within range): 57.2% of walk/bike distance lands on named streets, 42.7% on unnamed ways, 0.1% on nothing.
+Coverage per data version: `evals/results/data_coverage.json`.
 
 ### OpenStreetMap help locations
 
@@ -75,13 +101,16 @@ synthetic.
 
 ## Versioning with DVC
 
+`data/raw/` (4 files, 324 MB: the GTFS zip, both OSM snapshots, the OTP precompute) is tracked by DVC. Git holds
+only the pointer `data/raw.dvc` (directory hash, size, file count); the data itself is git-ignored. The remote
+is a local directory outside the repository, configured with `--local` so its path stays out of git; a pull from
+it was checked with the working copy and the DVC cache moved away.
+
 ```bash
-pip install dvc
-dvc init
-make ingest
-make dvc-track
-dvc remote add -d storage <your remote, e.g. a UNSW OneDrive folder or a local path outside the repo>
-dvc push
+dvc remote add --local -d localstore <a folder outside the repo>   # once per machine
+dvc pull                                                           # restore data/raw/
+make data                                                          # rebuild data/processed/
 ```
 
-Commit `data/raw.dvc`, never the raw files. To restore on another machine: `dvc pull`, then `make data`.
+The remote is on one team member's laptop, so other machines need their own remote (or a shared one, added the
+same way) before `dvc pull` works there.
