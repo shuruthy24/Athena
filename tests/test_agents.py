@@ -185,3 +185,14 @@ def test_explain_inputs_are_checked_at_the_boundary(athena):
 def test_trip_outside_data_coverage_is_honest(athena):
     r = athena.explain({"origin": "newtown", "destination": "quay", "band": "22", "mode": "walk"})
     assert "no routes" in r["answer"]
+
+
+def test_numbers_are_not_read_as_streets_named_like_numbers(athena):
+    from athena.agents import street_patterns
+    athena._street_patterns = street_patterns(athena.known_streets + ["1", "4", "Mall"])
+    facts = {"risk_reduction_pct": 4.6, "fastest.streets": [], "athena.streets": []}
+    ok = athena.check_claims([{"text": "Athena's route has 4.6% lower route risk in a small lane.",
+                               "facts": ["risk_reduction_pct"]}], facts)
+    assert ok[0]["supported"], ok                    # "1", "4" and "Mall" (inside "small") are not street mentions
+    bad = athena.check_claims([{"text": "It avoids the Mall at night.", "facts": ["risk_reduction_pct"]}], facts)
+    assert any("mentions Mall" in p for p in bad[0]["problems"])     # a real whole-word mention is still caught

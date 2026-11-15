@@ -71,6 +71,13 @@ def leaks_prompt(text: str, windows: set[str], size: int = LEAK_WINDOW) -> bool:
     return any(t[i:i + size] in windows for i in range(0, max(0, len(t) - size + 1)))
 
 
+def street_patterns(names: list[str]) -> list[tuple[str, re.Pattern]]:
+    """(name, whole-word case-insensitive pattern) for every street name a claim could mention. Names with no
+    letters or under 3 characters are skipped: OSM has ways named "1" or "2", which matched any number."""
+    return [(n, re.compile(r"(?<!\w)" + re.escape(n) + r"(?!\w)", re.I))
+            for n in names if len(n) >= 3 and re.search(r"[A-Za-z]", n)]
+
+
 class Athena:
     def __init__(self, settings: Settings, llm, source=None):
         self.s = settings
@@ -91,6 +98,9 @@ class Athena:
         self.source = source if source is not None else LocalSource()
         street_rows, _ = self.source.streets()
         self.known_streets = [r["name"] for r in street_rows]
+        # Whole-word, case-insensitive patterns. Names with no letters or under 3 characters are skipped: real OSM
+        # data has ways named "1" or "2" (platforms, numbered paths), which as substrings matched every number.
+        self._street_patterns = street_patterns(self.known_streets)
 
     # ------------------------------------------------------------------ helpers
     def _prompt_tag(self, role: str) -> str:
@@ -173,7 +183,6 @@ class Athena:
     def check_claims(self, claims: list[dict], facts: dict) -> list[dict]:
         """Deterministic part of the Evidence Critic. Returns one result per claim."""
         known_streets = set(facts.get("fastest.streets", [])) | set(facts.get("athena.streets", []))
-        all_known = set(self.known_streets)
         out = []
         for i, c in enumerate(claims):
             problems = []
@@ -189,8 +198,8 @@ class Athena:
             for n in numbers_in(text):
                 if not any(close(n, v) for v in cited_nums):
                     problems.append(f"number {n:g} not in cited facts")
-            for name in all_known:
-                if name.lower() in text.lower() and name not in known_streets:
+            for name, pattern in self._street_patterns:
+                if name not in known_streets and pattern.search(text):
                     problems.append(f"mentions {name}, which is on neither route")
             red = facts.get("risk_reduction_pct") or 0
             if FASTEST_LOWER.search(text) and red > 0:
