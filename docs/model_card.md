@@ -5,9 +5,9 @@ waiting for the team's live runs.
 
 ## Components and models
 
-| Role | What it does | Model (provisional until `model_comparison.json`) | No-model baseline |
+| Role | What it does | Model | No-model baseline |
 | --- | --- | --- | --- |
-| Explainer | Drafts 2-4 claims, each citing fact keys, about the fastest vs lower-risk route | `scx-gpt-oss-120b` (`EXPLAINER_MODEL`) | fact-only explanation built from the facts |
+| Explainer | Drafts 2-4 claims, each citing fact keys, about the fastest vs lower-risk route | `scx-gemma-4-31B-it` (`EXPLAINER_MODEL`), chosen on first-draft pass rate in `model_comparison.json` | fact-only explanation built from the facts |
 | Critic | Flags claims its cited facts do not support | `scx-gpt-oss-120b` (`CRITIC_MODEL`) | deterministic rules (numbers, wording, streets, direction, prompt echo) |
 | Report classifier | approve / review / reject and a category for a street report | `moderator-v1` prompt by default; candidates in `athena/classify` (`REPORT_CLASSIFIER`) | majority class, keyword rule |
 | Judge (offline only) | PASS/FAIL on explanation faithfulness; A/B/TIE preference | `scx-Meta-Llama-3.3-70B-Instruct` (`JUDGE_MODEL`) | assertions |
@@ -41,12 +41,27 @@ See [metrics.md](metrics.md) for definitions and proposed targets and the README
 
 | Evaluation | Status |
 | --- | --- |
-| Explainer first-draft pass rate per model | not run yet (`evals/compare_models.py`) |
-| Assertions on real traces | not run yet (`evals/assertions.py`) |
+| Explainer first-draft pass rate per model | `model_comparison.json` (3 models, 18 sample trips; rules only) |
+| Assertions on real traces | `assertions.json` (36 live traces on the sample data) |
 | Judge TPR/TNR vs held-out human labels | not run yet (`evals/judge.py`) |
 | Blind A/B, LLM vs fact-only | not run yet (`evals/ab.py`) |
 | Report classifier TNR on hold / TPR on admit | not run yet (`evals/eval_classifier.py`) |
 | Critic rules on generated corruptions | `evals/results/offline.json` (tests the rules, not model drafts) |
+
+## How a route is scored
+
+A rule, not a model (there are no risk labels):
+
+- **Street score** per hour (6 pm, 10 pm, 1 am): path type, tunnel, venues open nearby, time of night, and
+  lighting: lit +0, **unknown +0.15**, unlit +0.30. Unknown lighting is scored halfway (team decision, 15 Nov
+  2026) and still shown as unknown; it is never treated as dark. Lighting comes from OSM `lit` tags, or "lit"
+  inferred from mapped street lamps (`evals/results/lit_inference.json`).
+- **Route score** = 0.55 × mean + 0.45 × worst stretch. On the real data the mean is weighted by **time** over
+  the whole trip: walking and cycling at their street's score, **waiting at a stop** at the score of the nearest
+  street, and **time on board** a tram, bus or train at a fixed **0.10** (an assumption below every street score,
+  not a measurement).
+- **Labels** are relative to the fastest option: lower, similar (within 5%) or higher. The rule's absolute values
+  have no ground truth, so the planner does not call a route "high" or "low" risk on its own.
 
 ## Ethical considerations
 
@@ -63,5 +78,9 @@ See [metrics.md](metrics.md) for definitions and proposed targets and the README
 ## Caveats
 
 - The evaluation sets so far were written by the people who built the system, which flatters the numbers.
-- The street risk rule's weights are a team judgement, not learned (there are no risk labels).
+- The street risk rule's weights are a team judgement, not learned (there are no risk labels). Unknown lighting
+  (+0.15) and time on board (0.10) are assumptions, recorded as team decisions.
+- Lighting data is thin, so on most real trips the comparison rests on path type, activity and time of night.
+- Stock OpenTripPlanner gives one walking route per trip; most real alternatives are public transport options.
+- The mean ignores exposure length; waits use timetable times.
 - Explanations and reports are only reachable from a route's detail page; there is no free-text chat.

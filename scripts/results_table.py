@@ -46,6 +46,15 @@ def rows() -> list[tuple[str, str, str]]:
     else:
         out.append(("Offline evals", "not run yet (`make eval`)", "offline.json"))
 
+    cov = _load("data_coverage.json")
+    if cov and cov.get("runs"):
+        label, c = list(cov["runs"].items())[-1]          # the newest data version
+        differ = c["trips"] - c["trips_same_route"]
+        out.append((f"Route outcome on real data ({c['trips']} trips, OSM + OTP, `{label}`)",
+                    f"Athena's route differs from the fastest on {differ}; median risk-indicator reduction "
+                    f"{c['median_risk_reduction_pct']}%, median extra {c['median_extra_min']} min; median unknown "
+                    f"lighting on Athena's route {c['median_athena_unknown_lighting_pct']}%", "data_coverage.json"))
+
     lab = _load("label_agreement.json")
     out.append(("Report labeller agreement",
                 f"kappa action {_f(lab['kappa_action'])}, category {_f(lab['kappa_category'])} on "

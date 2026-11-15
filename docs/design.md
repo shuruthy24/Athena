@@ -85,16 +85,26 @@ for free-form questions is a stretch goal only (AGENTS.md).
 | Prompts assumed public | Outputs that repeat a 40-character stretch of any system prompt are rejected as unsupported and replaced. |
 | One retry per logical call | The client retries once on a transient failure, optionally on `FALLBACK_MODEL`; callers never retry again. |
 | Strict judge contract | Exactly `verdict` and `reason`, no repair; malformed output counts as wrong in TPR/TNR. |
-| Unknown stays unknown | Missing lighting lowers confidence and is disclosed; it is never scored as unlit. |
+| Unknown lighting is disclosed, never dark | Missing lighting is scored halfway between lit and unlit (+0.15 vs +0.30, team decision) and always reported as unknown. |
+| Time-weighted trip score | Walking, waiting at stops (nearest street) and time on board (fixed 0.10) all count, so a long walk does not beat a short walk plus a tram by default. |
+| Labels relative to the fastest | The rule's absolute values have no ground truth; options are lower, similar or higher than the fastest. |
 | Cache | Keyed by prompt versions, models and the exact facts; failures are never cached. |
 
 ## 5. Model choice
 
-Provisional defaults until `evals/compare_models.py` runs: `scx-gpt-oss-120b` for explainer, critic and
-moderator (the cheapest SCX model in the Tech 6 price table), and `scx-Meta-Llama-3.3-70B-Instruct` as judge, a
-different family so it does not grade its own family's output. The choice will be made from
-`evals/results/model_comparison.json` on first-draft pass rate, then latency and cost (criteria in
-[metrics.md](metrics.md)). **Not run yet**: the table in the README shows its status.
+Explainer chosen from `evals/results/model_comparison.json` (18 sample trips, first drafts scored by the code
+rules only; criteria in [metrics.md](metrics.md): best first-draft pass rate, then latency and cost):
+
+| Model | First-draft pass rate | p50 / p95 latency | Cost per call (USD) |
+| --- | --- | --- | --- |
+| `scx-gemma-4-31B-it` | 1.000 | 5044 / 5960 ms | 0.00047386 |
+| `scx-Meta-Llama-3.3-70B-Instruct` | 0.944 | 1584 / 24827 ms | 0.00063279 |
+| `scx-gpt-oss-120b` | 0.833 | 1198 / 1532 ms | 0.00057629 |
+
+`scx-gemma-4-31B-it` is the explainer: the only model whose drafts all passed, and the cheapest per call, at about
+4x the latency of gpt-oss (the explanation cache hides it on repeat requests). The critic and moderator stay on
+`scx-gpt-oss-120b` and the judge on `scx-Meta-Llama-3.3-70B-Instruct` (a different family from the explainer);
+those roles have not been compared yet.
 
 ## 6. Observed failures and regression checks
 
@@ -108,15 +118,21 @@ Each was found while building the course version; each now has a test that fails
 | A draft could echo its system prompt in the headline | Prompt text shown to users | Prompt-echo check in the critic rules | `test_echoed_system_prompt_is_caught_and_replaced` |
 | Agent and client both retried a failed draft (up to four HTTP attempts) | Hidden cost and latency during outages | Retry only in the client | `test_model_outage_degrades_to_fact_only_explanation`, `test_second_failure_is_not_retried_again` |
 
-Error analysis on real model traces (Tech 6 workflow) is the team's next step: `evals/analysis.csv`.
+| Explanations left out that Athena's route was *not* lower risk (error analysis, `evals/analysis.csv`) | A user could take a longer route believing it had a risk benefit | Explainer prompt v2 states it; assertion `no_risk_benefit_disclosed` | `test_no_risk_benefit_must_be_disclosed` |
+| Real OSM has ways named "1" or "4"; the claim checker matched street names as substrings | Every live draft was rejected and fell back to the fact-only text | Whole-word matching; names without letters skipped | `test_numbers_are_not_read_as_streets_named_like_numbers` |
+| OTP was asked for "walk" and "bike" without "direct only" | Walking options included trams and buses, listed several times | `directOnly`, and transit itineraries dropped from walk/bike trips | `test_walk_and_bike_trips_drop_itineraries_that_use_transit` |
+| Absolute bands on real data put most streets in "high" | Every option said "Higher risk" | Labels relative to the fastest option | `test_journeys_are_labelled_against_the_fastest_option` |
+| Parquet kept only the first row's columns | Optional fields (unnamed-path data, waits) could vanish silently | Column union over all rows | covered by `tests/test_match.py` round trips |
+
+Error analysis on real model traces (Tech 6 workflow): 6 traces labelled so far in `evals/analysis.csv`.
 
 ## 7. Operational risks and recommendation
 
 | Risk | Status |
 | --- | --- |
-| No real data yet: routes are a two-trip hand-made sample | Pipeline built and tested; OSM snapshot and OTP precompute not run |
+| Real data is thin on lighting and alternatives | OSM + OTP rebuilt for 42 place pairs; coverage and its limits in `data_coverage.json` |
 | No human labels: classifier and judge are unaudited | Workflow built; labels are the team's |
-| No live model evidence: model choice is provisional | Scripts built, budgeted and tested with fakes |
+| Live model evidence is small | Explainer comparison (3 models) and 36 live traces on the sample data |
 | Not deployed | Container and deploy guide written; image not built here |
 
 **Recommendation: NOT READY** for Demo Day as it stands. The engineering is in place and `make check` is green,

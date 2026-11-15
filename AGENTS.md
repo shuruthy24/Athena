@@ -525,3 +525,11 @@ routing evals) are gone. The planner now calls two typed endpoints, `POST /api/e
 emergency-by-typing parts of Sections 4 to 6. That also fixes the time-word override finding.
 
 **Zetaris removed (15 Nov 2026).** `athena/data/zetaris.py`, `ZetarisSource`, `scripts/load_zetaris.py`, `DATA_BACKEND` and the `ZETARIS_*` settings are gone; data is read from files only. `SCOUT_SECRET` is now `RATE_LIMIT_SECRET`. This supersedes the Zetaris-optional notes in Sections 4, 5, 6 and 7 (Step 1) and in the Step 1 row above.
+
+**Real data (15 Nov 2026).** GTFS (TfNSW, 15 Nov) and two OSM snapshots ingested; OTP 2.7.0 precompute for 42 place
+pairs (walk/bike direct only, asked fastest and with OTP's safety preference); walk/bike legs matched to OSM ways by
+location (`pipeline/match.py`), unnamed paths included; lamp-inferred lighting; unknown lighting scored +0.15; trips
+scored by time with waits at stops and time on board (0.10); planner labels relative to the fastest option.
+`data/raw` is versioned with DVC (local remote). `make eval` stays pinned to the hand-made sample as the regression
+set; real-data numbers are in `evals/results/data_coverage.json`. Decisions and limits: `data_sources.md`,
+`docs/model_card.md`.

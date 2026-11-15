@@ -19,6 +19,7 @@ that say "not run yet" are waiting for a live run or human labels (see [Status](
 | Prompt-injection guard (26 prompts, incl. indirect) | precision 1.000, recall 1.000 | `offline.json` |
 | Evidence critic rules (276 generated claims) | precision 1.000, recall 1.000 | `offline.json` |
 | Route outcome vs fastest (18 trips, hand-made sample) | median risk-indicator reduction 36.3%, median extra 0.8 min | `offline.json` |
+| Route outcome on real data (377 trips, OSM + OTP, `option4-direct-walk-timed`) | Athena's route differs from the fastest on 61; median risk-indicator reduction 0.0%, median extra 0.0 min; median unknown lighting on Athena's route 72.3% | `data_coverage.json` |
 | Report labeller agreement | not run yet (`make labels`) | `label_agreement.json` |
 | Explainer model comparison | 3 models; best first-draft pass rate 1.000 (scx-gemma-4-31B-it) | `model_comparison.json` |
 | Report classifier, dev split | not run yet (`python evals/eval_classifier.py`) | `classifier_dev.json` |
@@ -33,7 +34,7 @@ that say "not run yet" are waiting for a live run or human labels (see [Status](
 
 | You do | Athena does |
 |---|---|
-| Open the planner, choose a trip, a departure time and any mix of transit, walking and cycling | Lists the options, ranked together (balanced, lower risk, fastest, fewest changes, least walking), each with a risk-indicator band, the facts behind it, the streets and their lighting, and nearby help. |
+| Open the planner, choose a trip, a departure time and any mix of transit, walking and cycling | Lists the options, ranked together (balanced, lower risk, fastest, fewest changes, least walking), each labelled against the fastest option (lower, similar or higher risk indicators), the facts behind it, the streets and their lighting, and nearby help. |
 | Open a route and press **Explain this trade-off** | Computes time, route risk, lit share and the worst stretch for both routes. A model drafts 2-4 claims that cite those facts; deterministic rules and a model critic send unsupported claims back; after two revisions it falls back to a fact-only explanation. |
 | Open a route | Shows the nearest police station, hospital and train station to it, and 000. No model call. |
 | Send a report "two lights out on Moore Park path" from the route page | Removes personal details before any model sees the text, classifies the report, checks it against street data, and an approved report adds a temporary penalty that halves every 7 days. |
@@ -135,12 +136,35 @@ indirect injection in report text before any model call. Inputs are typed (place
 Rate limits are per client, keyed by a hashed id, so no IP address is stored. The hackathon version also had a
 chat router with signed execution contracts (Scout); it was removed because there is no longer a free-text chat.
 
+## How a route is scored
+
+A rule, not a model (there are no risk labels):
+
+- **Street score** per hour (6 pm, 10 pm, 1 am): path type, tunnel, venues open nearby, time of night, and
+  lighting: lit +0, **unknown +0.15**, unlit +0.30. Unknown lighting is scored halfway (team decision, 15 Nov
+  2026) and still shown as unknown; it is never treated as dark. Lighting comes from OSM `lit` tags, or "lit"
+  inferred from mapped street lamps (`evals/results/lit_inference.json`).
+- **Route score** = 0.55 × mean + 0.45 × worst stretch. On the real data the mean is weighted by **time** over
+  the whole trip: walking and cycling at their street's score, **waiting at a stop** at the score of the nearest
+  street, and **time on board** a tram, bus or train at a fixed **0.10** (an assumption below every street score,
+  not a measurement).
+- **Labels** are relative to the fastest option: lower, similar (within 5%) or higher. The rule's absolute values
+  have no ground truth, so the planner does not call a route "high" or "low" risk on its own.
+
 ## Limitations
 
-Risk is a rule-based indicator, not a measure of safety. Until `make data` runs on real snapshots, routes cover a
-two-trip hand-made sample (UNSW Library and Town Hall). The evaluation sets so far were written by the team that
-built the system, which flatters the numbers. Report submission and the explanation are only reachable from a
-route's detail page.
+- Risk is a rule-based indicator, not a measure of safety. Its weights are a team judgement.
+- **Lighting data is thin.** OSM tags lighting on few streets: the median share of Athena's route with no lighting
+  data is in the results table (`data_coverage.json`). City of Sydney street-light poles would help but their licence
+  is unconfirmed (`data_sources.md`).
+- **Few real alternatives.** Stock OpenTripPlanner does not read lighting, and its walking safety preference
+  returned the same route as the fastest on every walking trip; most differences are between public transport
+  options. Athena's route differs from the fastest on the trips counted in the results table.
+- The mean ignores how long you are exposed: two walks of different length with the same average score look
+  the same. Waits at stops use timetable times, not live delays.
+- The 18-trip numbers come from the hackathon's hand-made sample (still the offline regression set); the real-data
+  row comes from the OSM and OTP rebuild (`make data`).
+- The evaluation sets so far were written by the team that built the system, which flatters the numbers.
 
 ## Hackathon origin
 
