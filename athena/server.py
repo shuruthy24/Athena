@@ -195,26 +195,36 @@ def journeys(origin: str, destination: str, band: str = "22", mode: str = "trans
 
 @app.get("/api/street-safety")
 def street_safety(band: str = "22", time: str | None = None) -> dict:
-    """GeoJSON for the safety overlay: street geometry joined to Athena's street risk values."""
+    """GeoJSON for the street-risk overlay. With the processed data (`make data`) every street carries its own
+    OSM geometry; the hand-made sample has none, so its streets are drawn from web/streets.geojson."""
     band = resolve_band(band, time)
-    geo = json.loads((ROOT / "web" / "streets.geojson").read_text())
     try:
         rows, ev = planner_source().streets()
     except Exception:  # noqa: BLE001
         rows, ev = athena().source.streets()
-    attrs = {r["name"]: r for r in rows}
-    features, seen = [], set()
-    for f in geo["features"]:
-        name = f["properties"].get("name")
-        a = attrs.get(name)
-        if not name or not a or name in seen:
-            continue
-        seen.add(name)
+
+    def props(name: str, a: dict) -> dict:
         risk = a.get(f"risk_{band}")
-        features.append({"type": "Feature", "geometry": f["geometry"], "properties": {
-            "name": name, "risk": None if risk is None else float(risk), "lit": a.get("lit"),
-            "highway": a.get("highway"), "tunnel": bool(a.get("tunnel")),
-            "venues": a.get(f"venues_{band}")}})
+        return {"name": name, "risk": None if risk is None else float(risk), "lit": a.get("lit"),
+                "lit_source": a.get("lit_source"), "highway": a.get("highway"), "tunnel": bool(a.get("tunnel")),
+                "venues": a.get(f"venues_{band}")}
+
+    features = []
+    if rows and rows[0].get("geometry"):
+        for a in rows:
+            lines = [[[round(x, 5), round(y, 5)] for x, y in line] for line in json.loads(a["geometry"])]
+            features.append({"type": "Feature", "geometry": {"type": "MultiLineString", "coordinates": lines},
+                             "properties": props(a["name"], a)})
+    else:
+        geo = json.loads((ROOT / "web" / "streets.geojson").read_text())
+        attrs, seen = {r["name"]: r for r in rows}, set()
+        for f in geo["features"]:
+            name = f["properties"].get("name")
+            a = attrs.get(name)
+            if not name or not a or name in seen:
+                continue
+            seen.add(name)
+            features.append({"type": "Feature", "geometry": f["geometry"], "properties": props(name, a)})
     return {"type": "FeatureCollection", "features": features, "band": band,
             "source": ev.get("executed_by"),
             "note": "Risk is Athena's rule-based street score (lighting, path type, activity), not an incident count."}
