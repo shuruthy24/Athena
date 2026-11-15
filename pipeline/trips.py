@@ -5,14 +5,16 @@ Output route_legs     one row per leg of every itinerary (journey planner)
        leg_streets    one row per street step of every itinerary
        route_steps    the "fastest" and "athena" itinerary per trip/band/mode (Ask Athena explanations)
 
-Variant choice uses the existing route rule unchanged (athena.analysis.variant_metrics: 0.55 x
-distance-weighted mean street risk + 0.45 x worst stretch): "fastest" is the shortest itinerary and
+Variant choice uses the app's route rule (athena.analysis.variant_metrics: 0.55 x time-weighted mean + 0.45 x worst
+stretch, with waits at stops and time on board included, see there): "fastest" is the shortest itinerary and
 "athena" the one with the lowest route risk, ties broken by time. When they are the same itinerary both
 labels point at it, as in the hackathon data, and the explanation says the routes are the same.
 """
 from __future__ import annotations
 
-from athena.analysis import variant_metrics
+from datetime import datetime
+
+from athena.analysis import MIN_WAIT_S, variant_metrics
 
 from .clean import normalise
 from .match import WayIndex, decode_polyline, match_line
@@ -22,29 +24,77 @@ SEG_FIELDS = ("label", "lit", "risk_18", "risk_22", "risk_01", "highway", "tunne
 STEP_FIELDS = ["trip", "origin", "destination", "band", "mode", "variant", "duration_min", "walk_m",
                "transfers", "leg", "leg_mode", "line", "step", "street", "distance_m"]
 STREET_MODES = {"WALK", "BICYCLE"}
+STOP_RADIUS_M = 25.0        # a stop is scored from the nearest street or path within this distance
+
+
+def _seconds_between(a: str | None, b: str | None) -> float | None:
+    try:
+        return (datetime.fromisoformat(b) - datetime.fromisoformat(a)).total_seconds()
+    except (TypeError, ValueError):
+        return None
+
+
+def annotate_waits(legs: list[dict], index: WayIndex | None, segments: dict) -> None:
+    """Add wait_s (time at the stop before each public transport leg) and where that wait happens: wait_street
+    (a named street) or wait_seg_* (an unnamed way), from the nearest way to the stop. In place."""
+    by_it: dict[int, list[dict]] = {}
+    for leg in legs:
+        by_it.setdefault(int(leg["itinerary"]), []).append(leg)
+    for its in by_it.values():
+        its.sort(key=lambda r: int(r["leg"]))
+        prev_end = its[0].get("start_time")
+        for leg in its:
+            if leg["leg_mode"] not in STREET_MODES:
+                wait = _seconds_between(prev_end, leg.get("leg_start"))
+                leg["wait_s"] = None if wait is None else max(0.0, wait)
+                near = index.distances(float(leg["from_lat"]), float(leg["from_lon"]), STOP_RADIUS_M) \
+                    if index is not None and leg.get("from_lat") is not None else {}
+                seg = segments.get(min(near, key=near.get)) if near else None
+                if seg and seg["street"]:
+                    leg["wait_street"] = seg["street"]
+                elif seg:
+                    leg.update({f"wait_seg_{k}": seg.get(k) for k in SEG_FIELDS})
+            prev_end = leg.get("leg_end") or prev_end
 
 
 def itinerary_steps(legs: list[dict], streets: list[dict], trip: dict, variant: str) -> list[dict]:
-    """route_steps rows for one itinerary: one row per street step of walk/bike legs, one row per transit leg."""
+    """route_steps rows for one itinerary: one row per street step of walk/bike legs, one row per transit leg, and
+    a WAIT row before a transit leg when the wait at the stop is at least MIN_WAIT_S. When every leg has a
+    duration, every row gets duration_s (street steps share their leg's time by distance), so the route score can
+    weight by time."""
     head = legs[0]
     out, n = [], 0
     by_leg: dict[int, list[dict]] = {}
     for s in streets:
         by_leg.setdefault(int(s["leg"]), []).append(s)
+    timed = all(leg.get("duration_s") is not None for leg in legs)
     for leg in sorted(legs, key=lambda r: int(r["leg"])):
         base = {"trip": f"{trip['origin']}|{trip['destination']}", "origin": trip["origin"],
                 "destination": trip["destination"], "band": trip["band"], "mode": trip["mode"],
                 "variant": variant, "duration_min": head["total_min"], "walk_m": head["walk_m"],
                 "transfers": head["transfers"], "leg": int(leg["leg"]), "leg_mode": leg["leg_mode"]}
         if leg["leg_mode"] in STREET_MODES:
-            for st in sorted(by_leg.get(int(leg["leg"]), []), key=lambda r: int(r["step"])):
-                out.append({**base, "line": None, "step": n, "street": st.get("street") or None,
-                            "distance_m": float(st["distance_m"]),
-                            **{k: v for k, v in st.items() if k.startswith("seg_")}})
+            leg_steps = sorted(by_leg.get(int(leg["leg"]), []), key=lambda r: int(r["step"]))
+            total = sum(float(st["distance_m"]) for st in leg_steps)
+            for st in leg_steps:
+                row = {**base, "line": None, "step": n, "street": st.get("street") or None,
+                       "distance_m": float(st["distance_m"]),
+                       **{k: v for k, v in st.items() if k.startswith("seg_")}}
+                if timed:
+                    share = float(st["distance_m"]) / total if total else 1 / len(leg_steps)
+                    row["duration_s"] = round(float(leg["duration_s"]) * share, 1)
+                out.append(row)
                 n += 1
         else:
-            out.append({**base, "line": leg.get("line"), "step": n, "street": None,
-                        "distance_m": float(leg["distance_m"])})
+            if timed and (leg.get("wait_s") or 0) >= MIN_WAIT_S:
+                out.append({**base, "leg_mode": "WAIT", "line": None, "step": n, "street": leg.get("wait_street"),
+                            "distance_m": 0.0, "duration_s": float(leg["wait_s"]),
+                            **{k[5:]: v for k, v in leg.items() if k.startswith("wait_seg_")}})
+                n += 1
+            row = {**base, "line": leg.get("line"), "step": n, "street": None, "distance_m": float(leg["distance_m"])}
+            if timed:
+                row["duration_s"] = float(leg["duration_s"])
+            out.append(row)
             n += 1
     return out
 
@@ -80,9 +130,16 @@ def build_trip_tables(snapshot: dict, street_rows: list[dict],
     matched_m = unmatched_m = 0.0
     unmatched: dict[str, float] = {}
     route_legs, leg_streets, route_steps = [], [], []
-    same, trips_without_routes = 0, 0
+    same, trips_without_routes, dropped_transit = 0, 0, 0
     for trip in snapshot.get("trips", []):
-        legs = trip.get("legs") or []
+        legs = [dict(r) for r in trip.get("legs") or []]
+        if trip["mode"] in ("walk", "bike"):
+            # Older snapshots asked OTP for walk/bike without directOnly and got tram and bus trips back.
+            with_transit = {int(r["itinerary"]) for r in legs if r["leg_mode"] not in STREET_MODES}
+            dropped_transit += len(with_transit)
+            legs = [r for r in legs if int(r["itinerary"]) not in with_transit]
+        kept = {int(r["itinerary"]) for r in legs}
+        annotate_waits(legs, index, segments)
         located = set()
         located_steps = []
         if index is not None:
@@ -92,13 +149,13 @@ def build_trip_tables(snapshot: dict, street_rows: list[dict],
                     located.add((int(leg["itinerary"]), int(leg["leg"])))
                     located_steps += rows
                     for r in rows:
-                        k = "named_m" if r["street"] else "unnamed_m" if "seg_label" in r else "unmatched_m"
+                        k = "named_m" if r["street"] else "unnamed_m" if r.get("seg_label") else "unmatched_m"
                         by_location[k] += r["distance_m"]
         # OTP names unnamed ways "path" or "sidewalk", and sometimes uses a cycle-route name. Only names in the
         # streets table carry data; anything else becomes an unnamed step, which is scored as unknown.
         steps = []
         for r in trip.get("steps") or []:
-            if (int(r["itinerary"]), int(r["leg"])) in located:
+            if int(r["itinerary"]) not in kept or (int(r["itinerary"]), int(r["leg"])) in located:
                 continue                                  # replaced by the location match above
             name = canonical.get(normalise(r.get("street"))) if r.get("street") else None
             d = float(r.get("distance_m") or 0)
@@ -135,7 +192,8 @@ def build_trip_tables(snapshot: dict, street_rows: list[dict],
             leg_streets += [{**r, "trip": f"{ctx['origin']}|{ctx['destination']}", "band": ctx["band"],
                              "mode": ctx["mode"], "journey": journey, "variant": variant} for r in it_streets]
     stats = {"trips": len(snapshot.get("trips", [])), "trips_without_routes": trips_without_routes,
-             "fastest_is_athena": same, "route_steps": len(route_steps), "route_legs": len(route_legs),
+             "fastest_is_athena": same, "walk_bike_itineraries_with_transit_dropped": dropped_transit,
+             "route_steps": len(route_steps), "route_legs": len(route_legs),
              "leg_streets": len(leg_streets),
              "step_distance_matched_pct": round(100 * matched_m / ((matched_m + unmatched_m) or 1), 1),
              "top_unmatched_names": [n for n, _ in sorted(unmatched.items(), key=lambda x: -x[1])[:10]]}

@@ -60,6 +60,7 @@ button,select,input{font:inherit;color:var(--ink)}
 .pill{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.8rem;border-radius:999px;padding:2px 9px 2px 7px;background:var(--soft);white-space:nowrap}
 .pill .sw{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
 .pill.low{color:var(--ok)} .pill.medium{color:var(--warn)} .pill.high{color:var(--bad)} .pill.unknown{color:var(--muted)}
+.pill.lower{color:var(--ok)} .pill.similar{color:var(--warn)} .pill.higher{color:var(--bad)} .pill.reference{color:var(--ink)}
 .pill.unknown .sw{background:transparent;border:1.5px dashed currentColor}
 .tag{font:500 .7rem var(--f-mono);padding:2px 8px;border-radius:999px;background:var(--soft);letter-spacing:.02em;white-space:nowrap}
 .tag.fast{color:var(--fast)} .tag.athena{color:var(--athena)} .tag.best{color:var(--accent)}

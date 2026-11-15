@@ -21,7 +21,9 @@ const ICON = {
 };
 const HELP = {police: "Police station", hospital: "Hospital", station: "Train station"};
 const RISK_TEXT = {low: "Lower risk indicators", medium: "Moderate risk indicators", high: "Higher risk indicators", unknown: "Insufficient lighting data"};
-const RISK_SHORT = {low: "Lower risk", medium: "Moderate risk", high: "Higher risk", unknown: "Not enough data"};
+const RISK_SHORT = {low: "Lower risk", medium: "Moderate risk", high: "Higher risk", unknown: "Not enough data",
+  // journeys are labelled against the fastest option (athena/journeys.py RELATIVE_LABELS)
+  reference: "Fastest option", lower: "Lower risk than fastest", similar: "Similar risk to fastest", higher: "Higher risk than fastest"};
 
 // Validated band thresholds from the Athena street-tagging pipeline.
 const riskBand = r => r == null ? "unknown" : r < .33 ? "low" : r < .55 ? "medium" : "high";

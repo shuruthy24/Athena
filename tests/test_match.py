@@ -82,3 +82,51 @@ def test_without_segments_the_name_match_is_still_used():
     streets = [{"name": "Lit Road", "lit": "yes", "risk_22": 0.2}]
     _, _, steps, stats = build_trip_tables(_snapshot(encode([(-33.9, 151.201), (-33.9, 151.205)])), streets)
     assert "by_location" not in stats and {r["street"] for r in steps} == {None}
+
+
+def _transit_trip(mode="transit"):
+    t0, t1, t2, t3 = ("2026-11-16T01:00:00+11:00", "2026-11-16T01:05:00+11:00",
+                      "2026-11-16T01:15:00+11:00", "2026-11-16T01:30:00+11:00")
+    walk = {"journey": "x", "itinerary": 0, "leg": 0, "leg_mode": "WALK", "line": None, "total_min": 30.0,
+            "walk_m": 400.0, "transfers": 0, "distance_m": 400.0, "duration_s": 300, "start_time": t0,
+            "leg_start": t0, "leg_end": t1, "from_lat": -33.90001, "from_lon": 151.2010, "polyline": None}
+    tram = {**walk, "leg": 1, "leg_mode": "TRAM", "line": "L3", "distance_m": 5000.0, "duration_s": 900,
+            "leg_start": t2, "leg_end": t3, "from_lat": -33.90001, "from_lon": 151.2050}   # the stop is on ROAD (Lit Road)
+    steps = [{"itinerary": 0, "leg": 0, "step": 0, "street": "Lit Road", "distance_m": 400.0}]
+    return {"origin": "unsw", "destination": "townhall", "band": "01", "mode": mode, "legs": [walk, tram], "steps": steps}
+
+
+STREETS = [{"name": "Lit Road", "lit": "yes", "risk_18": 0.2, "risk_22": 0.2, "risk_01": 0.3, "tunnel": False}]
+SEGMENTS = [{**ROAD, "street": "Lit Road", "label": "Lit Road", "lit": "yes", "risk_01": 0.3}]
+
+
+def test_a_wait_at_the_stop_becomes_a_timed_row_scored_from_the_nearest_street():
+    _, _, steps, _ = build_trip_tables({"trips": [_transit_trip()]}, STREETS, SEGMENTS)
+    rows = [r for r in steps if r["variant"] == "fastest"]
+    wait = next(r for r in rows if r["leg_mode"] == "WAIT")
+    assert wait["duration_s"] == 600 and wait["street"] == "Lit Road"        # 01:05 -> 01:15 at the stop
+    assert all(r.get("duration_s") is not None for r in rows)
+    m = variant_metrics(rows, {s["name"]: s for s in STREETS}, "01", {})
+    assert (m["wait_min"], m["on_board_min"]) == (10.0, 15.0)
+    # time-weighted: (300 s walk + 600 s wait) x 0.3 + 900 s on board x 0.10, over 1800 s
+    assert m["mean_risk"] == round((900 * 0.3 + 900 * 0.10) / 1800, 3)
+
+
+def test_short_gaps_are_not_waits_and_untimed_rows_keep_the_old_rule():
+    trip = _transit_trip()
+    trip["legs"][1]["leg_start"] = "2026-11-16T01:05:20+11:00"                # 20 s: a transfer, not a wait
+    _, _, steps, _ = build_trip_tables({"trips": [trip]}, STREETS, SEGMENTS)
+    assert not any(r["leg_mode"] == "WAIT" for r in steps)
+    for leg in trip["legs"]:
+        leg.pop("duration_s")
+    _, _, steps, _ = build_trip_tables({"trips": [trip]}, STREETS, SEGMENTS)
+    m = variant_metrics([r for r in steps if r["variant"] == "fastest"], {s["name"]: s for s in STREETS}, "01", {})
+    assert m["on_board_min"] is None and m["mean_risk"] == 0.3               # walking streets only, as before
+
+
+def test_walk_and_bike_trips_drop_itineraries_that_use_transit():
+    _, _, steps, stats = build_trip_tables({"trips": [_transit_trip("walk")]}, STREETS, SEGMENTS)
+    assert steps == [] and stats["walk_bike_itineraries_with_transit_dropped"] == 1
+    assert stats["trips_without_routes"] == 1
+    _, _, steps, _ = build_trip_tables({"trips": [_transit_trip("transit")]}, STREETS, SEGMENTS)
+    assert steps                                                              # transit trips keep them

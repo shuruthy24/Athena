@@ -42,49 +42,82 @@ def report_penalties(band: str, now: datetime | None = None, path: Path | None =
 
 
 STREET_MODES = ("WALK", "BICYCLE")
+# Exposure while riding a tram, bus, train or ferry: a fixed assumption (team decision, 15 Nov 2026), below every
+# street score the rule can give (the lowest is about 0.15, a lit main road at 6 pm). Not measured.
+IN_VEHICLE_RISK = 0.10
+MIN_WAIT_S = 30             # shorter gaps between legs are transfers on foot, not waits at a stop
+
+
+def _row_attrs(s: dict, streets: dict[str, dict], band: str, penalties: dict[str, float]):
+    """(label, street row or seg_* attributes, report penalty) for a street step or a wait at a stop."""
+    if s.get("street"):
+        return s["street"], streets.get(s["street"]), penalties.get(s["street"], 0.0)
+    if s.get("seg_label"):
+        return s["seg_label"], {"lit": s.get("seg_lit"), f"risk_{band}": s.get(f"seg_risk_{band}"),
+                                "tunnel": s.get("seg_tunnel")}, 0.0
+    return None, None, 0.0
 
 
 def variant_metrics(steps: list[dict], streets: dict[str, dict], band: str, penalties: dict[str, float]) -> dict:
+    """Route risk = 0.55 x mean + 0.45 x worst stretch.
+
+    With timed rows (the processed OTP data: every row has duration_s) the mean is weighted by TIME and covers the
+    whole trip: walking and cycling at their street's score, waiting at a stop (leg_mode WAIT) at the nearest
+    street's score, and time on board at IN_VEHICLE_RISK. Without times (the hand-made sample) it is the
+    distance-weighted mean over walk/bike streets only, as before. Lit and unknown-lighting shares are always
+    over walk/bike distance only: we have no lighting data for vehicles or stops' surroundings beyond the street."""
     if not steps:
         return {}
     first = steps[0]
-    scored_m = lit_m = unknown_m = known_m = 0.0
-    weighted = 0.0
+    timed = all(s.get("duration_s") is not None for s in steps)
+    scored_m = lit_m = unknown_m = 0.0
+    weighted = known_w = 0.0
+    wait_s = vehicle_s = 0.0
     worst = None
     legs, names = [], []
     for s in sorted(steps, key=lambda r: r["step"]):
-        d = float(s["distance_m"])
-        if s.get("street"):                               # a named street: its row in the streets table
-            label, st = s["street"], streets.get(s["street"])
-            penalty = penalties.get(s["street"], 0.0)
-            names.append(s["street"])
-        elif "seg_label" in s:                            # an unnamed way matched by location: its own data
-            label, penalty = s["seg_label"], 0.0
-            st = {"lit": s.get("seg_lit"), f"risk_{band}": s.get(f"seg_risk_{band}"), "tunnel": s.get("seg_tunnel")}
-        elif s.get("leg_mode") in STREET_MODES:           # walk/bike with no data at all: unknown
-            scored_m += d
+        d = float(s.get("distance_m") or 0)
+        w = float(s["duration_s"]) if timed else d
+        mode = s.get("leg_mode")
+        if mode == "WAIT":
+            wait_s += float(s.get("duration_s") or 0)
+            label, st, penalty = _row_attrs(s, streets, band, penalties)
+            risk = None if not st or st.get(f"risk_{band}") is None else min(1.0, float(st[f"risk_{band}"]) + penalty)
+            if timed and risk is not None:
+                weighted += w * risk
+                known_w += w
+                if worst is None or risk > worst["risk"]:
+                    worst = {"name": f"waiting at {label}", "risk": round(risk, 2), "lit": st.get("lit"),
+                             "distance_m": 0, "tunnel": False, "report_penalty": round(penalty, 3)}
+            continue
+        if mode not in STREET_MODES and not s.get("street") and not s.get("seg_label"):
+            legs.append({"mode": mode, "line": s.get("line"), "distance_m": s["distance_m"]})
+            if timed:                                  # time on board counts at the fixed in-vehicle value
+                vehicle_s += w
+                weighted += w * IN_VEHICLE_RISK
+                known_w += w
+            continue
+        label, st, penalty = _row_attrs(s, streets, band, penalties)
+        scored_m += d
+        if label is None:                              # walk/bike with no data at all: unknown
             unknown_m += d
             continue
-        else:                                             # transit: reported, not scored
-            legs.append({"mode": s["leg_mode"], "line": s.get("line"), "distance_m": s["distance_m"]})
-            continue
-        risk = None if not st or st.get(f"risk_{band}") is None else float(st[f"risk_{band}"])
-        if risk is not None:
-            risk = min(1.0, risk + penalty)
+        if s.get("street"):
+            names.append(s["street"])
+        risk = None if not st or st.get(f"risk_{band}") is None else min(1.0, float(st[f"risk_{band}"]) + penalty)
         lit = st.get("lit") if st else None
-        scored_m += d
         if lit == "yes":
             lit_m += d
         elif lit is None:
             unknown_m += d
         if risk is None:
             continue
-        weighted += d * risk
-        known_m += d
+        weighted += w * risk
+        known_w += w
         if worst is None or risk > worst["risk"]:
             worst = {"name": label, "risk": round(risk, 2), "lit": lit, "distance_m": round(d),
                      "tunnel": bool(st.get("tunnel")) if st else False, "report_penalty": round(penalty, 3)}
-    mean = weighted / known_m if known_m else None
+    mean = weighted / known_w if known_w else None
     risk = None if mean is None else round(0.55 * mean + 0.45 * (worst["risk"] if worst else mean), 3)
     return {
         "duration_min": round(float(first["duration_min"]), 1),
@@ -98,6 +131,8 @@ def variant_metrics(steps: list[dict], streets: dict[str, dict], band: str, pena
         "worst": worst,
         "streets": list(dict.fromkeys(names)),
         "transit_legs": legs,
+        "wait_min": round(wait_s / 60, 1) if timed else None,
+        "on_board_min": round(vehicle_s / 60, 1) if timed else None,
     }
 
 

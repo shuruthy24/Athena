@@ -18,6 +18,8 @@ from __future__ import annotations
 import logging
 import re
 from datetime import datetime, timedelta
+
+from .analysis import IN_VEHICLE_RISK, MIN_WAIT_S
 from dataclasses import dataclass
 
 from .analysis import report_penalties
@@ -26,7 +28,7 @@ log = logging.getLogger("athena.journeys")
 
 # Validated band thresholds from the Athena street-tagging pipeline (pipeline/tag_streets.py).
 BAND_LOW, BAND_MEDIUM = 0.33, 0.55
-UNKNOWN_LIMIT = 30.0          # % of scored distance with unknown lighting before we stop ranking on risk
+UNKNOWN_LIMIT = 30.0          # % of scored distance with unknown lighting above which confidence is "low"
 WORST_WEIGHT = 0.45           # risk = 0.55 x distance-weighted mean + 0.45 x worst stretch
 MODES = ("transit", "walk", "bike")
 BAND_TIMES = {"18": "18:00", "22": "22:00", "01": "01:00"}
@@ -37,6 +39,26 @@ LABELS = {
     "high": "Higher risk indicators",
     "unknown": "Insufficient lighting data",
 }
+# Journeys are labelled against the fastest option (team decision, 15 Nov 2026): the rule's absolute scores have
+# no ground truth, and on the real data most streets land in "high", so only the comparison is meaningful.
+RELATIVE_LABELS = {
+    "reference": "Fastest option",
+    "lower": "Lower risk than fastest",
+    "similar": "Similar risk to fastest",
+    "higher": "Higher risk than fastest",
+    "unknown": "Not enough data to compare",
+}
+SIMILAR_PCT = 5.0             # within 5% of the fastest option's score counts as similar
+
+
+def relative_band(risk: float | None, ref_risk: float | None, is_ref: bool) -> tuple[str, str]:
+    if is_ref and risk is not None:
+        return "reference", RELATIVE_LABELS["reference"]
+    if risk is None or not ref_risk:
+        return "unknown", RELATIVE_LABELS["unknown"]
+    change = 100 * (risk - ref_risk) / ref_risk
+    key = "lower" if change < -SIMILAR_PCT else "higher" if change > SIMILAR_PCT else "similar"
+    return key, RELATIVE_LABELS[key]
 STREET_MODES = {"WALK", "BICYCLE", "SCOOTER"}
 
 
@@ -67,22 +89,31 @@ def shift_iso(iso: str | None, minutes: int) -> str | None:
 
 
 def band_label(risk: float | None, unknown_pct: float) -> tuple[str, str]:
-    if risk is None or unknown_pct > UNKNOWN_LIMIT:
+    """Band from the risk score. Missing lighting no longer hides the band (unknown lighting is scored halfway,
+    team decision 15 Nov 2026); it lowers the journey's `confidence` instead, which the planner shows."""
+    if risk is None:
         return "unknown", LABELS["unknown"]
     key = "low" if risk < BAND_LOW else "medium" if risk < BAND_MEDIUM else "high"
     return key, LABELS[key]
 
 
 def score_streets(rows: list[dict], streets: dict[str, dict], band: str,
-                  penalties: dict[str, float]) -> dict:
-    """Distance-weighted risk over the street steps of one leg or journey."""
-    scored = lit = unknown = known = weighted = 0.0
+                  penalties: dict[str, float], extra: list[dict] | None = None) -> dict:
+    """Risk over one leg or journey: 0.55 x mean + 0.45 x worst stretch.
+
+    With `extra` (a whole journey whose rows carry duration_s) the mean is weighted by time and also covers waits
+    at stops and time on board (extra items: {"kind": "wait"|"vehicle", "seconds", "risk", "label", "lit"});
+    see athena.analysis.variant_metrics. Otherwise it is distance-weighted over the street steps. Lit and
+    unknown-lighting shares are always over walk/bike distance only."""
+    timed = extra is not None and all(r.get("duration_s") is not None for r in rows)
+    scored = lit = unknown = known_d = known_w = weighted = 0.0
     worst = None
     detail = []
     for r in rows:
         name = r.get("street")
         d = float(r.get("distance_m") or 0)
-        if not name and "seg_label" not in r:  # no way matched, or a name not in the streets table: unknown
+        w = float(r["duration_s"]) if timed else d
+        if not name and not r.get("seg_label"):  # no way matched, or a name not in the streets table: unknown
             scored += d
             unknown += d
             continue
@@ -104,17 +135,33 @@ def score_streets(rows: list[dict], streets: dict[str, dict], band: str,
                        "tunnel": bool(st.get("tunnel")) if st else None})
         if risk is None:
             continue
-        known += d
-        weighted += d * risk
+        known_d += d
+        known_w += w
+        weighted += w * risk
         if worst is None or risk > worst["risk"]:
             worst = {"street": name, "risk": round(risk, 3), "lit": lit_tag, "distance_m": round(d)}
-    mean = weighted / known if known else None
-    risk = None if mean is None else round((1 - WORST_WEIGHT) * mean + WORST_WEIGHT * worst["risk"], 3)
+    wait_s = vehicle_s = 0.0
+    for e in (extra or []) if timed else []:
+        if e["kind"] == "wait":
+            wait_s += e["seconds"]
+        else:
+            vehicle_s += e["seconds"]
+        if e["risk"] is None:              # a stop with no street data nearby: unknown, left out of the mean
+            continue
+        known_w += e["seconds"]
+        weighted += e["seconds"] * e["risk"]
+        if e["kind"] == "wait" and (worst is None or e["risk"] > worst["risk"]):
+            worst = {"street": f"waiting at {e['label']}", "risk": round(e["risk"], 3), "lit": e.get("lit"),
+                     "distance_m": 0, "wait_min": round(e["seconds"] / 60, 1)}
+    mean = weighted / known_w if known_w else None
+    risk = None if mean is None else round((1 - WORST_WEIGHT) * mean + WORST_WEIGHT * (worst["risk"] if worst else mean), 3)
     return {
         "risk": risk, "mean_risk": None if mean is None else round(mean, 3), "worst": worst,
-        "scored_m": round(scored), "known_m": round(known),
+        "scored_m": round(scored), "known_m": round(known_d),
         "lit_share_pct": round(100 * lit / scored, 1) if scored else None,
         "unknown_share_pct": round(100 * unknown / scored, 1) if scored else None,
+        "wait_min": round(wait_s / 60, 1) if timed else None,
+        "on_board_min": round(vehicle_s / 60, 1) if timed else None,
         "streets": detail,
     }
 
@@ -138,14 +185,20 @@ def explain(journey: dict, fastest: dict | None) -> list[str]:
         out.append("Not enough lighting data on this route to compare its risk indicators.")
     else:
         on = "cycling" if journey.get("mode") == "bike" else "walking"
-        out.append(f"{s['label']} ({s['risk']}) across {_dist(s['scored_m'])} of {on} on this route.")
+        parts = [f"{_dist(s['scored_m'])} of {on}"]
+        if s.get("on_board_min"):
+            parts.append(f"{_pct(s['on_board_min'])} min on board")
+        if s.get("wait_min"):
+            parts.append(f"{_pct(s['wait_min'])} min waiting at stops")
+        out.append(f"Risk indicator {s['risk']} ({s['label'].lower()}) over " + ", ".join(parts) + ".")
     if s.get("lit_share_pct") is not None:
         out.append(f"{_pct(s['lit_share_pct'])}% of that distance is lit"
                    + (f", and {_pct(s['unknown_share_pct'])}% has no lighting data." if s.get("unknown_share_pct") else "."))
     if s.get("worst"):
         w = s["worst"]
         lit = {"yes": "lit", "no": "unlit", None: "no lighting data"}[w["lit"]]
-        out.append(f"Highest-risk stretch: {w['street']} ({lit}, {w['risk']}, {w['distance_m']} m).")
+        size = f"{_pct(w['wait_min'])} min" if w.get("wait_min") else f"{w['distance_m']} m"
+        out.append(f"Highest-risk stretch: {w['street']} ({lit}, {w['risk']}, {size}).")
     if fastest and journey["id"] != fastest["id"]:
         extra = round(journey["total_min"] - fastest["total_min"], 1)
         fr, jr = fastest["safety"]["risk"], s["risk"]
@@ -271,6 +324,8 @@ class JourneyPlanner:
                            for m in modes}
         for j in journeys:
             j["is_fastest"] = j["id"] == fastest["id"]
+            j["safety"]["band"], j["safety"]["label"] = relative_band(
+                j["safety"]["risk"], fastest["safety"]["risk"], j["is_fastest"])
             j["explanation"] = explain(j, fastest_by_mode.get(j["mode"]))
         # Ties (walking and cycling often share streets) go to the quicker trip, matching the lower_risk sort.
         lowest = min((j for j in journeys if j["safety"]["risk"] is not None),
@@ -292,6 +347,20 @@ class JourneyPlanner:
             "report_penalties": {k: round(v, 3) for k, v in penalties.items()},
         }
 
+    @staticmethod
+    def _wait(r: dict, by_name: dict, band: str, penalties: dict) -> dict:
+        """The wait before a public transport leg, scored from the street or path nearest the stop."""
+        if r.get("wait_street"):
+            st, label = by_name.get(r["wait_street"]), r["wait_street"]
+            penalty = penalties.get(label, 0.0)
+        else:
+            st = {"lit": r.get("wait_seg_lit"), f"risk_{band}": r.get(f"wait_seg_risk_{band}")} \
+                if r.get("wait_seg_label") else None
+            label, penalty = r.get("wait_seg_label") or r.get("from_name") or "the stop", 0.0
+        raw = None if not st or st.get(f"risk_{band}") is None else float(st[f"risk_{band}"])
+        return {"kind": "wait", "seconds": float(r["wait_s"]), "label": label,
+                "risk": None if raw is None else min(1.0, raw + penalty), "lit": st.get("lit") if st else None}
+
     def _build(self, legs_rows, street_rows, by_name, band, mode, penalties) -> list[dict]:
         groups: dict[str, list[dict]] = {}
         for r in legs_rows:
@@ -303,10 +372,20 @@ class JourneyPlanner:
         for jid, rows in groups.items():
             rows.sort(key=lambda r: int(r["leg"]))
             head = rows[0]
-            legs, all_steps, lines = [], [], []
+            legs, all_steps, lines, extra = [], [], [], []
+            timed = all(r.get("duration_s") is not None for r in rows)
             for r in rows:
                 steps = sorted(steps_by_leg.get((jid, int(r["leg"])), []), key=lambda s: int(s["step"]))
+                if timed and r["leg_mode"] in STREET_MODES:
+                    total = sum(float(x.get("distance_m") or 0) for x in steps)
+                    steps = [{**x, "duration_s": float(r["duration_s"]) * (float(x.get("distance_m") or 0) / total
+                                                                           if total else 1 / len(steps))}
+                             for x in steps]
                 all_steps.extend(steps)
+                if timed and r["leg_mode"] not in STREET_MODES:
+                    extra.append({"kind": "vehicle", "seconds": float(r["duration_s"]), "risk": IN_VEHICLE_RISK})
+                    if (r.get("wait_s") or 0) >= MIN_WAIT_S:
+                        extra.append(self._wait(r, by_name, band, penalties))
                 leg_safety = score_streets(steps, by_name, band, penalties) if r["leg_mode"] in STREET_MODES else None
                 if r.get("line"):
                     kind = r["leg_mode"].title()
@@ -321,9 +400,9 @@ class JourneyPlanner:
                     "start": r.get("leg_start"), "end": r.get("leg_end"),
                     "polyline": r.get("polyline"), "safety": leg_safety,
                 })
-            safety = score_streets(all_steps, by_name, band, penalties)
+            safety = score_streets(all_steps, by_name, band, penalties, extra=extra if timed else None)
             key, label = band_label(safety["risk"], safety.get("unknown_share_pct") or 0)
-            safety["band"] = key
+            safety["band"] = key           # replaced by a label relative to the fastest option in plan()
             safety["label"] = label
             safety["confidence"] = ("high" if (safety.get("unknown_share_pct") or 0) < 10
                                     else "medium" if (safety.get("unknown_share_pct") or 0) < UNKNOWN_LIMIT else "low")

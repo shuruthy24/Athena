@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from athena.data.otp import OTPSource
 from athena.data.source import LocalSource
-from athena.journeys import LABELS, SORTS, JourneyPlanner, band_for_time, band_label, dedupe, rank, score_streets
+from athena.journeys import LABELS, RELATIVE_LABELS, SORTS, JourneyPlanner, band_for_time, band_label, dedupe, rank, score_streets
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -46,7 +46,7 @@ def test_band_labels_use_validated_thresholds_and_never_say_safe():
     assert band_label(0.33, 0)[0] == "medium"
     assert band_label(0.549, 0)[0] == "medium"
     assert band_label(0.55, 0)[0] == "high"
-    assert band_label(0.20, 31)[0] == "unknown"     # too much missing lighting data to rank on risk
+    assert band_label(0.20, 31)[0] == "low"         # missing lighting lowers confidence, not the band
     assert band_label(None, 0)[0] == "unknown"
     assert not any("safe" in v.lower().split() for v in LABELS.values())
 
@@ -64,7 +64,7 @@ def test_every_mode_returns_comparable_options_with_real_geometry(mode):
     assert r["coverage"] and len(r["journeys"]) >= 2
     assert r["freshness"]["live"] is False and "precomputed" in r["freshness"]["note"].lower()
     for j in r["journeys"]:
-        assert j["safety"]["label"] in LABELS.values()
+        assert j["safety"]["label"] in RELATIVE_LABELS.values()
         assert j["explanation"] and j["legs"]
         for leg in j["legs"]:
             pts = decode(leg["polyline"])
@@ -78,8 +78,11 @@ def test_every_mode_returns_comparable_options_with_real_geometry(mode):
 def test_transit_options_match_verified_output():
     r = plan("transit", "fastest")
     fast, alt = r["journeys"]
-    assert (fast["total_min"], fast["transfers"], fast["safety"]["risk"]) == (36.5, 1, 0.451)
-    assert (alt["total_min"], alt["transfers"], alt["safety"]["risk"]) == (39.4, 0, 0.272)
+    # Time-weighted with time on board at 0.10 (15 Nov 2026); before: 0.451 and 0.272, distance-weighted walking only.
+    assert (fast["total_min"], fast["transfers"], fast["safety"]["risk"]) == (36.5, 1, 0.376)
+    assert (alt["total_min"], alt["transfers"], alt["safety"]["risk"]) == (39.4, 0, 0.206)
+    assert (fast["safety"]["band"], alt["safety"]["band"]) == ("reference", "lower")
+    assert (fast["safety"]["on_board_min"], alt["safety"]["on_board_min"]) == (17.0, 24.0)
     assert alt["is_lowest_risk"] and "Tram L3" in alt["transit_lines"]
     assert any("lower risk indicators" in x for x in alt["explanation"])
 
@@ -236,7 +239,10 @@ def test_live_otp_rows_are_scored_like_precomputed():
     assert r["freshness"]["live"] is True and len(r["journeys"]) == 1
     assert r["journeys"][0]["safety"]["risk"] is not None
     assert session.calls[0][0] == "http://otp:8080/otp/gtfs/v1"
-    assert session.calls[0][1]["variables"]["modes"] == {"direct": ["WALK"]}
+    calls = [c[1]["variables"] for c in session.calls]
+    assert all(v["modes"] == {"directOnly": True, "direct": ["WALK"]} for v in calls)   # no tram or bus in "walk"
+    assert [v["preferences"]["street"]["walk"]["safetyFactor"] for v in calls] == [0.0, 1.0]
+    assert len(r["journeys"]) == 1                     # both preferences gave the same route: kept once
 
 
 @pytest.mark.parametrize("t,band", [("08:00", "18"), ("18:00", "18"), ("19:59", "18"), ("20:00", "22"),
@@ -283,3 +289,50 @@ def test_journeys_endpoint_accepts_time_and_modes(client):
 def test_lowest_risk_tag_matches_lower_risk_sort_on_ties():
     r = JourneyPlanner(LocalSource()).plan("townhall", "unsw", "01", "walk,bike", "lower_risk", use_reports=False)
     assert r["journeys"][0]["is_lowest_risk"]
+
+
+def test_street_safety_overlay_draws_processed_streets_from_their_own_geometry(client, monkeypatch):
+    c, server = client
+    rows = [{"name": "Real Street", "highway": "residential", "lit": None, "lit_source": None, "tunnel": False,
+             "risk_01": 0.6, "venues_01": 0, "geometry": json.dumps([[[151.2001234, -33.871], [151.201, -33.872]]])}]
+
+    class Processed:
+        def streets(self):
+            return rows, {"executed_by": "processed data files"}
+    monkeypatch.setattr(server, "planner_source", lambda: Processed())
+    g = c.get("/api/street-safety", params={"band": "01"}).json()
+    assert [f["properties"]["name"] for f in g["features"]] == ["Real Street"]   # not limited to the sample file
+    f = g["features"][0]
+    assert f["geometry"]["type"] == "MultiLineString" and f["geometry"]["coordinates"][0][0] == [151.20012, -33.871]
+    assert f["properties"]["risk"] == 0.6 and f["properties"]["lit"] is None      # unknown lighting stays unknown
+
+
+def test_journeys_are_labelled_against_the_fastest_option():
+    from athena.journeys import relative_band
+    assert relative_band(0.40, 0.40, True)[0] == "reference"
+    assert relative_band(0.30, 0.40, False)[0] == "lower"
+    assert relative_band(0.41, 0.40, False)[0] == "similar"          # within 5%
+    assert relative_band(0.50, 0.40, False)[0] == "higher"
+    assert relative_band(None, 0.40, False)[0] == "unknown"
+    assert relative_band(0.30, None, False)[0] == "unknown"           # nothing to compare against
+    assert not any("safe" in v.lower().split() for v in RELATIVE_LABELS.values())
+
+
+def test_time_on_board_and_waits_count_in_the_journey_score():
+    streets = {"Dark Lane": {"name": "Dark Lane", "lit": "no", "risk_01": 0.9},
+               "Busy Road": {"name": "Busy Road", "lit": "yes", "risk_01": 0.2}}
+    walk = [{"street": "Dark Lane", "distance_m": 600, "duration_s": 480}]
+    walk_only = score_streets(walk, streets, "01", {}, extra=[])
+    vehicle = {"kind": "vehicle", "seconds": 1200, "risk": 0.10}
+    with_tram = score_streets(walk, streets, "01", {}, extra=[vehicle])
+    assert with_tram["risk"] < walk_only["risk"] and with_tram["on_board_min"] == 20.0   # the ride counts, lower
+    lit_wait = {"kind": "wait", "seconds": 600, "risk": 0.2, "label": "Busy Road", "lit": "yes"}
+    dark_wait = {"kind": "wait", "seconds": 600, "risk": 0.95, "label": "Dark Lane", "lit": "no"}
+    calm = score_streets(walk, streets, "01", {}, extra=[vehicle, lit_wait])
+    exposed = score_streets(walk, streets, "01", {}, extra=[vehicle, dark_wait])
+    assert exposed["risk"] > calm["risk"] and exposed["worst"]["street"] == "waiting at Dark Lane"
+    assert exposed["wait_min"] == 10.0 and exposed["unknown_share_pct"] == walk_only["unknown_share_pct"]
+    no_data_wait = {"kind": "wait", "seconds": 600, "risk": None, "label": "a stop"}
+    assert score_streets(walk, streets, "01", {}, extra=[vehicle, no_data_wait])["risk"] == with_tram["risk"]
+    # Without extra (one leg, or the sample's untimed rows) it stays distance-weighted over streets only.
+    assert score_streets(walk, streets, "01", {})["wait_min"] is None
