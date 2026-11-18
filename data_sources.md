@@ -132,7 +132,7 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
 | Dataset | Origin | Licence / consent | Role | Size |
 | --- | --- | --- | --- | --- |
 | `evals/guard/injection.jsonl` | 10 rows from the Meterless v1 adversarial set, 16 written by the team | Apache-2.0 (`NOTICE`) / team | tuning (guard dev) | 26 |
-| `evals/guard/heldout_probes_v1.jsonl` | synthetic, written by Claude on 18 Nov 2026 after reading the guard's patterns; labels by construction | project | held-out, frozen | 50 |
+| `evals/guard/heldout_probes_v1.jsonl` | synthetic, AI-generated on 18 Nov 2026 after reading the guard's patterns; labels by construction | project | held-out, frozen | 50 |
 | `evals/guard/redteam.csv` | attempts by people outside the team | consent, pseudonymous `author_group` | held-out (to collect) | – |
 | `evals/privacy/pii_cases_v1.jsonl` | synthetic, fictional people and numbers | project | regression set (it motivated the 18 Nov PII fix) | 29 |
 | `data/labelling/reports_to_label.csv` → `data/reports/{train,dev,test}.jsonl` | team-written (`seed`) and collected (`collected`) street reports | consent text in `data/labelling/guide.md` | train / dev / **test frozen, touched once**; group split by street and writer | target 150+ |
