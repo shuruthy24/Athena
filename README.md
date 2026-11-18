@@ -92,7 +92,8 @@ python scripts/verify_demo.py --base-url http://127.0.0.1:8001
 
 `check.py` (also `make check`) runs the tests, regenerates every offline result and compares it with the
 committed file, checks the frozen test sets, scans for secrets, validates the data, and runs every feature check.
-`verify_demo.py --base-url` runs the same feature checks against the server you started. On Windows, use
+`verify_demo.py --base-url` runs the feature checks against the server you started (three checks that need
+access inside the app are skipped over HTTP; `check.py` runs them). On Windows, use
 `.venv\Scripts\python` instead of `python`.
 
 Don't run `verify_demo.py` without `--base-url`: that rewrites the committed `evals/results/verify.json`.
