@@ -29,7 +29,7 @@ checks run on Linux and Windows for every push (`.github/workflows/check.yml`).
 | F7 | Per-client rate limit, no IP stored | all POST endpoints | `server.rate_limit` | `test_rate_limit_is_per_client_not_shared` | F7 | done |
 | F8 | Earlier prototype map, kept for comparison | `/prototype` | `web/index.html` (pre-existing, unchanged) | page loads (F1) | F1 | pre-existing work, labelled as such |
 | F9 | Live OpenTripPlanner (plan any trip) | only when `OTP_URL` points at a running OTP | `athena/data/otp.py` | `test_live_otp_rows_are_scored_like_precomputed` (mock) | none | **never run against a live OTP**; off by default |
-| F10 | Deployed URL | none | `Dockerfile`, `docs/deploy.md` | none | `--base-url` once deployed | **not deployed** |
+| F10 | Deployed URL | none | `Dockerfile` | none | `--base-url` once deployed | **not deployed** |
 
 ## Not implemented and future work
 
@@ -45,7 +45,7 @@ decisions; evaluation.md, "Evaluations deliberately not run", gives the reason f
 | Larger blind A/B | 6 pairs, tied 3-3 (`ab.json`) | more pairs from a new trace run (`python evals/ab.py prepare ...`) |
 | Red-team held-out set | not collected | attempts by people outside the team (`evals/guard/README.md`) |
 | Task study (outcome metric) | not conducted | sessions with participants (`docs/user_study.md`), then `python evals/eval_user_study.py` |
-| Deployment and load test | not deployed | `docs/deploy.md`, then `make load-test BASE_URL=...` and `python scripts/verify_demo.py --base-url ...` |
+| Deployment and load test | not deployed | build and run the container (`Dockerfile` header), then `make load-test BASE_URL=...` and `python scripts/verify_demo.py --base-url ...` |
 | Critic, moderator and judge model choice | only the explainer was compared (`model_comparison.json`) | `python evals/compare_models.py` with labelled reports |
 | Public mirror of the raw snapshots | `data/raw_manifest.json` has no download URLs yet, so `make data-verify` runs only where `data/raw/` exists (DVC) | upload the raw files, add their URLs to the manifest, `make fetch-raw && make data-verify` |
 | Route baselines on real data | measured on the sample only (`route_baselines.json`) | `python evals/eval_route_baselines.py` on `data/processed` |
@@ -119,4 +119,4 @@ data.
 | Privacy | PII removed at ingest and before every model call, measured (`pii.json`); consent texts; retention; no accounts; hashed rate-limit ids ([data_sources.md](../data_sources.md)) |
 | Data quality | `pipeline.check` (schema, keys, area, references) and `data_quality.json` (missing values, duplicates, snapshot age) |
 | Architecture, design decisions and readiness | [design.md](design.md), [model_card.md](model_card.md) |
-| Deployment | [deploy.md](deploy.md) |
+| Container | `Dockerfile` (build and run instructions in its header) |

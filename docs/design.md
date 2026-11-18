@@ -139,7 +139,7 @@ not yet support relying on Athena for real trips. Each reason comes from a commi
 | The LLM explanation is not shown to beat the fact-only text | `ab.json`: people preferred the LLM text 3 times and the fact-only text 3 times |
 | Injected reports still get through end to end | `injection_e2e.json`: 4 of 24 held-out injection probes admitted with the live moderator; the text guard alone catches 0.208 of held-out probes (`offline.json`) |
 | On real data, the lower-risk option rarely differs from the fastest | `data_coverage.json`: differs on 61 of 377 trips; median unknown lighting on Athena's route 72.3% |
-| No load testing; the service is not deployed | no `ops.json`; the container and deploy guide exist (`Dockerfile`, [deploy.md](deploy.md)) |
+| No load testing; the service is not deployed | no `ops.json`; a container exists (`Dockerfile`) |
 
 **Next engineering actions:** more labelled reports and trace labels that include hold and FAIL cases; regenerate
 the secondary judge audit; grow the A/B sample; red-team the guard with people outside the team; deploy and load

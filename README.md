@@ -74,8 +74,8 @@ flowchart LR
 ```
 
 Design rationale, trust boundary and flow: [docs/design.md](docs/design.md). Metrics: [docs/metrics.md](docs/metrics.md).
-Models: [docs/model_card.md](docs/model_card.md). Data: [data_sources.md](data_sources.md). Agent instructions and
-contributor rules: [AGENTS.md](AGENTS.md).
+Models: [docs/model_card.md](docs/model_card.md). Data: [data_sources.md](data_sources.md). Status, limitations
+and what is not implemented: [docs/STATUS.md](docs/STATUS.md).
 
 ## Quick start
 

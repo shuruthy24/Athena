@@ -100,7 +100,7 @@ readme:
 serve:
 	$(PYTHON) -m uvicorn athena.server:app --host 127.0.0.1 --port $(PORT)
 
-# Container and load test (docs/deploy.md). BASE_URL is the deployed URL for the evidence in ops.json.
+# Container (see the Dockerfile header) and load test. BASE_URL is the deployed URL for the evidence in ops.json.
 docker:
 	docker build -t athena .
 
