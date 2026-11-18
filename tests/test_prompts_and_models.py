@@ -1,4 +1,4 @@
-"""Step 4: prompts live in versioned files, traces name the prompt version, and the model comparison script
+"""Prompts live in versioned files, traces name the prompt version, and the model comparison script
 applies its fixed criteria, budget and pricing correctly (against fake models, no gateway)."""
 import json
 import re

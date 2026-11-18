@@ -36,7 +36,7 @@ def binary_scores(truth: list[bool], pred: list[bool]) -> dict:
 
 def tpr_tnr(truth: list[bool], pred: list[bool | None]) -> dict:
     """Positive class = True. A None prediction (malformed output) stays in the denominator and counts as
-    wrong, as in Tech 6."""
+    wrong."""
     tp = sum(1 for t, p in zip(truth, pred) if t and p is True)
     fn = sum(1 for t, p in zip(truth, pred) if t and p is not True)
     tn = sum(1 for t, p in zip(truth, pred) if not t and p is False)

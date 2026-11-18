@@ -1,4 +1,4 @@
-"""HTTP API in sample mode, and the full live code path against a mock COMP3110 gateway server."""
+"""HTTP API in sample mode, and the full live code path against a mock gateway server."""
 import importlib
 
 import pytest

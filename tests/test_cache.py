@@ -1,4 +1,4 @@
-"""Step 8: explanation cache and per-request usage in the trace."""
+"""Explanation cache and per-request usage in the trace."""
 import json
 
 from athena.agents import Athena

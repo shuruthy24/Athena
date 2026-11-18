@@ -1,4 +1,4 @@
-"""Report labelling workflow (AGENTS.md Step 3). All rows here are generated test data, not labels."""
+"""Report labelling workflow. All rows here are generated test data, not labels."""
 import json
 import random
 

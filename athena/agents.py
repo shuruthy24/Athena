@@ -10,7 +10,7 @@ Route explanations run a draft-and-check loop (evaluator-optimiser):
   revise up to MAX_REVISIONS times, then fall back to a deterministic explanation built only from facts.
 
 Reports run Moderator (MODERATOR_MODEL) + Verifier (street data, corroboration) and are queued with a
-fading risk penalty when approved. Every model call goes through the COMP3110 gateway and its trace step
+fading risk penalty when approved. Every model call goes through the LiteLLM gateway and its trace step
 records the served model, tokens and estimated cost.
 """
 from __future__ import annotations
@@ -64,7 +64,7 @@ def prompt_windows(bodies: list[str], size: int = LEAK_WINDOW, stride: int = 10)
 
 
 def leaks_prompt(text: str, windows: set[str], size: int = LEAK_WINDOW) -> bool:
-    """True when output repeats a stretch of a system prompt. Prompts are public (week 8: assume leakage),
+    """True when output repeats a stretch of a system prompt. Prompts are assumed public (assume leakage),
     but the app still never echoes them back as an answer."""
     t = _norm_text(text)
     return any(t[i:i + size] in windows for i in range(0, max(0, len(t) - size + 1)))
@@ -194,7 +194,7 @@ class Athena:
             return {"kind": "offline-stub", "model": getattr(self.llm, "MODEL", "sample-offline-stub"),
                     "note": "Offline stand-in (SAMPLE_MODE): template text from the facts, not a language model."}
         return {"kind": "model", "model": self.s.model_for("explainer"),
-                "note": f"Drafted by {self.s.model_for('explainer')} through the COMP3110 gateway, then checked."}
+                "note": f"Drafted by {self.s.model_for('explainer')} through the model gateway, then checked."}
 
     def check_claims(self, claims: list[dict], facts: dict) -> list[dict]:
         """Deterministic part of the Evidence Critic. Returns one result per claim."""
@@ -227,7 +227,7 @@ class Athena:
         return out
 
     def _draft_once(self, payload: dict):
-        """One analyst call. The client owns the single permitted retry (AGENTS.md section 2), so a failure
+        """One analyst call. The client owns the single permitted retry, so a failure
         here goes straight to the fact-only fallback."""
         return self.llm.chat(self.s.model_for("explainer"), self.prompts["explainer"].body,
                              json.dumps(payload), role="explainer")
@@ -361,7 +361,7 @@ CONTRADICTS_LIT = re.compile(r"\bno (street )?lights?\b.{0,30}\b(at all|anywhere
 def verify_report(text: str, street: str | None, mod: dict, streets: dict[str, dict]) -> dict:
     """Report Verifier: combine the classifier or moderator output with street data.
     Order matters: reject > review > redact > approve. Accepts the classifier shape {action, category, reason}
-    (AGENTS.md section 6) and the hackathon moderator shape {prejudiced, category, plausible, reason}."""
+    and the earlier moderator shape {prejudiced, category, plausible, reason}."""
     resolved = bool(street and street in streets)
     if mod.get("force_review"):
         return {"action": "review", "reason": "moderator_unavailable", "street_resolved": resolved}

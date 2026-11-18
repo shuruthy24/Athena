@@ -1,4 +1,4 @@
-# Athena for COMP3110. See AGENTS.md section 9.
+# Athena. Every target has a plain-Python equivalent (README, "Commands").
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 PORT ?= 8001
 
@@ -15,7 +15,7 @@ install:
 install-lock:
 	$(PYTHON) -m pip install -r requirements-lock.txt
 
-# raw -> processed, then pipeline.check (AGENTS.md Step 2). Fetch raw first with `make ingest`.
+# raw -> processed, then pipeline.check. Fetch raw first with `make ingest`.
 data:
 	$(PYTHON) -m pipeline.run
 	$(PYTHON) -m pipeline.check --write-quality
@@ -76,11 +76,11 @@ report:
 	$(PYTHON) scripts/results_table.py --write
 	$(PYTHON) scripts/build_eval_report.py --write
 
-# Budgeted live evals through the COMP3110 gateway (needs COMP3110_MODEL_BASE_URL and COMP3110_API_KEY).
+# Budgeted live evals through the model gateway (needs COMP3110_MODEL_BASE_URL and COMP3110_API_KEY).
 eval-live:
 	$(PYTHON) evals/run_evals.py --live
 	@for s in evals/compare_models.py evals/eval_classifier.py evals/judge.py; do \
-		if [ -f $$s ]; then echo "run $$s explicitly; each has its own call budget (AGENTS.md section 7)"; fi; done
+		if [ -f $$s ]; then echo "run $$s explicitly; each has its own call budget"; fi; done
 
 # Frozen held-out sets must not change (evals/checksums.txt: guard probes, PII cases, report test split).
 checksums:

@@ -1,4 +1,4 @@
-"""Load test a running Athena (AGENTS.md Step 9). Standard library only.
+"""Load test a running Athena. Standard library only.
 
   python scripts/load_test.py --base-url https://<your-host>          # 50 requests per endpoint
   python scripts/load_test.py --base-url http://127.0.0.1:8001 -n 20 --concurrency 4

@@ -1,4 +1,4 @@
-"""Labeller agreement for the street reports (AGENTS.md Step 3).
+"""Labeller agreement for the street reports.
 
   python -m pipeline.agreement
     reads   data/labelling/reports_to_label.csv
@@ -80,7 +80,7 @@ def analyse(rows: list[dict]) -> tuple[dict, list[dict], list[dict]]:
 
 
 def clean_reports(rows: list[dict]) -> tuple[list[dict], dict]:
-    """Tech 4 order: drop missing -> (labels already canonical) -> conflicts -> duplicates -> encoding,
+    """Cleaning order: drop missing -> (labels already canonical) -> conflicts -> duplicates -> encoding,
     with PII removed first. Returns Report-shaped dicts and the counts for the run report."""
     stats: dict = {}
     for r in rows:

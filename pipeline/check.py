@@ -1,4 +1,4 @@
-"""`python -m pipeline.check`: validate the dataset the app will serve (AGENTS.md Step 2, Tech 4 final cell).
+"""`python -m pipeline.check`: validate the dataset the app will serve.
 
 Checks: every row matches its schema (athena/schemas.py); required tables are present and non-empty; no
 normalised duplicate street names; every street on every route exists in the streets table; at least one

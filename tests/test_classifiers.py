@@ -1,4 +1,4 @@
-"""Step 5: report classifiers, the verifier's classifier path, app wiring and the eval script's guards.
+"""Report classifiers, the verifier's classifier path, app wiring and the eval script's guards.
 All reports here are generated test data, not labels."""
 import json
 

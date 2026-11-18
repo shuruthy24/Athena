@@ -1,4 +1,4 @@
-"""LLM judge for explanation faithfulness, audited against human labels (AGENTS.md Step 6, Tech 6 section 4A).
+"""LLM judge for explanation faithfulness, audited against human labels.
 
   python evals/judge.py audit evals/traces/<run>     # budget 60 calls; writes evals/results/judge_audit.json
   python evals/judge.py audit evals/traces/<run> --labels evals/labels-<name>
@@ -15,7 +15,7 @@ Human labels (the team writes these; never an agent):
   evals/labels/dev.json       {"<trace_id>": "PASS" | "FAIL", ...}  used to tune the rubric only
   evals/labels/heldout.json   same shape; read only AFTER every judge prediction is collected
 
-Contract, as in Tech 6: the reply is exactly one JSON object with exactly "verdict" and a non-empty "reason";
+Contract: the reply is exactly one JSON object with exactly "verdict" and a non-empty "reason";
 binary verdicts PASS|FAIL, pairwise A|B|TIE; Markdown fences, prose, duplicate or extra fields are rejected
 and never repaired. Positive class = human PASS. TPR and TNR keep malformed replies in the denominator as
 wrong. One deterministic request per case (temperature 0, no fallback model: the judge is measured as

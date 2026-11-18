@@ -1,4 +1,4 @@
-"""Step 6: traces, assertions (one pass and one fail each), the strict judge and its audit, and the blind A/B.
+"""Traces, assertions (one pass and one fail each), the strict judge and its audit, and the blind A/B.
 Traces here come from the offline stand-in and fake judges: they test the workflow, not the models."""
 import copy
 import csv

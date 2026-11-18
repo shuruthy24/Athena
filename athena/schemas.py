@@ -1,4 +1,4 @@
-"""Data contracts for every table Athena reads (AGENTS.md section 6). pipeline/check.py validates each row."""
+"""Data contracts for every table Athena reads. pipeline/check.py validates each row."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -76,7 +76,7 @@ class Place(BaseModel):
 
 
 class Report(BaseModel):
-    """A labelled street report (Step 3). Text has PII removed before it is stored."""
+    """A labelled street report. Text has PII removed before it is stored."""
     id: str
     street: str
     band: Band

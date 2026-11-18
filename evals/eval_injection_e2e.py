@@ -1,7 +1,7 @@
 """End to end: does an injection inside a street report get ADMITTED by the whole report pipeline?
 
   python evals/eval_injection_e2e.py              # offline: guard + no-model baselines (keyword rule, offline stub)
-  python evals/eval_injection_e2e.py --live       # guard + the configured classifier through the COMP3110 gateway
+  python evals/eval_injection_e2e.py --live       # guard + the configured classifier through the model gateway
                                                   # (REPORT_CLASSIFIER, MODERATOR_MODEL); about 50 calls
 
 The text guard is only the first layer (evals/run_evals.py measures it alone). A report that slips past it still

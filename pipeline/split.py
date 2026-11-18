@@ -1,13 +1,13 @@
-"""Group split of the labelled reports (AGENTS.md Step 3, week 2 holdouts by group).
+"""Group split of the labelled reports (holdout by group, so no writer or street spans two splits).
 
   python -m pipeline.split              # data/reports/labelled.jsonl -> train/dev/test.jsonl + evals/checksums.txt
   python -m pipeline.split --refreeze   # only with team agreement: replaces a frozen test split
 
 Reports that share a street or an author_group are joined into one group (union-find), and whole groups go
 to one split, so no street and no writer appears in two splits. Synthetic rows only ever go to train.
-Groups with the most reports collected from people outside the team go to test first (the Step 3
-caveat), then dev, then train, aiming at 60/20/20 by rows. Deterministic: the same input gives the same
-split. The test split is frozen by its sha256 in evals/checksums.txt and is not rewritten without
+Groups with the most reports collected from people outside the team go to test first (reports written by the
+labellers themselves make test scores optimistic), then dev, then train, aiming at 60/20/20 by rows.
+Deterministic: the same input gives the same split. The test split is frozen by its sha256 in evals/checksums.txt and is not rewritten without
 --refreeze (changing the split is an ask-first action).
 """
 from __future__ import annotations
@@ -125,7 +125,7 @@ def main(argv=None) -> int:
     sizes = {k: len(v) for k, v in parts.items()}
     print(f"split sizes {sizes}; test frozen in {CHECKSUMS.relative_to(ROOT)}")
     if sizes["test"] < 60:
-        print(f"note: test has {sizes['test']} rows; AGENTS.md Step 3 asks for 60. Add more human-written reports.")
+        print(f"note: test has {sizes['test']} rows; a 60-row test split is the target. Add more human-written reports.")
     return 0
 
 

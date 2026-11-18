@@ -1,10 +1,10 @@
-"""Report classifier evaluation (AGENTS.md Step 5).
+"""Report classifier evaluation.
 
   python evals/eval_classifier.py --offline                     # dev split, no-model candidates only
   python evals/eval_classifier.py                               # dev split, adds prompt-zero and prompt-5shot (live)
   python evals/eval_classifier.py --split test --touch-test     # ONCE, after the team has chosen on dev
 
-Metrics, fixed before any run (AGENTS.md Step 5):
+Metrics, fixed before any run:
   admit = approve (redact counts as admit: the rest of the report is used); hold = review or reject.
   TNR on hold    share of hold reports the pipeline holds (a wrongly admitted report is the severe error)
   TPR on admit   share of admit reports the pipeline admits

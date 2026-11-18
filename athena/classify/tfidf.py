@@ -1,7 +1,7 @@
-"""TF-IDF report classifiers (week 3: compare a classification prompt with a conventional classifier).
+"""TF-IDF report classifiers (a conventional classifier to compare with the prompted ones).
 
 Two scikit-learn pipelines, one for the action and one for the category, each over word 1-2 grams and
-character 3-5 grams (the feature set that won Tech 5). Logistic regression or LinearSVC, class weights
+character 3-5 grams. Logistic regression or LinearSVC, class weights
 balanced, seed 3110. Trained on data/reports/train.jsonl plus train_synthetic.jsonl, never dev or test.
 
   python -m athena.classify.tfidf --kind logreg    # writes models/report_classifier.joblib

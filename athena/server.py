@@ -36,7 +36,7 @@ def build_athena() -> Athena:
     if s.sample_mode:
         log.info("SAMPLE_MODE=true: offline model stub; no gateway calls")
         return Athena(s, SampleLLM(), LocalSource())
-    # os.environ[...] on purpose: a live run without the gateway settings must fail loudly (AGENTS.md section 2).
+    # os.environ[...] on purpose: a live run without the gateway settings must fail loudly.
     llm = GatewayLLM(os.environ["COMP3110_MODEL_BASE_URL"], os.environ["COMP3110_API_KEY"],
                      timeout_s=s.llm_timeout_s, fallback_model=s.fallback_model)
     return Athena(s, llm, LocalSource())
@@ -264,7 +264,7 @@ def health() -> dict:
     # Provenance for the interface badge and for anyone verifying a demo: which data and which models answer.
     prov = a.source.provenance() if hasattr(a.source, "provenance") else {"mode": "unknown"}
     out["data_provenance"] = prov
-    out["llm"] = "offline stand-in (SAMPLE_MODE, no language model)" if s.sample_mode else "COMP3110 gateway"
+    out["llm"] = "offline stand-in (SAMPLE_MODE, no language model)" if s.sample_mode else "LiteLLM gateway"
     if s.sample_mode:
         out.update(gateway="skipped (sample mode)")
         return out

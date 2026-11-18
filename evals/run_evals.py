@@ -1,7 +1,7 @@
 """Run Athena's offline evaluations and write the evidence files.
 
   python3 evals/run_evals.py            # deterministic parts (no gateway calls)
-  python3 evals/run_evals.py --live     # also moderates the 14 reports through the COMP3110 gateway
+  python3 evals/run_evals.py --live     # also moderates the 14 reports through the model gateway
 
 Outputs: evals/results/offline.json and evals/results/offline_report.md (or live.json / live_report.md
 with --live).
@@ -240,7 +240,7 @@ def git_sha() -> str | None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--live", action="store_true", help="moderate the reports through the COMP3110 gateway")
+    ap.add_argument("--live", action="store_true", help="moderate the reports through the model gateway")
     ap.add_argument("--out-dir", default=str(ROOT / "evals/results"), help="where to write results")
     args = ap.parse_args()
     s = get_settings()

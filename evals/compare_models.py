@@ -1,4 +1,4 @@
-"""Model comparison in the Tech 2/3 shape (AGENTS.md Step 4). Live: the team runs this.
+"""Model comparison: quality, latency, tokens and cost per model. Live: needs the gateway key.
 
   python evals/compare_models.py --dry-run                     # plan and budget, no calls
   python evals/compare_models.py                               # default candidates, 200-call budget
@@ -6,9 +6,9 @@
 
 Same prompt and settings for every model (temperature 0, stream=False, one request at a time), latency
 from time.perf_counter() around the complete response, token usage from the response, and cost from the
-course price table (athena/pricing.py; unpriced routes report null, never a guess).
+published price table (athena/pricing.py; unpriced routes report null, never a guess).
 
-Criteria, fixed before any run (week 1 "metrics first"; Tech 2 "criteria before results"):
+Criteria, fixed before any run (metrics first; criteria before results):
 
   explainer   cases: every trip/band/mode the app can serve (the route data has no train/test split)
               PASS when the first draft (a) parses to {"headline", "claims"} with 2-4 claims, (b) every claim

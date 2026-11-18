@@ -1,4 +1,4 @@
-"""Blind pairwise A/B: does the LLM explanation beat the fact-only one? (AGENTS.md Step 6, Tech 6 section 4B)
+"""Blind pairwise A/B: does the LLM explanation beat the fact-only one?
 
   python evals/ab.py prepare evals/traces/<run> --n 6   # writes evals/ab/review.md and an empty choices.csv
   (reviewers read ONLY review.md, fill choices.csv: A, B or TIE plus one evidence-based sentence, then commit it)

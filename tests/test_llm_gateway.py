@@ -1,4 +1,4 @@
-"""GatewayLLM against the mock COMP3110 gateway: one retry per logical call, fallback route, usage and cost."""
+"""GatewayLLM against the mock gateway: one retry per logical call, fallback route, usage and cost."""
 import pytest
 
 from athena.llm import GatewayLLM, LLMError

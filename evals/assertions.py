@@ -1,4 +1,4 @@
-"""Deterministic regression assertions over saved explanation traces (AGENTS.md Step 6, Tech 6 section 3).
+"""Deterministic regression assertions over saved explanation traces.
 
   python evals/assertions.py evals/traces/<run>        # writes evals/results/assertions.json
 
@@ -110,7 +110,7 @@ def no_risk_benefit_disclosed(rec: dict) -> AssertionResult:
 
 
 def model_steps_observable(rec: dict) -> AssertionResult:
-    """Every model step names its model, prompt version and token counts (week 1 gateways: log every call)."""
+    """Every model step names its model, prompt version and token counts (log every call)."""
     steps = [s for s in rec["trace"] if s.get("model")]
     missing = [s["step"] for s in steps if not s.get("prompt") or s.get("tokens_in") is None]
     return AssertionResult("model_steps_observable", not missing, f"steps missing usage/prompt: {missing}")

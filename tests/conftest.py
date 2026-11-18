@@ -14,12 +14,12 @@ sys.path.insert(0, str(ROOT))
 # a LocalSource at import time, and a local `make data` rebuild must not change test results.
 os.environ["ATHENA_DATA_DIR"] = str(ROOT / "data")
 
-GATEWAY_KEY = "test-gateway-key-not-real"   # COMP3110 gateway mock
+GATEWAY_KEY = "test-gateway-key-not-real"   # gateway mock
 MODEL = "scx-gpt-oss-120b"
 
 
 class MockHandler(BaseHTTPRequestHandler):
-    """Mock of the COMP3110 LiteLLM gateway (OpenAI-compatible /v1/models and /v1/chat/completions, with
+    """Mock of the LiteLLM gateway (OpenAI-compatible /v1/models and /v1/chat/completions, with
     token usage)."""
     calls: list = []
     analyst_bad_first = True

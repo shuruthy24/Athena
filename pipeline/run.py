@@ -6,7 +6,7 @@
   data/places.json                -> places.parquet        (configuration, not a source snapshot)
   manifest.json                   which raw files (with sha256) built which tables, and the row counts
 
-Storage format on purpose (week 2): Parquet for tables queried on every request. Without an OSM snapshot
+Storage format on purpose: Parquet for tables queried on every request. Without an OSM snapshot
 there is nothing to build: run `python3 -m pipeline.ingest osm` first. Without an OTP snapshot the streets
 are still rebuilt and the app keeps using the hand-made sample routes in data/*.json, and says so.
 """

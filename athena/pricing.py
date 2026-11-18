@@ -1,7 +1,8 @@
 """Model prices for cost estimates (USD per one million tokens).
 
-Source: COMP3110 Tech 6 README, "Model pricing reference" (the latest table the course published).
-The course has published no prices for the AWS Nova or Bedrock routes, so those are left out and
+Source: the gateway operator's published "Model pricing reference" table (PRICE_SOURCE names it, as recorded
+in committed results).
+The operator has published no prices for the AWS Nova or Bedrock routes, so those are left out and
 their cost is reported as None ("unpriced") instead of being guessed.
 """
 from __future__ import annotations

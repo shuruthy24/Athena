@@ -1,4 +1,4 @@
-"""Check the live stack: COMP3110 gateway model discovery, one tiny request per role model.
+"""Check the live stack: LiteLLM gateway model discovery, one tiny request per role model.
 No secrets are printed or written.
 
   python3 scripts/check_stack.py     -> PASS/FAIL lines, evals/results/stack_check.json

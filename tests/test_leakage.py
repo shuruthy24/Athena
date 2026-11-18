@@ -1,5 +1,5 @@
-"""Step 7 security: system-prompt leakage, data never in an instruction position, indirect injection through
-report text and street names (week 8)."""
+"""Security: system-prompt leakage, data never in an instruction position, indirect injection through
+report text and street names."""
 import json
 import shutil
 from pathlib import Path

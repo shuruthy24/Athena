@@ -1,4 +1,4 @@
-"""Fetch raw source snapshots into data/raw/. Raw files are written once and never edited (AGENTS.md section 2).
+"""Fetch raw source snapshots into data/raw/. Raw files are written once and never edited.
 
   python3 -m pipeline.ingest osm          # OpenStreetMap via Overpass -> data/raw/osm_<YYYY-MM-DD>.json
   python3 -m pipeline.ingest gtfs         # prints how to download TfNSW GTFS (login required, done by a human)

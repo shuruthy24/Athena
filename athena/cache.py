@@ -1,7 +1,7 @@
-"""Explanation cache (AGENTS.md Step 8; week 1 gateways: "caching is underrated").
+"""Explanation cache.
 
 Key = sha256 of the explainer and critic prompt versions, their models, MAX_REVISIONS and the exact facts.
-Reuse is only safe when everything that shaped the answer matches (week 1: user, permissions, context and
+Reuse is only safe when everything that shaped the answer matches (user, permissions, context and
 model/prompt version). Here no user data reaches the explainer, so facts + prompts + models are the context:
 a new report penalty changes the facts and therefore the key. The question wording is not part of the key;
 the explanation describes the trip's facts. Only completed explanations are cached ("approve" or the

@@ -1,11 +1,11 @@
-"""Model access through the COMP3110 LiteLLM gateway.
+"""Model access through an OpenAI-compatible LiteLLM gateway.
 
-GatewayLLM uses the OpenAI Python SDK the way Tech 1 does: base_url from COMP3110_MODEL_BASE_URL and
+GatewayLLM uses the OpenAI Python SDK: base_url from COMP3110_MODEL_BASE_URL and
 api_key from COMP3110_API_KEY (read by the caller with os.environ[...], so a missing value fails
 loudly). Every call is non-streaming at temperature 0 and returns the model that actually served it,
 token usage, latency and an estimated cost from athena.pricing.
 
-Retry rule (AGENTS.md section 2): at most one retry per logical call, counted across every layer.
+Retry rule: at most one retry per logical call, counted across every layer.
 The retry lives here, only for transient failures (connection, timeout, 429, 5xx, empty completion),
 and goes to the fallback model when one is configured. Callers must not retry again.
 

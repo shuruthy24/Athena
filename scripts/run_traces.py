@@ -1,4 +1,4 @@
-"""Generate real explanation traces for error analysis (AGENTS.md Step 6, Tech 6 workflow). Live: you run this.
+"""Generate real explanation traces for error analysis. Live: needs the gateway key.
 
   python scripts/run_traces.py                 # live explainer + critic through the gateway, budget 200 calls
   python scripts/run_traces.py --offline       # SampleLLM, to try the workflow; NOT evidence, labelled as such

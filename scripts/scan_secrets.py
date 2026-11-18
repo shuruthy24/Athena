@@ -1,4 +1,4 @@
-"""Secrets scan for the repo (AGENTS.md section 2). Standard library only, so it runs anywhere.
+"""Secrets scan for the repo. Standard library only, so it runs anywhere.
 
   python3 scripts/scan_secrets.py            # scan every tracked file (make check)
   python3 scripts/scan_secrets.py --staged   # scan staged changes only (pre-commit hook)

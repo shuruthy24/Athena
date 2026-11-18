@@ -1,4 +1,4 @@
-# Athena for COMP3110: one container, data baked in, the course gateway as the only external call.
+# Athena: one container, data baked in, the model gateway as the only external call.
 #   make data && make train      (optional: processed Parquet and the TF-IDF classifier, if you use them)
 #   docker build -t athena .
 #   docker run -p 8000:8000 -e COMP3110_MODEL_BASE_URL=... -e COMP3110_API_KEY=... -e RATE_LIMIT_SECRET=... athena

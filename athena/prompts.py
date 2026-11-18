@@ -1,4 +1,4 @@
-"""Prompts as versioned files (AGENTS.md Step 4, week 3: "prompts are code, track in git").
+"""Prompts as versioned files (prompts are code, tracked in git).
 
 Each prompt lives in prompts/<role>.v<N>.md with front matter:
 

@@ -1,4 +1,4 @@
-# Secrets scan before every commit (AGENTS.md section 2). Without the pre-commit package, run `make hooks`.
+# Secrets scan before every commit. Without the pre-commit package, run `make hooks`.
 repos:
   - repo: local
     hooks:

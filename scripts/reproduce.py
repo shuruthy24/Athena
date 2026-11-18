@@ -10,7 +10,7 @@ What "reproduce" means for each result file in evals/results/:
   rescore   live model outputs are saved (traces), so their scoring is recomputed offline (assertions.json); for
             model_comparison.json the per-case pass flags are recounted to check the summary.
   rebuild   data/processed from data/raw (pipeline.verify), when the raw snapshots are present.
-  input     needs the course key, human labels, a deployed URL or the raw data to regenerate; listed with the
+  input     needs the gateway key, human labels, a deployed URL or the raw data to regenerate; listed with the
             command that produces it.
 Timestamps, git shas and latencies are never compared.
 """

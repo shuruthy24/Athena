@@ -1,8 +1,8 @@
-"""Tech 4 cleaning helpers, ported to plain Python over lists of dicts so the pipeline needs no pandas.
+"""Cleaning helpers in plain Python over lists of dicts so the pipeline needs no pandas.
 
-Same helpers, same order as Tech 4: drop_missing -> fix_labels -> find_conflicts (inspect, then decide
+Order: drop_missing -> fix_labels -> find_conflicts (inspect, then decide
 explicitly) -> drop_duplicates (exact, then normalised) -> fix_encoding. remove_pii runs at ingest, before
-any other stage sees the text (week 2: "never 'we will strip it later', always anonymise at ingest").
+any other stage sees the text (never "we will strip it later": always anonymise at ingest).
 Regex redaction cannot find names; a human reads the report text as well (data/labelling/guide.md).
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f​-‏‪-‮⁦-⁩]")
 
 
 def normalise(text: str | None) -> str:
-    """Lowercase and collapse whitespace, for comparing rows (Tech 4 'normalised duplicate')."""
+    """Lowercase and collapse whitespace, for comparing rows (a "normalised duplicate")."""
     return " ".join(str(text or "").lower().split())
 
 

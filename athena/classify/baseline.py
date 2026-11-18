@@ -1,4 +1,4 @@
-"""No-ML baselines for the report classifier (Rules of ML #1: launch without ML first)."""
+"""No-ML baselines for the report classifier (launch without ML first)."""
 from __future__ import annotations
 
 import re

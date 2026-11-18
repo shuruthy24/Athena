@@ -1,11 +1,11 @@
-"""Street-report classifiers behind one interface (AGENTS.md Step 5, section 6).
+"""Street-report classifiers behind one interface.
 
-Candidates, from simplest to most expensive (week 1: rule before ML; week 3: compare a classification
+Candidates, from simplest to most expensive (rule before ML; compare a classification
 prompt with a conventional classifier):
   majority        always the most common train labels (the floor every candidate must beat)
   keyword         hand-written rules, no training
   tfidf-logreg    TF-IDF + logistic regression (scikit-learn), trained on the train split
-  tfidf-svm       TF-IDF + LinearSVC (won Tech 5)
+  tfidf-svm       TF-IDF + LinearSVC
   prompt-zero     moderator.v2 prompt, no examples
   prompt-5shot    moderator.v2 prompt with 5+ examples from the train split only
 

@@ -1,13 +1,13 @@
-"""Synthetic training variants of train-split reports (AGENTS.md Step 3). Live: you run this.
+"""Synthetic training variants of train-split reports. Live: needs the gateway key.
 
-  python -m pipeline.synth --max-rows 300            # uses MODERATOR_MODEL through the COMP3110 gateway
+  python -m pipeline.synth --max-rows 300            # uses MODERATOR_MODEL through the model gateway
   python -m pipeline.synth --dry-run                 # shows the plan and the call budget, no calls
 
 Reads only data/reports/train.jsonl (never dev or test), so no evaluation text leaks into training.
 Writes data/reports/train_synthetic.jsonl with source="synthetic", the seed's labels and author_group
 (variants of one writer's report stay with that writer), and an id "s-<seed id>-<k>". Each variant is
 PII-scrubbed and dropped if it uses banned wording or duplicates its seed. Budget: at most
-ceil(max_rows / n) calls, one retry each inside the client (AGENTS.md section 2).
+ceil(max_rows / n) calls, one retry each inside the client.
 """
 from __future__ import annotations
 

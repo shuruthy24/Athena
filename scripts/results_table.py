@@ -1,4 +1,4 @@
-"""Render the README results table from evals/results/ (AGENTS.md Step 10: every number traces to a file).
+"""Render the README results table from evals/results/ (every number traces to a file).
 
   python scripts/results_table.py            # print the table
   python scripts/results_table.py --write    # replace the block between the README markers

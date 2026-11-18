@@ -1,4 +1,4 @@
-"""Data pipeline (AGENTS.md Step 2) on a tiny Overpass-shaped fixture: opening hours, cleaning, street features
+"""Data pipeline on a tiny Overpass-shaped fixture: opening hours, cleaning, street features
 and the risk rule, trip variant selection, Parquet export, LocalSource and pipeline.check."""
 import json
 import shutil
@@ -40,7 +40,7 @@ def test_opening_hours(value, band, expected):
     assert opening_hours.open_at(value, band) is expected
 
 
-# ---------------------------------------------------------------- cleaning (Tech 4 helpers)
+# ---------------------------------------------------------------- cleaning helpers
 def test_remove_pii_marks_each_kind():
     text, kinds = remove_pii("Call 0412 345 678 or mail a.b@example.com, I live at 12 Smith Street, see www.x.com")
     assert "0412" not in text and "@" not in text and "12 Smith" not in text and "www." not in text

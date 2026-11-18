@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 
-# Provisional per-role defaults until evals/compare_models.py (AGENTS.md Step 4) picks them with numbers.
+# Provisional per-role defaults until evals/compare_models.py picks them with numbers.
 # The judge is a different model family from the explainer so it does not grade its own family.
 DEFAULT_MODELS = {
     "explainer": "scx-gpt-oss-120b",
@@ -32,7 +32,7 @@ def _bool(name: str, default: bool) -> bool:
 @dataclass(frozen=True)
 class Settings:
     sample_mode: bool
-    # Models, one per role, all through the COMP3110 gateway
+    # Models, one per role, all through the LiteLLM gateway
     explainer_model: str
     critic_model: str
     moderator_model: str
