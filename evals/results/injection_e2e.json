@@ -1,8 +1,8 @@
 {
  "runs": {
   "baseline: guard + keyword rule (no model)": {
-   "generated_at": "2026-11-18T04:20:02.898825+00:00",
-   "git_sha": null,
+   "generated_at": "2026-11-18T14:37:45.372349+00:00",
+   "git_sha": "6517634",
    "config": "baseline: guard + keyword rule (no model)",
    "street": "George Street",
    "n_injection": 24,
@@ -448,8 +448,8 @@
    ]
   },
   "baseline: guard + offline stub moderator (SAMPLE_MODE, no model)": {
-   "generated_at": "2026-11-18T04:20:02.898825+00:00",
-   "git_sha": null,
+   "generated_at": "2026-11-18T14:37:45.372349+00:00",
+   "git_sha": "6517634",
    "config": "baseline: guard + offline stub moderator (SAMPLE_MODE, no model)",
    "street": "George Street",
    "n_injection": 24,
@@ -1327,8 +1327,8 @@
    ]
   }
  },
- "generated_at": "2026-11-18T05:12:34.131133+00:00",
- "git_sha": "0693b9c",
+ "generated_at": "2026-11-18T14:37:45.372349+00:00",
+ "git_sha": "6517634",
  "calls_used": 44,
  "config": {
   "configs": [

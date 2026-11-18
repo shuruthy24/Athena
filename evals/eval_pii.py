@@ -12,7 +12,8 @@ frozen in evals/checksums.txt). Redactors compared on the same texts:
 
 Metrics, fixed before the first run: recall = share of PII spans that no longer appear in the output, per kind and
 overall; over-redaction rate = share of PII-free texts that the redactor changed. Names and student ids are in the
-set on purpose: regex redaction cannot find names, and the labelling guide relies on a human reading each report.
+set on purpose. Their patterns (athena/guard.py) were written against this regression set, so recall here is
+optimistic; a name with no introduction is not found, and the labelling guide relies on a human reading each report.
 """
 from __future__ import annotations
 

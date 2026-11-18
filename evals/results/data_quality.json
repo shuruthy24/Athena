@@ -1,8 +1,8 @@
 {
  "datasets": {
   "sample": {
-   "generated_at": "2026-11-18T04:20:03.016927+00:00",
-   "git_sha": null,
+   "generated_at": "2026-11-18T14:37:45.571902+00:00",
+   "git_sha": "6517634",
    "tables": {
     "streets": {
      "rows": 12,
@@ -92,7 +92,7 @@
    "warnings": [],
    "staleness": {
     "sample": {
-     "note": "hand-made hackathon sample, no fetch date (not real measurements)"
+     "note": "hand-made sample, no fetch date (not real measurements)"
     }
    }
   },
@@ -194,8 +194,8 @@
    }
   }
  },
- "generated_at": "2026-11-18T11:13:00.742751+00:00",
- "git_sha": "62433e8",
+ "generated_at": "2026-11-18T14:37:45.571902+00:00",
+ "git_sha": "6517634",
  "calls_used": 0,
  "config": {
   "stale_days": 180,

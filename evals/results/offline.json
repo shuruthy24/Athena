@@ -1,7 +1,7 @@
 {
- "generated": "2026-11-18T04:20:02.645934+00:00",
- "generated_at": "2026-11-18T04:20:02.645934+00:00",
- "git_sha": null,
+ "generated": "2026-11-18T14:37:44.912362+00:00",
+ "generated_at": "2026-11-18T14:37:44.912362+00:00",
+ "git_sha": "6517634",
  "config": {
   "live": false,
   "moderator_model": "sample-offline-stub",

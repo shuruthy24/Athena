@@ -77,9 +77,9 @@ A rule, not a model (there are no risk labels):
   classifier is measured on first (TNR on hold).
 - **Risk indicators can stigmatise places.** The rule uses lighting, path type, venues open and lamp density,
   not crime counts or demographics. Unknown lighting stays unknown.
-- **Privacy:** no accounts; PII (phones, emails, house addresses, links, card numbers, plates) is redacted before
-  any model call with one policy for the app and ingest; names are not found by regex, so the form asks people to
-  leave them out; rate-limit ids are keyed hashes; report text is stored only in the container and lost on redeploy.
+- **Privacy:** no accounts; PII (phones, emails, house addresses, links, card numbers, plates, student ids, introduced
+  names) is redacted before any model call with one policy for the app and ingest; a bare name is not found, so the
+  form asks people to leave names out; rate-limit ids are keyed hashes; report text is stored only in the container and lost on redeploy.
 - **Sovereignty:** check where each gateway model is hosted before sending user report text to it.
 
 ## Caveats

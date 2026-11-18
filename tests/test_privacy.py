@@ -27,10 +27,17 @@ def test_app_path_and_ingest_use_the_same_policy():
     assert "Barker" not in red and "photos.example" not in red and "a@b.co" not in red and "0412" not in red
 
 
-def test_names_are_not_found_by_regex_a_documented_limit():
-    # Regex redaction cannot find names; the report form asks people not to include them and labellers read
-    # every report (data/labelling/guide.md). This test documents the limit so a change in behaviour is noticed.
-    assert "Priya Sharma" in inspect_text("My name is Priya Sharma")[0]
+def test_introduced_names_and_student_ids_are_removed():
+    assert "Priya Sharma" not in inspect_text("My name is Priya Sharma")[0]
+    assert "Tom" not in inspect_text("My friend Tom got hassled")[0]
+    assert "z5123456" not in inspect_text("My zID is z5123456")[0]
+
+
+def test_names_without_an_introduction_are_a_documented_limit():
+    # Regex finds names only after an introduction ("my name is", "my friend", "I'm"). A bare name passes, so the
+    # report form asks people not to include names and labellers read every report (data/labelling/guide.md).
+    assert "Priya Sharma" in inspect_text("Saw Priya Sharma near the station")[0]
+    assert inspect_text("Two lights out on Anzac Parade")[0] == "Two lights out on Anzac Parade"
 
 
 def test_pii_eval_runs_and_the_app_path_removes_at_least_four_in_five_spans(tmp_path, monkeypatch):

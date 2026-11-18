@@ -154,9 +154,11 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
 ## Privacy
 
 - **Street reports** can say where someone felt unsafe. No accounts; text is redacted (phones, emails, house
-  addresses, links, card numbers, plates) before any model call and before storage, with one policy for the app and
-  for ingest (`athena/guard.py`). It was measured on `evals/results/pii.json`: names and student ids are not found,
-  so the report form asks people to leave them out and labellers read every report.
+  addresses, links, card numbers, plates, student ids, and names that follow an introduction such as "my name is")
+  before any model call and before storage, with one policy for the app and for ingest (`athena/guard.py`).
+  Measured in `evals/results/pii.json`. The name and student-id patterns were written against that same regression
+  set, so its recall is optimistic; a name with no introduction ("saw Priya near the station") is not found, so the
+  report form asks people to leave names out and labellers read every report.
 - **Collected reports and study answers** are given with consent (texts in `data/labelling/guide.md` and
   `docs/user_study.md`), stored under pseudonymous group ids, never names, and deleted after marking.
 - **App storage:** report text and traces go to the container's `runs/` folder (git-ignored, lost on redeploy).

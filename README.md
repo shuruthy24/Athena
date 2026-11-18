@@ -26,7 +26,7 @@ gives the reason for each. Method, baselines, intervals and verdicts: [docs/eval
 | Evidence critic rules (276 generated claims) | precision 1.000, recall 1.000 | `offline.json` |
 | Route outcome vs fastest (18 trips, hand-made sample) | median risk-indicator reduction 36.3%, median extra 0.8 min | `offline.json` |
 | Injected reports admitted by the whole report pipeline (lower is better) | baseline: guard + keyword rule (no model): 0.792 (19/24); baseline: guard + offline stub moderator (SAMPLE_MODE, no model): 0.792 (19/24); live: moderator-v1 on scx-gpt-oss-120b: 0.167 (4/24) | `injection_e2e.json` |
-| PII redaction before any model (17 synthetic spans) | app path recall 0.824, over-redaction 0.167; no-redaction baseline 0.0; names are not found by regex | `pii.json` |
+| PII redaction before any model (17 synthetic spans) | app path recall 1.000, over-redaction 0.167; no-redaction baseline 0.0; names found only when introduced ('my name is ...') | `pii.json` |
 | Route ranking vs baselines (processed data, all modes, 126 trips) | fastest 0.0% for +0.0 min, lit 29.9%; least_walking 0.0% for +1.2 min, lit 39.4%; fewest_transfers 0.0% for +0.0 min, lit 29.4%; most_lit 0.0% for +1.4 min, lit 51.4%; lower_risk 1.7% for +0.4 min, lit 27.0%; balanced 0.65% for +0.2 min, lit 25.0% (risk reduction is Athena's own rule; lit share is not) | `route_baselines.json` |
 | Route ranking vs baselines (sample data, all modes, 6 trips) | fastest 0.0% for +0.0 min, lit 77.4%; least_walking 0.0% for +0.0 min, lit 77.4%; fewest_transfers 0.0% for +0.0 min, lit 77.4%; most_lit 36.3% for +0.8 min, lit 100.0%; lower_risk 52.3% for +17.0 min, lit 100.0%; balanced 44.3% for +0.8 min, lit 100.0% (risk reduction is Athena's own rule; lit share is not) | `route_baselines.json` |
 | Route outcome on real data (377 trips, OSM + OTP, `option4-direct-walk-timed`) | Athena's route differs from the fastest on 61; median risk-indicator reduction 0.0%, median extra 0.0 min; median unknown lighting on Athena's route 72.3% | `data_coverage.json` |
@@ -226,7 +226,7 @@ higher risk relative to the fastest option. Full rule and its assumptions: [docs
 - The 18-trip numbers come from the hand-made sample (the offline regression set); the real-data row comes from the
   OSM and OTP rebuild (`make data`).
 - Injected reports can still get through: with the live moderator, 4 of 24 held-out injection probes were admitted
-  end to end (`injection_e2e.json`). Names are not removed by PII redaction.
+  end to end (`injection_e2e.json`). Names are removed only when introduced ("my name is ...").
 - The evaluation sets are small and were mostly written by the team that built the system, which flatters the
   numbers. Readiness and its reasons: [docs/design.md](docs/design.md) §7. Everything not implemented, and known
   issues: [docs/STATUS.md](docs/STATUS.md).

@@ -39,6 +39,11 @@ EXTRA_PII = [
     ("phone", re.compile(r"(?:\+?61\s?[2378]|\(0[2378]\)|\b0[2378])[\s-]?\d{4}[\s-]?\d{4}\b")),
     ("card", re.compile(r"\b(?:\d[ -]?){13,16}\b")),
     ("ip", re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")),
+    # UNSW student ids (zID). Runs after the email pattern, so a z1234567@... address is removed as an email.
+    ("student_id", re.compile(r"\b[zZ]\d{7}\b")),
+    # Names only where the writer introduces a person ("my name is", "my friend", "I'm" + capitalised words). Regex
+    # cannot find names in general; this catches the common self-introduction and leaves street names alone.
+    ("name", re.compile(r"\b(?i:my name is|my friend|my partner|my mate|call me|i'm|i am)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?")),
 ]
 # One redaction policy for the app and for ingest, in this order (URLs before emails, addresses first).
 ALL_PII = EXTRA_PII[:2] + PII_PATTERNS + EXTRA_PII[2:]

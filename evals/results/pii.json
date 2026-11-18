@@ -1,6 +1,6 @@
 {
- "generated_at": "2026-11-18T04:20:02.714378+00:00",
- "git_sha": null,
+ "generated_at": "2026-11-18T14:37:45.017308+00:00",
+ "git_sha": "6517634",
  "calls_used": 0,
  "config": {
   "cases": "evals/privacy/pii_cases_v1.jsonl",
@@ -10,10 +10,10 @@
  },
  "redactors": {
   "app_guard": {
-   "recall": 0.8235,
+   "recall": 1.0,
    "recall_ci95": [
-    0.5897,
-    0.9381
+    0.8157,
+    1.0
    ],
    "recall_by_kind": {
     "address": {
@@ -29,7 +29,7 @@
      "n": 2
     },
     "name": {
-     "removed": 0,
+     "removed": 2,
      "n": 2
     },
     "phone": {
@@ -41,7 +41,7 @@
      "n": 2
     },
     "student_id": {
-     "removed": 0,
+     "removed": 1,
      "n": 1
     },
     "url": {
@@ -54,20 +54,7 @@
     0.047,
     0.448
    ],
-   "missed": [
-    {
-     "id": "pii-010",
-     "kind": "name"
-    },
-    {
-     "id": "pii-011",
-     "kind": "name"
-    },
-    {
-     "id": "pii-017",
-     "kind": "student_id"
-    }
-   ],
+   "missed": [],
    "over_redacted": [
     {
      "id": "clean-007",
@@ -82,10 +69,10 @@
    ]
   },
   "ingest_cleaner": {
-   "recall": 0.8235,
+   "recall": 1.0,
    "recall_ci95": [
-    0.5897,
-    0.9381
+    0.8157,
+    1.0
    ],
    "recall_by_kind": {
     "address": {
@@ -101,7 +88,7 @@
      "n": 2
     },
     "name": {
-     "removed": 0,
+     "removed": 2,
      "n": 2
     },
     "phone": {
@@ -113,7 +100,7 @@
      "n": 2
     },
     "student_id": {
-     "removed": 0,
+     "removed": 1,
      "n": 1
     },
     "url": {
@@ -126,20 +113,7 @@
     0.047,
     0.448
    ],
-   "missed": [
-    {
-     "id": "pii-010",
-     "kind": "name"
-    },
-    {
-     "id": "pii-011",
-     "kind": "name"
-    },
-    {
-     "id": "pii-017",
-     "kind": "student_id"
-    }
-   ],
+   "missed": [],
    "over_redacted": [
     {
      "id": "clean-007",

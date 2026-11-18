@@ -1,6 +1,6 @@
 # Athena evaluation report
 
-Generated 2026-11-18T04:20:02.645934+00:00 by `python3 evals/run_evals.py`.
+Generated 2026-11-18T14:37:44.912362+00:00 by `python3 evals/run_evals.py`.
 
 All numbers below come from the run that wrote this file. Sets are small; read them as smoke tests, not benchmarks (Meterless says the same of its own 32-example v1 corpus).
 

@@ -1,12 +1,12 @@
 {
  "datasets": {
   "sample": {
-   "generated_at": "2026-11-18T04:20:02.803420+00:00",
-   "git_sha": null,
+   "generated_at": "2026-11-18T14:37:45.201054+00:00",
+   "git_sha": "6517634",
    "data": {
     "mode": "sample",
     "routable_pair_count": 2,
-    "label": "Hand-made sample routes from the hackathon, not real measurements (2 routable trips: Town Hall station → UNSW Library, UNSW Library → Town Hall station)"
+    "label": "Hand-made sample routes, not real measurements (2 routable trips: Town Hall station → UNSW Library, UNSW Library → Town Hall station)"
    },
    "note": "Route risk is Athena's own rule (docs/model_card.md), so the lower_risk strategy minimises the metric it is scored on. Compare minutes, lit and unknown shares, and the heuristics' reductions.",
    "summary": {
@@ -48024,8 +48024,8 @@
    ]
   }
  },
- "generated_at": "2026-11-18T14:34:22.512288+00:00",
- "git_sha": "a5c2601",
+ "generated_at": "2026-11-18T14:37:45.201054+00:00",
+ "git_sha": "6517634",
  "calls_used": 0,
  "config": {
   "strategies": {

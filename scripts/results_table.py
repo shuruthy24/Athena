@@ -66,7 +66,7 @@ def rows() -> list[tuple[str, str, str]]:
         r = pii["redactors"]
         out.append((f"PII redaction before any model ({pii['config']['n_pii_spans']} synthetic spans)",
                     f"app path recall {_f(r['app_guard']['recall'])}, over-redaction {_f(r['app_guard']['over_redaction_rate'])}; "
-                    f"no-redaction baseline 0.0; names are not found by regex", "pii.json"))
+                    f"no-redaction baseline 0.0; names found only when introduced ('my name is ...')", "pii.json"))
     rb = _load("route_baselines.json")
     for ds, body in sorted((rb or {}).get("datasets", {}).items()):
         allm = body["summary"].get("walk,bike,transit", {})

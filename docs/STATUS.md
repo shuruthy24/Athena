@@ -56,8 +56,8 @@ decisions; evaluation.md, "Evaluations deliberately not run", gives the reason f
   route evaluation scores Athena with that same rule ([evaluation.md](evaluation.md)).
 - **Injected reports can still get through.** The text guard alone misses most held-out injection probes; with
   the live moderator, 4 of 24 were admitted end to end (`injection_e2e.json`).
-- **Names and student ids are not removed** by PII redaction (regex cannot find names). The report form asks
-  people to leave them out, and labellers read every report.
+- **Names are removed only when introduced** ("my name is", "my friend", "I'm"); a bare name passes PII
+  redaction. The report form asks people to leave names out, and labellers read every report.
 - **Lighting data is thin:** most real streets have no OSM lighting tag. Unknown lighting is scored halfway and
   always shown as unknown.
 - **Few real alternatives:** stock OpenTripPlanner gives one walking route per trip, so most differences are
