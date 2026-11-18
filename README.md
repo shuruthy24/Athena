@@ -78,15 +78,18 @@ the ordered work plan: [AGENTS.md](AGENTS.md).
 
 ## Quick start
 
-You need **Python 3.12 or 3.13** (`python --version`; on Windows the command is `python` or `py`, not `python3`).
-No key and no server setup are needed to see and verify the app: `SAMPLE_MODE=true` uses a labelled offline
-stand-in instead of the course models.
+You need **Python 3.12 or 3.13** (`python3 --version` on macOS/Linux; on Windows the command is `python` or `py`,
+not `python3`) and git. No key and no server setup are needed to see and verify the app: `SAMPLE_MODE=true` uses a
+labelled offline stand-in instead of the course models.
+
+Clone the **`comp3110`** branch. The repository's default branch, `main`, is the frozen hackathon submission
+(tag `hackathon-final`). It has none of the course rework and no `requirements-lock.txt`.
 
 **macOS / Linux**
 
 ```bash
-git clone https://github.com/shuruthy24/Athena.git && cd Athena
-python3 -m venv .venv && source .venv/bin/activate
+git clone --branch comp3110 https://github.com/shuruthy24/Athena.git && cd Athena
+python3 -m venv .venv && source .venv/bin/activate   # ~450 MB; see the disk-quota note below
 python -m pip install -r requirements-lock.txt      # exact versions behind every committed result
 SAMPLE_MODE=true python -m uvicorn athena.server:app --port 8001
 ```
@@ -94,7 +97,7 @@ SAMPLE_MODE=true python -m uvicorn athena.server:app --port 8001
 **Windows (PowerShell)**
 
 ```powershell
-git clone https://github.com/shuruthy24/Athena.git; cd Athena
+git clone --branch comp3110 https://github.com/shuruthy24/Athena.git; cd Athena
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements-lock.txt
 $env:SAMPLE_MODE="true"
@@ -107,15 +110,28 @@ hackathon sample, which only routes UNSW Library ↔ Town Hall station. Once `da
 [docs/STATUS.md](docs/STATUS.md)) the real OSM + OTP data covering 42 place pairs is served automatically. Stop the
 server with Ctrl+C.
 
-**Verify it works** (in a second terminal, same folder):
+**Verify it works** in a second terminal, in the same folder. A new terminal does not have the virtual environment
+active, so activate it first (without it, `python` is the system Python and fails with
+`ModuleNotFoundError: No module named 'fastapi'`):
 
 ```bash
+source .venv/bin/activate                                      # macOS / Linux, every new terminal
 python scripts/verify_demo.py                                  # every demonstrated feature, in-process, offline
 python scripts/verify_demo.py --base-url http://127.0.0.1:8001 # the server you just started (or a deployed URL)
 python scripts/check.py                                        # = make check: tests, reproduce results, data, docs
 ```
 
-Each prints PASS/FAIL per feature. On Windows, use `.venv\Scripts\python` instead of `python`. Troubleshooting:
+Each prints PASS/FAIL per feature. On Windows, use `.venv\Scripts\python` instead of `python`. With `--base-url`,
+`verify_demo.py` saves its result as `evals/results/verify_<host>.json` (for example `verify_127_0_0_1.json`). The
+file is untracked: delete it, or commit it on purpose as evidence for a deployed URL.
+
+**Disk quota (e.g. UNSW lab machines):** the virtual environment is about 450 MB. If your home directory has a
+quota, create it outside the home directory and activate that one instead of `.venv`:
+`python3 -m venv /tmp/$USER-athena && source /tmp/$USER-athena/bin/activate`. `/tmp` is local to each machine
+and may be cleared, so on another machine, or after a reboot, recreate it and run the `pip install` line again.
+`make` then uses the active environment's `python3`.
+
+Troubleshooting:
 if PowerShell refuses to run `Activate.ps1`, you do not need it (the commands above call the venv's Python
 directly). If the project is inside OneDrive and the install is slow or fails with "file in use", move the folder
 out of OneDrive.
