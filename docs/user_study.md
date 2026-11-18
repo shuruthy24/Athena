@@ -1,5 +1,8 @@
 # Task study: do people choose the lower-risk option when it costs them little?
 
+**Status: not conducted.** This is the protocol for a planned study; no sessions were held and
+`evals/results/user_study.json` does not exist (evaluation.md, "Evaluations deliberately not run").
+
 The outcome metric in [metrics.md](metrics.md), measured with real people, not with Athena's own rule. Run by the
 team; analysed by `python evals/eval_user_study.py` (results in `evals/results/user_study.json`). Nothing in this
 study is generated: if it has not been run, the evaluation report says "not run yet".
