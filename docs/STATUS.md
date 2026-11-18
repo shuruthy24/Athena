@@ -43,7 +43,7 @@ decisions; evaluation.md, "Evaluations deliberately not run", gives the reason f
 | Report classifier test split | held back on purpose (no decision depends on it) | as above |
 | Judge audit with FAIL cases | the primary audit (`judge_audit.json`) has no held-out FAIL labels, so TNR is undefined; the secondary audit's result file was not saved | `python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample` (gateway key, 6 calls) |
 | Larger blind A/B | 6 pairs, tied 3-3 (`ab.json`) | more pairs from a new trace run (`python evals/ab.py prepare ...`) |
-| Red-team held-out set | not collected | attempts by people outside the team (`evals/guard/README.md`) |
+| Red-team held-out set | not collected | injection attempts from people outside the team, saved as `evals/guard/redteam.csv` (`make eval` scores it when present) |
 | User study (outcome metric) | not conducted; whether people choose the lower-risk option is unmeasured | a task study with people outside the team |
 | Deployment and load test | not deployed | build and run the container (`Dockerfile` header), then `make load-test BASE_URL=...` and `python scripts/verify_demo.py --base-url ...` |
 | Critic, moderator and judge model choice | only the explainer was compared (`model_comparison.json`) | `python evals/compare_models.py` with labelled reports |

@@ -5,6 +5,29 @@ what the numbers are. The results table is **generated** from `evals/results/` b
 and `make check` fails if it is out of date, so no number here is typed by hand. Metric definitions and targets
 were written in [metrics.md](metrics.md) before each evaluation first ran.
 
+## Summary
+
+What the evaluations support, with the file behind each claim (all in `evals/results/`):
+
+- **Explanations are faithful to the route facts.** All 36 live explainer traces pass every code assertion
+  (`assertions.json`), and the critic rules catch all 276 synthetic corruptions (`offline.json`). The LLM judge
+  cannot yet be trusted as a second check: its held-out labels contain no FAIL case, so TNR is undefined
+  (`judge_audit.json`).
+- **The LLM text is not shown to beat the fact-only text.** People preferred each 3 times in 6 blind pairs (`ab.json`).
+- **The report guard is not enough on its own.** It scores 1.0 on the set it was tuned on but catches 0.208 of
+  held-out probes; with the live moderator behind it, 4 of 24 injected reports are still admitted
+  (`offline.json`, `injection_e2e.json`).
+- **PII redaction** removes all 17 spans in the regression set (`pii.json`); that set shaped the patterns, so this is
+  an upper bound.
+- **The risk indicator is not lighting-aware on real data.** Athena's lower-risk pick lowers its own risk score by
+  a median 1.7% but puts less of the trip on lit streets than the fastest route (`route_baselines.json`).
+- **The report classifier choice is not decided by evidence:** dev and test contain no reports that should be held,
+  so every candidate scores the same on the admit/hold decision (`classifier_dev.json`).
+- **The data and the app check out:** 0 data-quality failures (`data_quality.json`) and 17 of 17 feature checks
+  (`verify.json`).
+
+Samples are small throughout (tens of cases; intervals are shown), and most sets were written by the team.
+
 ## Reproduce
 
 No key, no server, any OS (Python 3.12 or 3.13):
@@ -47,9 +70,20 @@ present (`python -m pipeline.fetch_raw`), it also rebuilds `data/processed/` and
 | Trace labels | **human** PASS/FAIL | judge dev / **held-out** (seeded assignment written before labelling) | 36 | `evals/labels/` |
 | Guard dev set | 10 public (Meterless, Apache-2.0) + 16 team-written | **tuning**: the patterns were fixed against it | 26 | `evals/guard/injection.jsonl` |
 | Guard held-out probes | synthetic, written after the patterns, labels by construction | **held out, frozen**; never used to tune | 50 | `evals/guard/heldout_probes_v1.jsonl` |
-| Red-team attempts | **real**, people outside the team | **held out** | to collect | `evals/guard/redteam.csv` |
 | PII cases | synthetic, fictional people | regression set (it motivated the 18 Nov fix, so it is not held out) | 29 texts | `evals/privacy/pii_cases_v1.jsonl` |
 | Critic corruptions | synthetic by construction | tests the rules, not real drafts | 276 | generated in `evals/run_evals.py` |
+
+### Tuning vs held-back data
+
+| Held-back set | Never used for | How that is enforced |
+| --- | --- | --- |
+| Guard held-out probes (`heldout_probes_v1.jsonl`) | writing or changing the guard's patterns | written after the patterns were fixed; sha256 in `evals/checksums.txt`, `make check` fails on any change; `evals/guard/README.md` says to write a v2 rather than tune on v1 |
+| Report test split (`data/reports/test.jsonl`) | training or choosing a classifier | group split by street and writer (no street or writer in two splits); sha256 frozen; `eval_classifier.py --split test` refuses to run without `--touch-test`, and it has not been run |
+| Held-out trace labels (`evals/labels/heldout.json`) | tuning the judge rubric | ids assigned by a seeded shuffle before any label existed (`assignment.json`); `judge.py` reads the labels only after every prediction is collected |
+
+Tuning sets: the guard dev set, the report train and dev splits, the dev trace labels. Not held out, by design: the
+real trips (the risk rule's weights were set while looking at them), the hand-made sample and the PII cases
+(regression sets).
 
 Synthetic sets are used only where real data cannot exist yet, or to test a rule on purpose: no one has
 labelled injection attempts against a street-report app, and PII cannot be collected ethically. Each synthetic set
@@ -98,7 +132,6 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Report guardrail (end to end) | Is an injected report ever admitted by the whole pipeline? | 24 held-out injection probes + 26 benign (synthetic) | injection admit rate (lower is better); benign hold rate | guard + keyword rule (no model) | live: moderator-v1 on scx-gpt-oss-120b: 0.167 [0.07, 0.36]; benign held 0.077 | 0 admitted | **misses** | `python evals/eval_injection_e2e.py [--live]` → `injection_e2e.json` (2026-11-18 @ 0693b9c) |
 | Text guard alone | Does the guard block instructions in report text? | dev: 26 rows (tuning set: the patterns were written and fixed against it) | recall, precision, false-block rate | phrase filter recall 0.125; no guard 0.0 | recall 1.000 [0.81, 1.00], precision 1.000, false-block 0.000 | recall ≥ 0.9, precision ≥ 0.95 (dev: optimistic by construction) | **meets** | `make eval` → `offline.json` (2026-11-18 @ 6517634) |
 | Text guard alone | Does the guard block instructions in report text? | heldout_probes: 50 rows (held-out synthetic probes written after the patterns, never used for tuning) | recall, precision, false-block rate | phrase filter recall 0.000; no guard 0.0 | recall 0.208 [0.09, 0.40], precision 0.833, false-block 0.038 | recall ≥ 0.9, precision ≥ 0.95 | **misses** | `make eval` → `offline.json` (2026-11-18 @ 6517634) |
-| Text guard alone | Does the guard block instructions in report text? | held-out real attempts by people outside the team (evals/guard/README.md) | recall, precision, false-block rate | no guard; phrase filter | — | recall ≥ 0.9, precision ≥ 0.95 | not run yet | `evals/guard/README.md (red-team collection)` → `offline.json` |
 | Privacy: PII redaction | Is personal information removed before any model sees a report? | 29 synthetic texts, 17 PII spans (regression set) | span recall; over-redaction of PII-free texts | no redaction (recall 0) | recall 1.000 [0.82, 1.00]; over-redaction 0.167; misses none | descriptive (set written 18 Nov; before-fix run in pii_before_fixes.json) | descriptive | `python evals/eval_pii.py` → `pii.json` (2026-11-18 @ 6517634) |
 | Model choice (explainer) | Which model drafts passing explanations at the lowest cost? | 18 sample trips per model, live gateway | first-draft pass rate, p50/p95 latency, cost per call | cheapest model | scx-gpt-oss-120b 0.8333; scx-gemma-4-31B-it 1.0; scx-Meta-Llama-3.3-70B-Instruct 0.9444 | cheapest model within 0.05 of the best pass rate | **meets** | `python evals/compare_models.py` → `model_comparison.json` (2026-11-14 @ 341abce) |
 | Data quality | Is the served data complete, unique and in range? | processed dataset tables | schema, duplicate keys, out-of-area points, missing share, snapshot age | — | 0 failures, 0 warnings; streets with unknown lighting 0.836 | no failures | **meets** | `python -m pipeline.check --write-quality` → `data_quality.json` (2026-11-18 @ 62433e8) |
@@ -106,7 +139,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Operations | Is the deployed service fast and reliable enough? | 50 requests per endpoint, deployed URL | p50/p95 latency, error rate, cost per request | — | — | p95 ≤ 10 s, errors ≤ 1% | not run yet | `make load-test BASE_URL=...` → `ops.json` |
 | Completion | Does every demonstrated feature run from the instructions? | 17 end-to-end checks, sample data, offline | checks passing | — | 17 pass, 0 fail | all pass | **meets** | `python scripts/verify_demo.py` → `verify.json` (2026-11-18 @ no git) |
 
-**Summary:** 8 meet their target, 6 miss it, 2 not run yet, 4 descriptive (no target set in advance), 2 baseline reference rows.
+**Summary:** 8 meet their target, 6 miss it, 1 not run yet, 4 descriptive (no target set in advance), 2 baseline reference rows.
 
 <!-- eval:end -->
 

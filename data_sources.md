@@ -133,12 +133,24 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
 | --- | --- | --- | --- | --- |
 | `evals/guard/injection.jsonl` | 10 rows from the Meterless v1 adversarial set, 16 written by the team | Apache-2.0 (`NOTICE`) / team | tuning (guard dev) | 26 |
 | `evals/guard/heldout_probes_v1.jsonl` | synthetic, AI-generated on 18 Nov 2026 after reading the guard's patterns; labels by construction | project | held-out, frozen | 50 |
-| `evals/guard/redteam.csv` | attempts by people outside the team | consent, pseudonymous `author_group` | held-out (to collect) | – |
 | `evals/privacy/pii_cases_v1.jsonl` | synthetic, fictional people and numbers | project | regression set (it motivated the 18 Nov PII fix) | 29 |
-| `data/labelling/reports_to_label.csv` → `data/reports/{train,dev,test}.jsonl` | team-written (`seed`) and collected (`collected`) street reports | consent text in `data/labelling/guide.md` | train / dev / **test frozen, touched once**; group split by street and writer | target 150+ |
+| `data/labelling/reports_to_label.csv` → `data/reports/{train,dev,test}.jsonl` | team-written (`seed`) and collected (`collected`) street reports | consent text in `data/labelling/guide.md` | train / dev / **test frozen, touched once**; group split by street and writer | 49 (train 35, dev 5, test 9) |
 | `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` | live explainer outputs on the sample routes | LiteLLM gateway | error analysis, assertions | 36 |
 | `evals/labels/{dev,heldout}.json` | human PASS/FAIL, split by `assignment.json` (seeded, written before labelling) | team | judge dev / held-out | 36 |
 | `data/reports.json` | 14 synthetic reports with expected actions | project | regression set | 14 |
+
+### Street reports: balance, agreement and known issues
+
+- **Size and balance:** 49 reports (`data/reports/labelled.jsonl`): 40 `approve`, 9 `review`, 0 `reject`. The group
+  split puts the 35 team-written reports in train and the 14 collected reports in dev (5) and test (9). All 9
+  `review` rows are in train, so **dev and test have no report that should be held**, and the classifier's main
+  metric (TNR on hold) cannot be computed on them. Fixing this needs more collected reports, including vague,
+  off-topic and prejudiced ones.
+- **Agreement:** two people labelled every report independently. Action agreement was 77.6% (Cohen's kappa 0.399,
+  only fair, because almost every report is `approve`); category agreement 73.5% (kappa 0.648). All 23
+  disagreements were settled together and recorded in `data/labelling/disagreements.csv`; none is unsettled
+  (`evals/results/label_agreement.json`).
+- **Bias:** most reports were written by the team that built the system, which makes them easier for it.
 
 ## Synthetic data: how it was made and what it cannot show
 
