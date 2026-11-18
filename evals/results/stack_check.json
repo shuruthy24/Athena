@@ -1,17 +1,16 @@
 {
- "generated_at": "2026-11-14T07:30:39.605818+00:00",
- "git_sha": "341abce",
+ "generated_at": "2026-11-18T05:10:13.022831+00:00",
+ "git_sha": "0693b9c",
  "config": {
-  "data_backend": "files",
   "models": {
-   "explainer": "scx-gpt-oss-120b",
+   "explainer": "scx-gemma-4-31B-it",
    "critic": "scx-gpt-oss-120b",
    "moderator": "scx-gpt-oss-120b",
-   "judge": "scx-Meta-Llama-3.3-70B-Instruct"
+   "judge": "scx-GLM-5.3"
   },
   "fallback_model": null
  },
- "calls_used": 2,
+ "calls_used": 3,
  "checks": [
   {
    "check": "gateway model discovery (/models)",
@@ -33,7 +32,7 @@
   {
    "check": "explainer model listed",
    "ok": true,
-   "model": "scx-gpt-oss-120b"
+   "model": "scx-gemma-4-31B-it"
   },
   {
    "check": "critic model listed",
@@ -48,17 +47,28 @@
   {
    "check": "judge model listed",
    "ok": true,
-   "model": "scx-Meta-Llama-3.3-70B-Instruct"
+   "model": "scx-GLM-5.3"
   },
   {
-   "check": "text request scx-Meta-Llama-3.3-70B-Instruct",
+   "check": "text request scx-GLM-5.3",
    "ok": true,
-   "requested": "scx-Meta-Llama-3.3-70B-Instruct",
-   "served_by": "scx-Meta-Llama-3.3-70B-Instruct",
-   "ms": 820,
-   "tokens_in": 48,
-   "tokens_out": 5,
-   "cost_usd": 3.45447e-05,
+   "requested": "scx-GLM-5.3",
+   "served_by": "scx-GLM-5.3",
+   "ms": 718,
+   "tokens_in": 26,
+   "tokens_out": 83,
+   "cost_usd": null,
+   "attempts": 1
+  },
+  {
+   "check": "text request scx-gemma-4-31B-it",
+   "ok": true,
+   "requested": "scx-gemma-4-31B-it",
+   "served_by": "scx-gemma-4-31B-it",
+   "ms": 225,
+   "tokens_in": 32,
+   "tokens_out": 6,
+   "cost_usd": 1.68884e-05,
    "attempts": 1
   },
   {
@@ -66,10 +76,10 @@
    "ok": true,
    "requested": "scx-gpt-oss-120b",
    "served_by": "scx-gpt-oss-120b",
-   "ms": 256,
+   "ms": 228,
    "tokens_in": 101,
-   "tokens_out": 54,
-   "cost_usd": 5.1939e-05,
+   "tokens_out": 52,
+   "cost_usd": 5.07156e-05,
    "attempts": 1
   }
  ]
