@@ -26,8 +26,6 @@ LEG_COLS = ("journey, variant, itinerary, total_min, walk_m, transfers, start_ti
             "leg_mode, line, line_color, headsign, from_name, from_lat, from_lon, to_name, to_lat, "
             "to_lon, distance_m, duration_s, leg_start, leg_end, polyline")
 LEG_STREET_COLS = "journey, variant, itinerary, leg, step, street, distance_m"
-NUMERIC_LEG = ("total_min", "walk_m", "from_lat", "from_lon", "to_lat", "to_lon", "distance_m")
-INT_LEG = ("itinerary", "transfers", "leg", "duration_s")
 
 
 def validate_trip(origin: str, destination: str, band: str, mode: str) -> None:

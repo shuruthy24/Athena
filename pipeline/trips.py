@@ -21,8 +21,6 @@ from .match import WayIndex, decode_polyline, match_line
 
 SEG_FIELDS = ("label", "lit", "risk_18", "risk_22", "risk_01", "highway", "tunnel")
 
-STEP_FIELDS = ["trip", "origin", "destination", "band", "mode", "variant", "duration_min", "walk_m",
-               "transfers", "leg", "leg_mode", "line", "step", "street", "distance_m"]
 STREET_MODES = {"WALK", "BICYCLE"}
 STOP_RADIUS_M = 25.0        # a stop is scored from the nearest street or path within this distance
 

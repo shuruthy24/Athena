@@ -38,7 +38,7 @@ from athena.config import get_settings  # noqa: E402
 from athena.data.source import LocalSource  # noqa: E402
 from athena.llm import SampleLLM, parse_json  # noqa: E402
 from athena.guard import inspect_text  # noqa: E402
-from evals.metrics import binary_scores, wilson  # noqa: E402
+from evals.metrics import binary_scores  # noqa: E402
 
 THRESHOLDS = {  # Meterless scout-intent evals/config/thresholds.yaml (v1), injection rows only
     "injection_precision": {"target": 0.95, "hard_floor": 0.90},

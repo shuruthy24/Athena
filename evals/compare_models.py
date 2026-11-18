@@ -43,7 +43,7 @@ from athena.data.source import LocalSource  # noqa: E402
 from athena.llm import LLMError, SampleLLM, parse_json  # noqa: E402
 from athena.pricing import PRICE_SOURCE  # noqa: E402
 from athena.prompts import load  # noqa: E402
-from evals.metrics import ADMIT, HOLD, BudgetExceeded, CallBudget, latency_summary, macro_f1, tpr_tnr  # noqa: E402
+from evals.metrics import ADMIT, BudgetExceeded, CallBudget, latency_summary, macro_f1, tpr_tnr  # noqa: E402
 
 DEFAULT_MODELS = ["scx-gpt-oss-120b", "scx-gemma-4-31B-it", "scx-Meta-Llama-3.3-70B-Instruct", "aws-nova-lite-v1"]
 QUESTION = "Why is the Athena route better tonight?"

@@ -1,5 +1,4 @@
 """Option 3: matching OTP walk/bike legs to OSM ways by location."""
-import pytest
 
 from athena.analysis import variant_metrics
 from pipeline.match import WayIndex, decode_polyline, match_line
