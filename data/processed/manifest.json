@@ -1,0 +1,69 @@
+{
+ "built_at": "2026-11-18T11:12:51.123616+00:00",
+ "built_by": "make data (pipeline/run.py)",
+ "sources": {
+  "osm": {
+   "file": "osm_2026-11-15T0130.json",
+   "sha256": "0dc877ce6d9eb809d0074cbafebd5ccc77ea0e3738ffa8f1726a5d730937d32a",
+   "fetched": "2026-11-15T01:30:55.651498+00:00",
+   "licence": "ODbL-1.0",
+   "attribution": "\u00a9 OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)"
+  },
+  "otp": {
+   "file": "otp_trips_2026-11-15T0638.json",
+   "sha256": "81fe6c7af4b38c5a89f0663e329b2f86b3df9ced73a0b3bab326d6fb676f3669"
+  }
+ },
+ "tables": {
+  "streets": 2926,
+  "places": 7,
+  "route_legs": 1328,
+  "leg_streets": 27021,
+  "route_steps": 27375
+ },
+ "stats": {
+  "streets": {
+   "ways": 11196,
+   "ways_missing_name": 25656,
+   "names_encoding_fixed": 0,
+   "lamps": 1840,
+   "venues": 3666,
+   "venues_unknown_hours": 2868,
+   "streets": 2926,
+   "streets_lit_unknown": 2445,
+   "streets_lit_from_lamps": 79,
+   "infer_lit_from_lamps": true
+  },
+  "segments": {
+   "segments": 36852,
+   "named": 11196,
+   "unnamed": 25656,
+   "named_without_street": 0,
+   "unnamed_lit_unknown": 22173
+  },
+  "trips": {
+   "trips": 378,
+   "trips_without_routes": 1,
+   "fastest_is_athena": 309,
+   "walk_bike_itineraries_with_transit_dropped": 0,
+   "route_steps": 27375,
+   "route_legs": 1328,
+   "leg_streets": 27021,
+   "step_distance_matched_pct": 0.0,
+   "top_unmatched_names": [],
+   "by_location": {
+    "named_pct": 57.2,
+    "unnamed_pct": 42.7,
+    "unmatched_pct": 0.1
+   }
+  }
+ },
+ "content_sha256": {
+  "streets": "7bbecd16de98df672d3a57786f97a1a4a0f39edffb6d799240963194d90c622d",
+  "places": "9a94578b444539c7dcf9fcfea9d3c23483c1ab0d548d5c116821d1d96c06dd68",
+  "route_legs": "20c1da9787dc64ce0ba2c18b0a89a41421e581c875ce2d2cd2e98eb3aa74522b",
+  "leg_streets": "9d86b2cb2277f969b680d835ad88ef0605e41bd7238a84844f75d9b6e0238e1d",
+  "route_steps": "d31c91313cb81333f033d9620a56df394d64c87eadeec5d87ba99dfcea4573ac"
+ },
+ "routes": "otp"
+}

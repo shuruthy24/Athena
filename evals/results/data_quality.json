@@ -95,10 +95,107 @@
      "note": "hand-made hackathon sample, no fetch date (not real measurements)"
     }
    }
+  },
+  "processed": {
+   "generated_at": "2026-11-18T11:13:00.742751+00:00",
+   "git_sha": "62433e8",
+   "tables": {
+    "streets": {
+     "rows": 2926,
+     "missing_share": {
+      "lit": 0.8356,
+      "highway": 0.0,
+      "risk_18": 0.0,
+      "risk_22": 0.0,
+      "risk_01": 0.0,
+      "venues_22": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "name"
+     ],
+     "coordinates_outside_study_area": 0
+    },
+    "route_steps": {
+     "rows": 27375,
+     "missing_share": {
+      "street": 0.4896,
+      "distance_m": 0.0,
+      "duration_min": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "trip",
+      "band",
+      "mode",
+      "variant",
+      "leg",
+      "step"
+     ],
+     "coordinates_outside_study_area": 0
+    },
+    "route_legs": {
+     "rows": 1328,
+     "missing_share": {
+      "polyline": 0.0,
+      "distance_m": 0.0,
+      "from_lat": 0.0,
+      "to_lat": 0.0,
+      "start_time": 0.0,
+      "total_min": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "journey",
+      "leg"
+     ],
+     "coordinates_outside_study_area": 0
+    },
+    "leg_streets": {
+     "rows": 27021,
+     "missing_share": {
+      "street": 0.4833,
+      "distance_m": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "journey",
+      "leg",
+      "step"
+     ],
+     "coordinates_outside_study_area": 0
+    },
+    "places": {
+     "rows": 7,
+     "missing_share": {
+      "lat": 0.0,
+      "lon": 0.0,
+      "name": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "id"
+     ],
+     "coordinates_outside_study_area": 0
+    }
+   },
+   "failures": [],
+   "warnings": [],
+   "staleness": {
+    "osm": {
+     "fetched": "2026-11-15T01:30:55.651498+00:00",
+     "age_days": 3
+    }
+   }
   }
  },
- "generated_at": "2026-11-18T04:20:03.016927+00:00",
- "git_sha": null,
+ "generated_at": "2026-11-18T11:13:00.742751+00:00",
+ "git_sha": "62433e8",
  "calls_used": 0,
  "config": {
   "stale_days": 180,
