@@ -88,7 +88,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Route choice | Does Athena's ranking surface a lower-risk option at little extra time? | 6 trip × time cases, sample data (hand-made hackathon sample: regression set, not evidence) | median route-risk reduction vs fastest; median extra minutes (Athena's own rule: see note) | fastest 0%; most-lit heuristic 36.3% for +0.8 min; least walking 0.0% | balanced 44.3% for +0.8 min (differs from fastest on 6/6) | reduction > 0 with median extra ≤ 5 min | **meets** | `python evals/eval_route_baselines.py` → `route_baselines.json` (2026-11-18 @ no git) |
 | Route choice | Same question on every real trip (fastest vs Athena's lower-risk variant) | 377 trips, OSM snapshot + OTP precompute (`option4-direct-walk-timed`) | median risk reduction and extra minutes; median unknown lighting | fastest route | differs on 61/377; median reduction 0.0%, +0.0 min; unknown lighting 72.3% | reduction > 0 with median extra ≤ 5 min | **misses** | `python evals/eval_data_coverage.py --label <name> (needs data/processed)` → `data_coverage.json` (2026-11-15 @ a83dd55) |
 | Explanation faithfulness | Are the claims users read supported by the route facts? | 36 real explainer traces (evals/traces/2026-11-14-live-scx-gemma-4-31B-it), live model, sample routes | share of traces passing all 9 code assertions | fact-only explanation (passes by construction) | 36/36 = 1.00 | ≥ 0.95 | **meets** | `python evals/assertions.py evals/traces/2026-11-14-live-scx-gemma-4-31B-it` → `assertions.json` (2026-11-14 @ dcfd833) |
-| Explanation faithfulness | Can an LLM judge be trusted to flag unfaithful explanations? | held-out human PASS/FAIL labels (evals/labels/heldout.json) | judge TPR / TNR, malformed counted wrong | code assertions | — | TNR ≥ 0.9 | not run yet | `python evals/label.py traces <run>; python evals/judge.py audit <run>` → `judge_audit.json` |
+| Explanation faithfulness | Can an LLM judge be trusted to flag unfaithful explanations? | held-out human PASS/FAIL labels (evals/labels/heldout.json) | judge TPR / TNR, malformed counted wrong | code assertions | TPR 1.000, TNR n/a | TNR ≥ 0.9 | **misses** | `python evals/label.py traces <run>; python evals/judge.py audit <run>` → `judge_audit.json` (2026-11-18 @ e3f76e7) |
 | Explanation usefulness | Do people prefer the LLM explanation to the fact-only one? | 6+ blind presentations from the trace run | human preference A/B/TIE (blind, then revealed) | fact-only explanation | — | LLM preferred in a majority | not run yet | `python evals/ab.py prepare <run>; python evals/ab.py reveal --judge` → `ab.json` |
 | Evidence critic rules | Do the deterministic rules catch unsupported claims? | 276 claims, synthetic by construction (5 corruption types) | precision / recall (positive = unsupported) | citation-only check recall 0.210; no critic 0.0 | precision 1.000, recall 1.000 [0.98, 1.00] | descriptive (rules tested on corruptions, not real drafts) | descriptive | `make eval` → `offline.json` (2026-11-18 @ no git) |
 | Report classifier | Which classifier holds harmful reports and admits real ones? | team-labelled reports, group split by street and writer; dev for choosing, test once (frozen) | TNR on hold, TPR on admit, category macro-F1, cost, latency | majority class, keyword rule | — | TNR ≥ 0.95, TPR ≥ 0.80 | not run yet | `python evals/label.py reports --as a (then b); make labels; python evals/eval_classifier.py` → `classifier_dev.json` |
@@ -105,7 +105,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Operations | Is the deployed service fast and reliable enough? | 50 requests per endpoint, deployed URL | p50/p95 latency, error rate, cost per request | — | — | p95 ≤ 10 s, errors ≤ 1% | not run yet | `make load-test BASE_URL=...` → `ops.json` |
 | Completion | Does every demonstrated feature run from the instructions? | 17 end-to-end checks, sample data, offline | checks passing | — | 17 pass, 0 fail | all pass | **meets** | `python scripts/verify_demo.py` → `verify.json` (2026-11-18 @ no git) |
 
-**Summary:** 6 meet their target, 3 miss it, 6 not run yet, 2 descriptive (no target set in advance), 2 baseline reference rows.
+**Summary:** 6 meet their target, 4 miss it, 5 not run yet, 2 descriptive (no target set in advance), 2 baseline reference rows.
 
 <!-- eval:end -->
 
@@ -121,5 +121,22 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 - **On the hand-made sample a one-line "most lit" heuristic gets most of the benefit**, and the balanced ranking
   adds a little more at the same cost. Whether that holds on real data is `python evals/eval_route_baselines.py`
   on `data/processed`.
-- The classifier, judge audit, A/B and task study have not run: they need labelled reports, human labels and
-  participants (docs/STATUS.md lists the steps and time).
+- **The live model stack passed 8/8 after swapping the judge model.** `python scripts/check_stack.py` found
+  `scx-Meta-Llama-3.3-70B-Instruct` returning consistent `502` gateway errors on 18 Nov 2026; switched
+  `JUDGE_MODEL` to `scx-GLM-5.3` (a different family from the explainer), which then passed. See
+  `evals/results/stack_check.json`.
+- **The live, end-to-end injection eval admits some injected reports.** Against the real gateway
+  (`moderator-v1` on `scx-gpt-oss-120b`), `python evals/eval_injection_e2e.py --live` found an injection admit
+  rate of 16.7% (4/24, 95% CI [6.7%, 35.9%]) and a benign hold rate of 7.7% — the guard is not perfect under
+  live conditions, unlike the 1.0 / 1.0 it gets on its own tuning set.
+- **The judge audit ran, but TNR is undefined on this sample.** All 36 traces in
+  `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` were hand-labelled PASS/FAIL by the team (18 dev, 18
+  held-out); every one came back PASS, so `python evals/judge.py audit` reports TPR=1.0 but TNR=None — there
+  were no FAIL cases in the held-out set to test whether the judge can catch a bad explanation. The sample also
+  has heavy duplication (the same handful of route/time/mode combinations recur across the 36 traces), so this
+  should be read as "no faithfulness violations found in this particular pattern," not as proof the explainer
+  never fails: `evals/assertions.py` already found 2 real faithfulness failures (an omitted risk-parity fact)
+  in the separate 72-trace run. Re-run the audit against a set known to include FAIL traces before trusting
+  its TNR.
+- The A/B and task study have not run: they need human choices and participants (docs/STATUS.md lists the
+  steps and time).
