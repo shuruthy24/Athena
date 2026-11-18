@@ -1,0 +1,29 @@
+{
+ "generated_at": "2026-11-18T11:56:11.698751+00:00",
+ "git_sha": "4d61668",
+ "config": {
+  "sheet": "data/labelling/reports_to_label.csv"
+ },
+ "calls_used": 0,
+ "rows": 49,
+ "double_labelled": 49,
+ "kappa_action": 0.399,
+ "agreement_action": 0.776,
+ "kappa_category": 0.648,
+ "agreement_category": 0.735,
+ "disagreements": 23,
+ "unsettled": 0,
+ "labelled_rows": 49,
+ "label_counts": {
+  "approve": 40,
+  "review": 9
+ },
+ "cleaning": {
+  "pii_redacted_rows": 0,
+  "missing_dropped": 0,
+  "conflicts": [],
+  "duplicates_dropped": 0,
+  "encoding_fixed": 0,
+  "invalid": []
+ }
+}

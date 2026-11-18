@@ -1,6 +1,6 @@
 {
- "generated_at": "2026-11-18T10:41:30.222223+00:00",
- "git_sha": "e3f76e7",
+ "generated_at": "2026-11-18T13:06:11.464577+00:00",
+ "git_sha": "4d61668",
  "config": {
   "model": "scx-GLM-5.3",
   "prompt": "judge_binary.v1@0b08c8847ded",
@@ -20,145 +20,145 @@
    {
     "trace_id": "008111d89d744bf6",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 36.3 (and 0.419 vs 0.658 confirms lower risk); the fastest route's streets include Moore Park path with lit='no' and risk 0.82; athena.duration_min is 79.7 and extra_min is 0.5 (79.7 - 79.2 = 0.5); athena.lit_share_pct is 100.0. No streets outside the facts are named, comparisons point in the correct direction, and no claim asserts the route is safe.",
+    "reason": "All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is lower than fastest.risk (0.658); the fastest route's streets include Moore Park path with lit='no' and risk 0.82; athena.duration_min is 79.7 and extra_min is 0.5 (79.7 - 79.2 = 0.5, correctly longer); athena.lit_share_pct is 100.0. No unsupported streets or numbers, and comparison directions are correct.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 (and 0.419 vs 0.658 confirms lower risk); the fastest route's streets include Moore Park path with lit='no' and risk 0.82; athena.duration_min is 79.7 and extra_min is 0.5 (79.7 - 79.2 = 0.5); athena.lit_share_pct is 100.0. No streets outside the facts are named, comparisons point in the correct direction, and no claim asserts the route is safe.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is lower than fastest.risk (0.658); the fastest route's streets include Moore Park path with lit='no' and risk 0.82; athena.duration_min is 79.7 and extra_min is 0.5 (79.7 - 79.2 = 0.5, correctly longer); athena.lit_share_pct is 100.0. No unsupported streets or numbers, and comparison directions are correct.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "0a3a34f5b81d4196",
     "judge": "PASS",
-    "reason": "All claims match the facts exactly: risk_reduction_pct is 31.4, fastest.duration_min is 79.2 and athena.duration_min is 79.7, athena.lit_share_pct is 100.0 and fastest.lit_share_pct is 77.4. The headline's comparative statements (lower risk: 0.181 vs 0.264; small time difference: 0.5 min) are also supported, and no unsupported streets or numbers appear.",
+    "reason": "All claims match the facts exactly: risk_reduction_pct is 31.4, fastest.duration_min is 79.2 vs athena.duration_min 79.7, and athena.lit_share_pct 100.0 vs fastest.lit_share_pct 77.4. No streets outside the facts are named, comparison directions are correct, and the headline's 'lower risk' is a relative comparison (risk 0.181 vs 0.264) that does not imply the route is safe.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts exactly: risk_reduction_pct is 31.4, fastest.duration_min is 79.2 and athena.duration_min is 79.7, athena.lit_share_pct is 100.0 and fastest.lit_share_pct is 77.4. The headline's comparative statements (lower risk: 0.181 vs 0.264; small time difference: 0.5 min) are also supported, and no unsupported streets or numbers appear.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts exactly: risk_reduction_pct is 31.4, fastest.duration_min is 79.2 vs athena.duration_min 79.7, and athena.lit_share_pct 100.0 vs fastest.lit_share_pct 77.4. No streets outside the facts are named, comparison directions are correct, and the headline's 'lower risk' is a relative comparison (risk 0.181 vs 0.264) that does not imply the route is safe.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "0e5cf2d6406b4c56",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is lower than fastest.risk (0.658); durations match fastest.duration_min 22.4 and athena.duration_min 23.2; athena.lit_share_pct is 100.0 and the Moore Park path is listed as unlit ('no') and in avoided_streets. No unsupported streets are named, comparisons are in the correct direction, and nothing claims the route is safe.",
+    "reason": "All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is lower than fastest.risk (0.658); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0, and Moore Park path (fastest.worst.name) is listed as lit 'no' and is in avoided_streets. No unsupported numbers, streets, or comparisons, and nothing asserts the route is safe.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is lower than fastest.risk (0.658); durations match fastest.duration_min 22.4 and athena.duration_min 23.2; athena.lit_share_pct is 100.0 and the Moore Park path is listed as unlit ('no') and in avoided_streets. No unsupported streets are named, comparisons are in the correct direction, and nothing claims the route is safe.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is lower than fastest.risk (0.658); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0, and Moore Park path (fastest.worst.name) is listed as lit 'no' and is in avoided_streets. No unsupported numbers, streets, or comparisons, and nothing asserts the route is safe.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "1884ff7af9b44f11",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 31.4 (consistent with athena.risk 0.181 vs fastest.risk 0.264), durations 22.4 vs 23.2 minutes match, lit shares 100.0% vs 77.4% match, and the Moore Park path is in avoided_streets with fastest.worst.risk 0.32 and fastest.worst.lit 'no'. No unsupported streets, numbers, or safety claims are present.",
+    "reason": "All claims match the facts: risk_reduction_pct is 31.4 and athena.risk (0.181) is indeed lower than fastest.risk (0.264); durations 22.4 vs 23.2 minutes match; lit shares 100.0% vs 77.4% match; Moore Park path is in avoided_streets with fastest.worst.risk 0.32 and fastest.worst.lit 'no'. No unsupported streets are named, comparison directions are correct, and no claim asserts the route is safe, only lower risk.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 31.4 (consistent with athena.risk 0.181 vs fastest.risk 0.264), durations 22.4 vs 23.2 minutes match, lit shares 100.0% vs 77.4% match, and the Moore Park path is in avoided_streets with fastest.worst.risk 0.32 and fastest.worst.lit 'no'. No unsupported streets, numbers, or safety claims are present.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 31.4 and athena.risk (0.181) is indeed lower than fastest.risk (0.264); durations 22.4 vs 23.2 minutes match; lit shares 100.0% vs 77.4% match; Moore Park path is in avoided_streets with fastest.worst.risk 0.32 and fastest.worst.lit 'no'. No unsupported streets are named, comparison directions are correct, and no claim asserts the route is safe, only lower risk.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "3112d5dd37ff4201",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 36.3 (and athena.risk 0.419 < fastest.risk 0.658 confirms lower risk), durations are 79.2 vs 79.7 minutes exactly as stated, and lit shares are 100.0% vs 77.4% as cited. No unsupported streets, numbers, or comparisons appear.",
+    "reason": "All claims match the facts: risk_reduction_pct is 36.3 (and athena.risk 0.419 vs fastest.risk 0.658 confirms lower risk), fastest.duration_min 79.2 vs athena.duration_min 79.7, and athena.lit_share_pct 100.0 vs fastest.lit_share_pct 77.4. No unsupported numbers, streets, or safety implications.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 (and athena.risk 0.419 < fastest.risk 0.658 confirms lower risk), durations are 79.2 vs 79.7 minutes exactly as stated, and lit shares are 100.0% vs 77.4% as cited. No unsupported streets, numbers, or comparisons appear.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 (and athena.risk 0.419 vs fastest.risk 0.658 confirms lower risk), fastest.duration_min 79.2 vs athena.duration_min 79.7, and athena.lit_share_pct 100.0 vs fastest.lit_share_pct 77.4. No unsupported numbers, streets, or safety implications.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "36b8416aeea94447",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 25.9 (consistent with fastest.risk 0.606 vs athena.risk 0.449), durations 43.5 and 46.4 minutes match, and athena.transfers=0 with athena.walk_m=728 are correct. No unsupported streets are named, comparisons point the right way, and no absolute safety claim is made.",
+    "reason": "All claims match the facts exactly: risk_reduction_pct is 25.9 (consistent with 0.449 vs 0.606), durations are 43.5 and 46.4 minutes, and Athena's route has 0 transfers and 728 m of walking. No unsupported streets, numbers, or safety implications appear.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 25.9 (consistent with fastest.risk 0.606 vs athena.risk 0.449), durations 43.5 and 46.4 minutes match, and athena.transfers=0 with athena.walk_m=728 are correct. No unsupported streets are named, comparisons point the right way, and no absolute safety claim is made.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts exactly: risk_reduction_pct is 25.9 (consistent with 0.449 vs 0.606), durations are 43.5 and 46.4 minutes, and Athena's route has 0 transfers and 728 m of walking. No unsupported streets, numbers, or safety implications appear.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "3b0e5d459fe34db3",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 39.7 (consistent with 0.272 vs 0.451), athena.walk_m=728, athena.transfers=0, athena.duration_min=39.4, fastest.duration_min=36.5, and 'Devonshire St tunnel' is both fastest.worst.name and in fastest.streets. No unsupported streets or numbers, comparisons point the correct way, and the headline only states relative lower risk, not safety.",
+    "reason": "All claims match the facts exactly: risk_reduction_pct is 39.7, athena.walk_m is 728, athena.transfers is 0, athena.duration_min is 39.4, fastest.duration_min is 36.5, and fastest.worst.name is 'Devonshire St tunnel'. The headline's comparative direction is correct (athena.risk 0.272 < fastest.risk 0.451; 39.4 min > 36.5 min), and no unsupported streets or safety guarantees are stated.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 39.7 (consistent with 0.272 vs 0.451), athena.walk_m=728, athena.transfers=0, athena.duration_min=39.4, fastest.duration_min=36.5, and 'Devonshire St tunnel' is both fastest.worst.name and in fastest.streets. No unsupported streets or numbers, comparisons point the correct way, and the headline only states relative lower risk, not safety.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts exactly: risk_reduction_pct is 39.7, athena.walk_m is 728, athena.transfers is 0, athena.duration_min is 39.4, fastest.duration_min is 36.5, and fastest.worst.name is 'Devonshire St tunnel'. The headline's comparative direction is correct (athena.risk 0.272 < fastest.risk 0.451; 39.4 min > 36.5 min), and no unsupported streets or safety guarantees are stated.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "43049143348146d9",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 46.2 and athena.risk (0.277) is lower than fastest.risk (0.515); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0, and Moore Park path (fastest.worst.lit = 'no') is absent from Athena's street list and appears in avoided_streets. The headline's 'small time trade-off' is consistent with extra_min = 0.8, and no claim asserts the route is safe, only lower risk.",
+    "reason": "All claims match the facts: risk_reduction_pct is 46.2 (0.515 vs 0.277), durations are 22.4 and 23.2 minutes, athena.lit_share_pct is 100.0, and the Moore Park path is confirmed unlit (fastest.worst.lit = 'no') and absent from Athena's streets. No unsupported numbers, streets, or safety implications appear.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 46.2 and athena.risk (0.277) is lower than fastest.risk (0.515); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0, and Moore Park path (fastest.worst.lit = 'no') is absent from Athena's street list and appears in avoided_streets. The headline's 'small time trade-off' is consistent with extra_min = 0.8, and no claim asserts the route is safe, only lower risk.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 46.2 (0.515 vs 0.277), durations are 22.4 and 23.2 minutes, athena.lit_share_pct is 100.0, and the Moore Park path is confirmed unlit (fastest.worst.lit = 'no') and absent from Athena's streets. No unsupported numbers, streets, or safety implications appear.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "4c524c52b4c84cd1",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 31.4 (and athena.risk 0.181 < fastest.risk 0.264), durations 79.2 vs 79.7 match fastest.duration_min and athena.duration_min, lighting 100.0% vs 77.4% matches lit_share_pct values, and avoided_streets lists exactly Moore Park path and Bourke Street cycleway, which are absent from athena.streets. No unsupported streets or numbers, comparisons point the right way, and no claim asserts the route is safe.",
+    "reason": "All claims match the facts: risk_reduction_pct is 31.4 (and 0.181 vs 0.264 confirms Athena is lower risk), durations are 79.2 vs 79.7 minutes, lighting is 100.0% vs 77.4%, and avoided_streets lists exactly Moore Park path and Bourke Street cycleway (neither appears in athena.streets). No unsupported streets or numbers, comparisons point the right way, and the 'very small time difference' matches extra_min of 0.5.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 31.4 (and athena.risk 0.181 < fastest.risk 0.264), durations 79.2 vs 79.7 match fastest.duration_min and athena.duration_min, lighting 100.0% vs 77.4% matches lit_share_pct values, and avoided_streets lists exactly Moore Park path and Bourke Street cycleway, which are absent from athena.streets. No unsupported streets or numbers, comparisons point the right way, and no claim asserts the route is safe.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 31.4 (and 0.181 vs 0.264 confirms Athena is lower risk), durations are 79.2 vs 79.7 minutes, lighting is 100.0% vs 77.4%, and avoided_streets lists exactly Moore Park path and Bourke Street cycleway (neither appears in athena.streets). No unsupported streets or numbers, comparisons point the right way, and the 'very small time difference' matches extra_min of 0.5.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "8dd7590fd4674eaf",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 20.2 (consistent with 0.218 vs 0.174), athena.walk_m=728 with 0 transfers vs fastest.walk_m=1057 with 1 transfer, and athena.duration_min=36.4 is 1.9 minutes longer than fastest.duration_min=34.5. No unsupported streets or numbers are cited, and the comparison directions are correct.",
+    "reason": "All claims match the facts: risk_reduction_pct is 20.2 (consistent with 0.218 vs 0.174), athena.walk_m=728 with 0 transfers vs fastest.walk_m=1057 with 1 transfer, and athena.duration_min=36.4 is 1.9 minutes longer than fastest.duration_min=34.5. No unsupported streets or safety claims are made.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 20.2 (consistent with 0.218 vs 0.174), athena.walk_m=728 with 0 transfers vs fastest.walk_m=1057 with 1 transfer, and athena.duration_min=36.4 is 1.9 minutes longer than fastest.duration_min=34.5. No unsupported streets or numbers are cited, and the comparison directions are correct.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 20.2 (consistent with 0.218 vs 0.174), athena.walk_m=728 with 0 transfers vs fastest.walk_m=1057 with 1 transfer, and athena.duration_min=36.4 is 1.9 minutes longer than fastest.duration_min=34.5. No unsupported streets or safety claims are made.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "9eaf025de1a64f56",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 31.4 and athena.risk (0.181) is lower than fastest.risk (0.264); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0 and the Moore Park path is listed as unlit (fastest.worst.lit = 'no') and is avoided. No unsupported streets or numbers appear, comparisons point the right way, and no claim asserts the route is safe.",
+    "reason": "All claims match the facts: risk_reduction_pct is 31.4 and athena.risk (0.181) is lower than fastest.risk (0.264); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0 and the Moore Park path is confirmed unlit (fastest.worst.lit = 'no') and absent from Athena's streets. No unsupported streets, numbers, or safety claims appear.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 31.4 and athena.risk (0.181) is lower than fastest.risk (0.264); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0 and the Moore Park path is listed as unlit (fastest.worst.lit = 'no') and is avoided. No unsupported streets or numbers appear, comparisons point the right way, and no claim asserts the route is safe.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 31.4 and athena.risk (0.181) is lower than fastest.risk (0.264); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0 and the Moore Park path is confirmed unlit (fastest.worst.lit = 'no') and absent from Athena's streets. No unsupported streets, numbers, or safety claims appear.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "a69d80ce12ff4a49",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 36.3 (and 0.419 vs 0.658 confirms Athena is lower risk), durations are 22.4 and 23.2 minutes as stated, athena.lit_share_pct is 100.0, and Moore Park path (fastest.worst.lit = 'no') is absent from Athena's streets and listed in avoided_streets. No unsupported numbers, streets, or safety claims appear.",
+    "reason": "All claims match the facts: risk_reduction_pct is 36.3, fastest.duration_min is 22.4 and athena.duration_min is 23.2, athena.lit_share_pct is 100.0, and the Moore Park path is the fastest route's worst segment with lit='no' and is listed in avoided_streets. Comparisons are correctly directed (Athena lower risk, slightly longer) and no unsupported streets or safety claims appear.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 (and 0.419 vs 0.658 confirms Athena is lower risk), durations are 22.4 and 23.2 minutes as stated, athena.lit_share_pct is 100.0, and Moore Park path (fastest.worst.lit = 'no') is absent from Athena's streets and listed in avoided_streets. No unsupported numbers, streets, or safety claims appear.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3, fastest.duration_min is 22.4 and athena.duration_min is 23.2, athena.lit_share_pct is 100.0, and the Moore Park path is the fastest route's worst segment with lit='no' and is listed in avoided_streets. Comparisons are correctly directed (Athena lower risk, slightly longer) and no unsupported streets or safety claims appear.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "ba738efd190c43a2",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 46.2 (consistent with 0.515 vs 0.277), Moore Park path is in fastest.streets with lit='no' and risk 0.68, athena.lit_share_pct is 100.0, and extra_min is 0.5 (79.7 vs 79.2). No unsupported streets or numbers, comparisons point the right way, and no safety is implied.",
+    "reason": "All claims match the facts: risk_reduction_pct is 46.2 (consistent with 0.515 vs 0.277), Moore Park path is in fastest.streets with lit='no' and risk 0.68, athena.lit_share_pct is 100.0, and extra_min is 0.5 (79.7 vs 79.2). No unsupported streets or numbers, comparisons point the right way, and nothing asserts the route is safe.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 46.2 (consistent with 0.515 vs 0.277), Moore Park path is in fastest.streets with lit='no' and risk 0.68, athena.lit_share_pct is 100.0, and extra_min is 0.5 (79.7 vs 79.2). No unsupported streets or numbers, comparisons point the right way, and no safety is implied.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 46.2 (consistent with 0.515 vs 0.277), Moore Park path is in fastest.streets with lit='no' and risk 0.68, athena.lit_share_pct is 100.0, and extra_min is 0.5 (79.7 vs 79.2). No unsupported streets or numbers, comparisons point the right way, and nothing asserts the route is safe.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "c34753f57bd94701",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 36.3 (0.419 vs 0.658), durations are 22.4 and 23.2 minutes as stated, athena.lit_share_pct is 100.0, and the Moore Park path is confirmed unlit (fastest.worst.lit = 'no') and absent from Athena's streets. No unsupported streets are named, comparisons point the right way, and no claim asserts the route is safe.",
+    "reason": "All claims match the facts: risk_reduction_pct is 36.3, fastest.duration_min is 22.4, athena.duration_min is 23.2, athena.lit_share_pct is 100.0, and the Moore Park path (fastest.worst.name) is unlit (fastest.worst.lit = 'no') and absent from athena.streets. No unsupported streets or numbers, comparisons point the right way, and no claim asserts the route is safe.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 (0.419 vs 0.658), durations are 22.4 and 23.2 minutes as stated, athena.lit_share_pct is 100.0, and the Moore Park path is confirmed unlit (fastest.worst.lit = 'no') and absent from Athena's streets. No unsupported streets are named, comparisons point the right way, and no claim asserts the route is safe.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3, fastest.duration_min is 22.4, athena.duration_min is 23.2, athena.lit_share_pct is 100.0, and the Moore Park path (fastest.worst.name) is unlit (fastest.worst.lit = 'no') and absent from athena.streets. No unsupported streets or numbers, comparisons point the right way, and no claim asserts the route is safe.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "da5b9fe4b4614cfd",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is indeed lower than fastest.risk (0.658); Moore Park path is in fastest.streets with lit='no' and risk 0.82; athena.duration_min is 79.7 and extra_min is 0.5 (consistent with fastest 79.2); athena.lit_share_pct is 100.0. No unsupported streets or numbers, comparisons point the right way, and no claim implies the route is safe.",
+    "reason": "All claims match the facts: risk_reduction_pct is 36.3 (and athena.risk 0.419 < fastest.risk 0.658), fastest.worst.name is 'Moore Park path' with lit 'no' and risk 0.82, athena.duration_min is 79.7 with extra_min 0.5 (consistent with fastest 79.2), and athena.lit_share_pct is 100.0. No unsupported streets or numbers appear, and comparison directions are correct.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is indeed lower than fastest.risk (0.658); Moore Park path is in fastest.streets with lit='no' and risk 0.82; athena.duration_min is 79.7 and extra_min is 0.5 (consistent with fastest 79.2); athena.lit_share_pct is 100.0. No unsupported streets or numbers, comparisons point the right way, and no claim implies the route is safe.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 (and athena.risk 0.419 < fastest.risk 0.658), fastest.worst.name is 'Moore Park path' with lit 'no' and risk 0.82, athena.duration_min is 79.7 with extra_min 0.5 (consistent with fastest 79.2), and athena.lit_share_pct is 100.0. No unsupported streets or numbers appear, and comparison directions are correct.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "f0c775b0f9b5414c",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 25.9 (consistent with 0.449 vs 0.606), athena.walk_m=728 with 0 transfers vs fastest.walk_m=1057 with 1 transfer, and athena.duration_min=46.4 is 2.9 minutes longer than fastest.duration_min=43.5. No unsupported streets or numbers, comparisons point the right way, and nothing implies the route is safe.",
+    "reason": "All claims match the facts: risk_reduction_pct is 25.9 (consistent with 0.449 vs 0.606), athena.walk_m=728 with 0 transfers vs fastest.walk_m=1057 with 1 transfer, and athena.duration_min=46.4 is 2.9 minutes longer than fastest.duration_min=43.5. No unsupported streets, numbers, or safety implications.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 25.9 (consistent with 0.449 vs 0.606), athena.walk_m=728 with 0 transfers vs fastest.walk_m=1057 with 1 transfer, and athena.duration_min=46.4 is 2.9 minutes longer than fastest.duration_min=43.5. No unsupported streets or numbers, comparisons point the right way, and nothing implies the route is safe.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 25.9 (consistent with 0.449 vs 0.606), athena.walk_m=728 with 0 transfers vs fastest.walk_m=1057 with 1 transfer, and athena.duration_min=46.4 is 2.9 minutes longer than fastest.duration_min=43.5. No unsupported streets, numbers, or safety implications.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "f5183b79f913409a",
     "judge": "PASS",
-    "reason": "All claims match the facts exactly: risk_reduction_pct is 39.7 (consistent with risks 0.451 vs 0.272), Athena's walk is 728m with 0 transfers and 39.4 minutes, and the fastest route is 36.5 minutes with a 1057m walk and 1 transfer. The headline's comparative statements (lower risk, slightly longer trip of +2.9 minutes) are supported, no unsupported streets are named, and no absolute safety claim is made.",
+    "reason": "All claims match the facts exactly: risk_reduction_pct=39.7, athena.walk_m=728, athena.transfers=0, athena.duration_min=39.4, fastest.duration_min=36.5, fastest.walk_m=1057, fastest.transfers=1. The headline's comparative statements (lower risk 0.272 vs 0.451, slightly longer by 2.9 min) are supported, no unsupported streets are named, and nothing implies the route is safe.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts exactly: risk_reduction_pct is 39.7 (consistent with risks 0.451 vs 0.272), Athena's walk is 728m with 0 transfers and 39.4 minutes, and the fastest route is 36.5 minutes with a 1057m walk and 1 transfer. The headline's comparative statements (lower risk, slightly longer trip of +2.9 minutes) are supported, no unsupported streets are named, and no absolute safety claim is made.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts exactly: risk_reduction_pct=39.7, athena.walk_m=728, athena.transfers=0, athena.duration_min=39.4, fastest.duration_min=36.5, fastest.walk_m=1057, fastest.transfers=1. The headline's comparative statements (lower risk 0.272 vs 0.451, slightly longer by 2.9 min) are supported, no unsupported streets are named, and nothing implies the route is safe.\"}",
     "human": "PASS"
    },
    {
     "trace_id": "f74c55a79aab42cd",
     "judge": "PASS",
-    "reason": "All claims match the facts: risk_reduction_pct is 36.3 (0.658 to 0.419), fastest.duration_min is 22.4 and athena.duration_min is 23.2, athena.lit_share_pct is 100.0, and Moore Park path is unlit (fastest.worst.lit = 'no') and is in avoided_streets on Athena's route. Comparisons are correctly directional and no unsupported streets or numbers appear.",
+    "reason": "All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is lower than fastest.risk (0.658); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0, and Moore Park path is the fastest route's worst segment with lit='no' and is in avoided_streets. No unsupported streets or numbers, comparisons point the right way, and no claim asserts the route is safe.",
     "error": null,
-    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 (0.658 to 0.419), fastest.duration_min is 22.4 and athena.duration_min is 23.2, athena.lit_share_pct is 100.0, and Moore Park path is unlit (fastest.worst.lit = 'no') and is in avoided_streets on Athena's route. Comparisons are correctly directional and no unsupported streets or numbers appear.\"}",
+    "raw": "{\"verdict\": \"PASS\", \"reason\": \"All claims match the facts: risk_reduction_pct is 36.3 and athena.risk (0.419) is lower than fastest.risk (0.658); fastest.duration_min is 22.4 and athena.duration_min is 23.2; athena.lit_share_pct is 100.0, and Moore Park path is the fastest route's worst segment with lit='no' and is in avoided_streets. No unsupported streets or numbers, comparisons point the right way, and no claim asserts the route is safe.\"}",
     "human": "PASS"
    }
   ]

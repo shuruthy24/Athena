@@ -1,0 +1,22 @@
+{
+ "seed": 3110,
+ "heldout": [
+  "1f2da3e0263f46e9",
+  "37ae6af48eb743c1",
+  "5287aed1cd004347",
+  "8b8e9fab2d0a4fe2",
+  "9f0cc38301564359",
+  "ab0abad294154336"
+ ],
+ "dev": [
+  "251e86f2d3714db1",
+  "4faa74b1c9db4aee",
+  "50a8bb7901ea4091",
+  "941be52b4e2140ad",
+  "abfa532398ed45d4",
+  "fe3ea6a9a5444cf2"
+ ],
+ "created_at": "2026-11-18T12:46:56.286187+00:00",
+ "rule": "seeded shuffle of the run's trace ids, written before any label; do not edit",
+ "run": "evals/traces/2026-11-14-live-sample"
+}

@@ -1,0 +1,392 @@
+{
+ "generated_at": "2026-11-18T12:03:07.799898+00:00",
+ "git_sha": "4d61668",
+ "split": "dev",
+ "config": {
+  "candidates": [
+   "majority",
+   "keyword",
+   "tfidf-logreg",
+   "tfidf-svm",
+   "prompt-zero",
+   "prompt-5shot"
+  ],
+  "model": "scx-gpt-oss-120b",
+  "train_rows": 35,
+  "budget": 150,
+  "admit": [
+   "approve",
+   "redact"
+  ]
+ },
+ "calls_used": 10,
+ "stopped": null,
+ "results": [
+  {
+   "candidate": "majority",
+   "n": 5,
+   "tnr_hold": null,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 5,
+    "fn": 0,
+    "tn": 0,
+    "fp": 0
+   },
+   "category_macro_f1": 0.1111,
+   "latency": {
+    "n": 5,
+    "mean_ms": 0,
+    "p50_ms": 0,
+    "p95_ms": 0
+   },
+   "model_calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd_per_report": 0.0,
+   "rows": [
+    {
+     "id": "r-03a5ee61",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-331dd45b",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-73ac6828",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-cb4ecf3f",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-f88f6c58",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    }
+   ]
+  },
+  {
+   "candidate": "keyword",
+   "n": 5,
+   "tnr_hold": null,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 5,
+    "fn": 0,
+    "tn": 0,
+    "fp": 0
+   },
+   "category_macro_f1": 0.1,
+   "latency": {
+    "n": 5,
+    "mean_ms": 0,
+    "p50_ms": 0,
+    "p95_ms": 1
+   },
+   "model_calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd_per_report": 0.0,
+   "rows": [
+    {
+     "id": "r-03a5ee61",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-331dd45b",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "lighting"
+    },
+    {
+     "id": "r-73ac6828",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "other"
+    },
+    {
+     "id": "r-cb4ecf3f",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "other"
+    },
+    {
+     "id": "r-f88f6c58",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "harassment"
+    }
+   ]
+  },
+  {
+   "candidate": "tfidf-logreg",
+   "n": 5,
+   "tnr_hold": null,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 5,
+    "fn": 0,
+    "tn": 0,
+    "fp": 0
+   },
+   "category_macro_f1": 0.4667,
+   "latency": {
+    "n": 5,
+    "mean_ms": 3,
+    "p50_ms": 3,
+    "p95_ms": 3
+   },
+   "model_calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd_per_report": 0.0,
+   "rows": [
+    {
+     "id": "r-03a5ee61",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-331dd45b",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-73ac6828",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "isolation"
+    },
+    {
+     "id": "r-cb4ecf3f",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-f88f6c58",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    }
+   ]
+  },
+  {
+   "candidate": "tfidf-svm",
+   "n": 5,
+   "tnr_hold": null,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 5,
+    "fn": 0,
+    "tn": 0,
+    "fp": 0
+   },
+   "category_macro_f1": 0.4667,
+   "latency": {
+    "n": 5,
+    "mean_ms": 2,
+    "p50_ms": 2,
+    "p95_ms": 2
+   },
+   "model_calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd_per_report": 0.0,
+   "rows": [
+    {
+     "id": "r-03a5ee61",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-331dd45b",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-73ac6828",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "isolation"
+    },
+    {
+     "id": "r-cb4ecf3f",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-f88f6c58",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    }
+   ]
+  },
+  {
+   "candidate": "prompt-zero",
+   "n": 5,
+   "tnr_hold": null,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 5,
+    "fn": 0,
+    "tn": 0,
+    "fp": 0
+   },
+   "category_macro_f1": 0.2222,
+   "latency": {
+    "n": 5,
+    "mean_ms": 421,
+    "p50_ms": 417,
+    "p95_ms": 522
+   },
+   "model_calls": 5,
+   "tokens_in": 1341,
+   "tokens_out": 963,
+   "cost_usd_per_report": 0.00016802,
+   "rows": [
+    {
+     "id": "r-03a5ee61",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-331dd45b",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "lighting"
+    },
+    {
+     "id": "r-73ac6828",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-cb4ecf3f",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "lighting"
+    },
+    {
+     "id": "r-f88f6c58",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "lighting"
+    }
+   ]
+  },
+  {
+   "candidate": "prompt-5shot",
+   "n": 5,
+   "tnr_hold": null,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 5,
+    "fn": 0,
+    "tn": 0,
+    "fp": 0
+   },
+   "category_macro_f1": 0.2,
+   "latency": {
+    "n": 5,
+    "mean_ms": 378,
+    "p50_ms": 372,
+    "p95_ms": 395
+   },
+   "model_calls": 5,
+   "tokens_in": 2351,
+   "tokens_out": 845,
+   "cost_usd_per_report": 0.0001914,
+   "rows": [
+    {
+     "id": "r-03a5ee61",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "positive"
+    },
+    {
+     "id": "r-331dd45b",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "lighting"
+    },
+    {
+     "id": "r-73ac6828",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "r-cb4ecf3f",
+     "expected": "approve",
+     "got": "approve",
+     "category": "lighting",
+     "got_category": "lighting"
+    },
+    {
+     "id": "r-f88f6c58",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "positive"
+    }
+   ]
+  }
+ ]
+}

@@ -27,12 +27,12 @@ disagree. Rows that say "not run yet" are waiting for a live run, human labels o
 | PII redaction before any model (17 synthetic spans) | app path recall 0.824, over-redaction 0.167; no-redaction baseline 0.0; names are not found by regex | `pii.json` |
 | Route ranking vs baselines (sample data, all modes, 6 trips) | least_walking 0.0% for +0.0 min; fewest_transfers 0.0% for +0.0 min; most_lit 36.3% for +0.8 min; lower_risk 52.3% for +17.0 min; balanced 44.3% for +0.8 min | `route_baselines.json` |
 | Route outcome on real data (377 trips, OSM + OTP, `option4-direct-walk-timed`) | Athena's route differs from the fastest on 61; median risk-indicator reduction 0.0%, median extra 0.0 min; median unknown lighting on Athena's route 72.3% | `data_coverage.json` |
-| Report labeller agreement | not run yet (`make labels`) | `label_agreement.json` |
+| Report labeller agreement | kappa action 0.399, category 0.648 on 49 reports | `label_agreement.json` |
 | Explainer model comparison | 3 models; best first-draft pass rate 1.000 (scx-gemma-4-31B-it) | `model_comparison.json` |
-| Report classifier, dev split | not run yet (`python evals/eval_classifier.py`) | `classifier_dev.json` |
+| Report classifier, dev split (TNR hold / TPR admit) | majority TNR n/a/TPR 1.000; keyword TNR n/a/TPR 1.000; tfidf-logreg TNR n/a/TPR 1.000; tfidf-svm TNR n/a/TPR 1.000; prompt-zero TNR n/a/TPR 1.000; prompt-5shot TNR n/a/TPR 1.000 | `classifier_dev.json` |
 | Report classifier, test split | not run yet (`python evals/eval_classifier.py`) | `classifier_test.json` |
-| Assertions on real explanation traces | 36/36 traces pass every assertion | `assertions.json` |
-| LLM judge audit (held-out human labels) | TPR 1.000, TNR n/a, malformed 0 of 18 | `judge_audit.json` |
+| Assertions on real explanation traces | 66/72 traces pass every assertion | `assertions.json` |
+| LLM judge audit (held-out human labels) | TPR 1.000, TNR 0.000, malformed 0 of 6 | `judge_audit.json` |
 | Blind A/B: LLM vs fact-only explanation | humans preferred LLM 3, fact-only 3, tie 0 | `ab.json` |
 | Task study with people (lower-risk choice share, Athena vs plain list) | not run yet (docs/user_study.md) | `user_study.json` |
 | Demonstrated features verified end to end (offline) | 17 passed, 0 failed | `verify.json` |

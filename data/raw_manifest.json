@@ -4,7 +4,7 @@
   "osm_2026-11-15T0130.json": {
    "needed_by_make_data": true,
    "source": "OpenStreetMap via the Overpass API (pipeline/ingest.py; the query is stored in the file)",
-   "licence": "ODbL-1.0, attribution '© OpenStreetMap contributors'",
+   "licence": "ODbL-1.0, attribution '\u00a9 OpenStreetMap contributors'",
    "retrieved": "2026-11-15T01:30:55Z",
    "sha256": "0dc877ce6d9eb809d0074cbafebd5ccc77ea0e3738ffa8f1726a5d730937d32a",
    "bytes": null,
@@ -15,7 +15,7 @@
    "source": "pipeline/precompute_trips.py: OpenTripPlanner 2.7.0 over the TfNSW GTFS below and a Geofabrik OSM extract",
    "licence": "derived from CC BY 4.0 (TfNSW) and ODbL-1.0 (OpenStreetMap) inputs",
    "retrieved": "2026-11-15T06:38Z",
-   "sha256": null,
+   "sha256": "81fe6c7af4b38c5a89f0663e329b2f86b3df9ced73a0b3bab326d6fb676f3669",
    "bytes": null,
    "url": null
   },
