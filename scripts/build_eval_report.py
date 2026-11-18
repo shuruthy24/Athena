@@ -71,6 +71,16 @@ def rows() -> list[dict]:
                    f"(differs from fastest on {b.get('differs_from_fastest')}/{b.get('trips')})",
             target="reduction > 0 with median extra ≤ 5 min", verdict=_verdict(ok),
             cmd="python evals/eval_route_baselines.py", file="route_baselines.json", when=_when(body))
+        lr, fa = allm.get("lower_risk", {}), allm.get("fastest", {})
+        add(cap="Route choice", q="Does the lower-risk pick put more of the trip on lit streets? (not scored by Athena's rule)",
+            data=f"same {b.get('trips')} cases, {ds} data",
+            metric="median lit share and unknown-lighting share of each strategy's pick (inputs, not the risk score)",
+            baseline=(f"fastest lit {fa.get('median_lit_share_pct')}% / unknown {fa.get('median_unknown_share_pct')}%; "
+                      f"most-lit heuristic lit {heur.get('median_lit_share_pct')}% / unknown {heur.get('median_unknown_share_pct')}%"),
+            result=(f"lower_risk lit {lr.get('median_lit_share_pct')}% / unknown {lr.get('median_unknown_share_pct')}%; "
+                    f"balanced lit {b.get('median_lit_share_pct')}% / unknown {b.get('median_unknown_share_pct')}%"),
+            target="descriptive (added after the first run, so no target)", verdict="descriptive",
+            cmd="python evals/eval_route_baselines.py", file="route_baselines.json", when=_when(body))
     if cov and cov.get("runs"):
         label, c = list(cov["runs"].items())[-1]
         ok = (c["median_risk_reduction_pct"] or 0) > 0 and (c["median_extra_min"] or 0) <= 5

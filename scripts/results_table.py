@@ -72,8 +72,9 @@ def rows() -> list[tuple[str, str, str]]:
         allm = body["summary"].get("walk,bike,transit", {})
         if allm:
             out.append((f"Route ranking vs baselines ({ds} data, all modes, {allm['balanced']['trips']} trips)",
-                        "; ".join(f"{k} {v['median_risk_reduction_pct']}% for +{v['median_extra_min']} min"
-                                  for k, v in allm.items() if k != "fastest"),
+                        "; ".join(f"{k} {v['median_risk_reduction_pct']}% for +{v['median_extra_min']} min, "
+                                  f"lit {v['median_lit_share_pct']}%" for k, v in allm.items())
+                        + " (risk reduction is Athena's own rule; lit share is not)",
                         "route_baselines.json"))
     cov = _load("data_coverage.json")
     if cov and cov.get("runs"):

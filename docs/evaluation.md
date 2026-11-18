@@ -84,7 +84,10 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 
 | Capability | Question | Eval set (role) | Metric | Baseline | Result (95% CI) | Target | Verdict | Reproduce |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Route choice | Does Athena's ranking surface a lower-risk option at little extra time? | 126 trip × time cases, processed data (OSM + OTP, real) | median route-risk reduction vs fastest; median extra minutes (Athena's own rule: see note) | fastest 0%; most-lit heuristic 0.0% for +1.4 min; least walking 0.0% | balanced 0.65% for +0.2 min (differs from fastest on 68/126) | reduction > 0 with median extra ≤ 5 min | **meets** | `python evals/eval_route_baselines.py` → `route_baselines.json` (2026-11-18 @ a5c2601) |
+| Route choice | Does the lower-risk pick put more of the trip on lit streets? (not scored by Athena's rule) | same 126 cases, processed data | median lit share and unknown-lighting share of each strategy's pick (inputs, not the risk score) | fastest lit 29.9% / unknown 70.1%; most-lit heuristic lit 51.4% / unknown 47.5% | lower_risk lit 27.0% / unknown 73.0%; balanced lit 25.0% / unknown 75.0% | descriptive (added after the first run, so no target) | descriptive | `python evals/eval_route_baselines.py` → `route_baselines.json` (2026-11-18 @ a5c2601) |
 | Route choice | Does Athena's ranking surface a lower-risk option at little extra time? | 6 trip × time cases, sample data (hand-made sample: regression set, not evidence) | median route-risk reduction vs fastest; median extra minutes (Athena's own rule: see note) | fastest 0%; most-lit heuristic 36.3% for +0.8 min; least walking 0.0% | balanced 44.3% for +0.8 min (differs from fastest on 6/6) | reduction > 0 with median extra ≤ 5 min | **meets** | `python evals/eval_route_baselines.py` → `route_baselines.json` (2026-11-18 @ no git) |
+| Route choice | Does the lower-risk pick put more of the trip on lit streets? (not scored by Athena's rule) | same 6 cases, sample data | median lit share and unknown-lighting share of each strategy's pick (inputs, not the risk score) | fastest lit 77.4% / unknown 0.0%; most-lit heuristic lit 100.0% / unknown 0.0% | lower_risk lit 100.0% / unknown 0.0%; balanced lit 100.0% / unknown 0.0% | descriptive (added after the first run, so no target) | descriptive | `python evals/eval_route_baselines.py` → `route_baselines.json` (2026-11-18 @ no git) |
 | Route choice | Same question on every real trip (fastest vs Athena's lower-risk variant) | 377 trips, OSM snapshot + OTP precompute (`option4-direct-walk-timed`) | median risk reduction and extra minutes; median unknown lighting | fastest route | differs on 61/377; median reduction 0.0%, +0.0 min; unknown lighting 72.3% | reduction > 0 with median extra ≤ 5 min | **misses** | `python evals/eval_data_coverage.py --label <name> (needs data/processed)` → `data_coverage.json` (2026-11-15 @ a83dd55) |
 | Explanation faithfulness | Are the claims users read supported by the route facts? | 36 real explainer traces (evals/traces/2026-11-14-live-scx-gemma-4-31B-it), live model, sample routes | share of traces passing all 9 code assertions | fact-only explanation (passes by construction) | 36/36 = 1.00 | ≥ 0.95 | **meets** | `python evals/assertions.py evals/traces/2026-11-14-live-scx-gemma-4-31B-it` → `assertions.json` (2026-11-14 @ dcfd833) |
 | Explanation faithfulness | Can an LLM judge be trusted to flag unfaithful explanations? | held-out human PASS/FAIL labels (evals/labels/heldout.json) | judge TPR / TNR, malformed counted wrong | code assertions | TPR 1.000, TNR n/a | TNR ≥ 0.9 | **misses** | `python evals/label.py traces <run>; python evals/judge.py audit <run>` → `judge_audit.json` (2026-11-18 @ 4d61668) |
@@ -105,7 +108,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Operations | Is the deployed service fast and reliable enough? | 50 requests per endpoint, deployed URL | p50/p95 latency, error rate, cost per request | — | — | p95 ≤ 10 s, errors ≤ 1% | not run yet | `make load-test BASE_URL=...` → `ops.json` |
 | Completion | Does every demonstrated feature run from the instructions? | 17 end-to-end checks, sample data, offline | checks passing | — | 17 pass, 0 fail | all pass | **meets** | `python scripts/verify_demo.py` → `verify.json` (2026-11-18 @ no git) |
 
-**Summary:** 7 meet their target, 6 miss it, 3 not run yet, 2 descriptive (no target set in advance), 2 baseline reference rows.
+**Summary:** 8 meet their target, 6 miss it, 3 not run yet, 4 descriptive (no target set in advance), 2 baseline reference rows.
 
 <!-- eval:end -->
 
@@ -181,9 +184,13 @@ failures, and the secondary judge audit's output was lost (above). Rules:
 - **PII redaction in the app path was weaker than at ingest.** It is now one policy for both, and the landline
   pattern's bug is fixed (`pii_before_fixes.json` has the earlier run). Names and student ids still pass regex
   redaction: the report form asks people to leave them out, and labellers read every report.
-- **On the hand-made sample a one-line "most lit" heuristic gets most of the benefit**, and the balanced ranking
-  adds a little more at the same cost. Whether that holds on real data has not been measured
-  (`python evals/eval_route_baselines.py` on `data/processed`).
+- **On real data the risk rule does not steer people onto lit streets.** Across 126 trip × time cases
+  (`route_baselines.json`, processed), Athena's lower-risk pick lowers the risk indicator by a median 1.7% for
+  0.4 extra minutes, but its median lit share (27.0%) is *below* the fastest route's (29.9%), and unknown lighting
+  rises. A one-line "most lit" heuristic raises lit share to 51.4% for 1.4 extra minutes while scoring 0% on
+  Athena's rule. The rule's other terms (path type, activity, time on board) outweigh lighting when most lighting
+  is unknown. On the hand-made sample the two agree, which is why the sample alone looked better. The weights
+  need revisiting before the risk indicator can be presented as lighting-aware.
 - **The live model stack passed 8/8 after swapping the judge model.** `python scripts/check_stack.py` found
   `scx-Meta-Llama-3.3-70B-Instruct` returning consistent `502` gateway errors (run of 18 Nov 2026); switched
   `JUDGE_MODEL` to `scx-GLM-5.3` (a different family from the explainer), which then passed. See
