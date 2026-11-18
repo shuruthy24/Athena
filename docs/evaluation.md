@@ -137,7 +137,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Data quality | Is the served data complete, unique and in range? | processed dataset tables | schema, duplicate keys, out-of-area points, missing share, snapshot age | — | 0 failures, 0 warnings; streets with unknown lighting 0.836 | no failures | **meets** | `python -m pipeline.check --write-quality` → `data_quality.json` (2026-11-18 @ 62433e8) |
 | Data quality | Is the served data complete, unique and in range? | sample dataset tables | schema, duplicate keys, out-of-area points, missing share, snapshot age | — | 0 failures, 0 warnings; streets with unknown lighting 0.000 | no failures | **meets** | `python -m pipeline.check --write-quality` → `data_quality.json` (2026-11-18 @ 6517634) |
 | Operations | Is the deployed service fast and reliable enough? | 50 requests per endpoint, deployed URL | p50/p95 latency, error rate, cost per request | — | — | p95 ≤ 10 s, errors ≤ 1% | not run yet | `make load-test BASE_URL=...` → `ops.json` |
-| Completion | Does every demonstrated feature run from the instructions? | 17 end-to-end checks, sample data, offline | checks passing | — | 17 pass, 0 fail | all pass | **meets** | `python scripts/verify_demo.py` → `verify.json` (2026-11-18 @ no git) |
+| Completion | Does every demonstrated feature run from the instructions? | 17 end-to-end checks, processed data, offline | checks passing | — | 17 pass, 0 fail | all pass | **meets** | `python scripts/verify_demo.py` → `verify.json` (2026-11-18 @ bbcd17b) |
 
 **Summary:** 8 meet their target, 6 miss it, 1 not run yet, 4 descriptive (no target set in advance), 2 baseline reference rows.
 

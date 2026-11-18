@@ -1,19 +1,40 @@
 {
- "generated_at": "2026-11-18T04:20:03.611698+00:00",
- "git_sha": null,
+ "generated_at": "2026-11-18T14:44:24.348524+00:00",
+ "git_sha": "bbcd17b",
  "calls_used": null,
  "config": {
   "target": "in-process",
   "sample_mode": true,
   "llm": "offline stand-in (SAMPLE_MODE, no language model)",
   "data_provenance": {
-   "mode": "sample",
-   "routable_pair_count": 2,
-   "label": "Hand-made sample routes from the hackathon, not real measurements (2 routable trips: Town Hall station → UNSW Library, UNSW Library → Town Hall station)"
+   "mode": "processed",
+   "routable_pair_count": 42,
+   "built_at": "2026-11-18T11:12:51.123616+00:00",
+   "routes": "otp",
+   "sources": {
+    "osm": {
+     "file": "osm_2026-11-15T0130.json",
+     "sha256": "0dc877ce6d9eb809d0074cbafebd5ccc77ea0e3738ffa8f1726a5d730937d32a",
+     "fetched": "2026-11-15T01:30:55.651498+00:00",
+     "licence": "ODbL-1.0"
+    },
+    "otp": {
+     "file": "otp_trips_2026-11-15T0638.json",
+     "sha256": "81fe6c7af4b38c5a89f0663e329b2f86b3df9ced73a0b3bab326d6fb676f3669"
+    }
+   },
+   "content_sha256": {
+    "streets": "7bbecd16de98df672d3a57786f97a1a4a0f39edffb6d799240963194d90c622d",
+    "places": "9a94578b444539c7dcf9fcfea9d3c23483c1ab0d548d5c116821d1d96c06dd68",
+    "route_legs": "20c1da9787dc64ce0ba2c18b0a89a41421e581c875ce2d2cd2e98eb3aa74522b",
+    "leg_streets": "9d86b2cb2277f969b680d835ad88ef0605e41bd7238a84844f75d9b6e0238e1d",
+    "route_steps": "d31c91313cb81333f033d9620a56df394d64c87eadeec5d87ba99dfcea4573ac"
+   },
+   "label": "OpenStreetMap snapshot 2026-11-15 and OpenTripPlanner trips (otp_trips_2026-11-15T0638.json); timetable times, not live"
   },
   "golden_trip": {
-   "origin": "townhall",
-   "destination": "unsw",
+   "origin": "unsw",
+   "destination": "central",
    "band": "01"
   }
  },
@@ -27,120 +48,120 @@
    "feature": "F0 health and provenance",
    "check": "/api/health reports data source, model route and gateway",
    "status": "PASS",
-   "detail": "data=sample (2 routable trips); llm=offline stand-in (SAMPLE_MODE, no language model)",
-   "ms": 21
+   "detail": "data=processed (42 routable trips); llm=offline stand-in (SAMPLE_MODE, no language model)",
+   "ms": 387
   },
   {
    "feature": "F1 pages",
    "check": "planner, street map and prototype pages and their scripts load",
    "status": "PASS",
    "detail": "served /, /map, /prototype, /web/athena.js, /web/vendor/maplibre-gl.js",
-   "ms": 34
+   "ms": 49
   },
   {
    "feature": "F2 trip planner",
    "check": "places list loads",
    "status": "PASS",
    "detail": "7 places",
-   "ms": 3
+   "ms": 5
   },
   {
    "feature": "F2 trip planner",
    "check": "options for the golden trip (all modes, 1 am) each carry a relative risk label",
    "status": "PASS",
-   "detail": "townhall|unsw 1 am: 6 options (bike, transit, walk); labels ['Fastest option', 'Lower risk than fastest', 'Similar risk to fastest']",
-   "ms": 8
+   "detail": "unsw|central 1 am: 3 options (bike, transit, walk); labels ['Fastest option', 'Higher risk than fastest', 'Lower risk than fastest']",
+   "ms": 1362
   },
   {
    "feature": "F2 trip planner",
    "check": "all five rankings work and fastest / lower-risk put the right option first",
    "status": "PASS",
    "detail": "ranked by fastest, lower_risk, balanced, fewest_transfers, least_walking",
-   "ms": 30
+   "ms": 5390
   },
   {
    "feature": "F2 trip planner",
    "check": "any departure time maps to the nearest street-risk profile",
    "status": "PASS",
    "detail": "23:40 uses the 1 am street profile",
-   "ms": 4
+   "ms": 461
   },
   {
    "feature": "F3 street map",
    "check": "street risk overlay returns GeoJSON for a time band",
    "status": "PASS",
-   "detail": "12 street features at 10 pm",
-   "ms": 3
+   "detail": "2926 street features at 10 pm",
+   "ms": 219
   },
   {
    "feature": "F4 help near route",
    "check": "police, hospital and station locations load (no model call)",
    "status": "PASS",
    "detail": "64 help locations (hospital, police, station)",
-   "ms": 3
+   "ms": 7
   },
   {
    "feature": "F5 explain trade-off",
    "check": "explanation: every shown claim cites facts and passed the checks",
    "status": "PASS",
-   "detail": "3 claims, verdict approve, drafted by offline-stub (sample-offline-stub), trace 5 steps",
-   "ms": 5
+   "detail": "1 claims, verdict approve, drafted by offline-stub (sample-offline-stub), trace 5 steps",
+   "ms": 374
   },
   {
    "feature": "F5 explain trade-off",
    "check": "a repeat explanation is served from the cache",
    "status": "PASS",
    "detail": "repeat request served from cache (hits 0 -> 1)",
-   "ms": 9
+   "ms": 360
   },
   {
    "feature": "F5 explain trade-off",
    "check": "a gateway outage degrades to fact-only text and report review",
    "status": "PASS",
    "detail": "gateway down: fact-only explanation (confidence low); report sent to human review",
-   "ms": 1
+   "ms": 656
   },
   {
    "feature": "F5 explain trade-off",
    "check": "inputs are validated at the boundary",
    "status": "PASS",
    "detail": "unknown place and unknown band rejected with 422 before any model call",
-   "ms": 5
+   "ms": 8
   },
   {
    "feature": "F6 street report",
    "check": "an injection inside report text is blocked before any model",
    "status": "PASS",
    "detail": "blocked by the text guard; no model call in the trace",
-   "ms": 3
+   "ms": 5
   },
   {
    "feature": "F6 street report",
    "check": "a report that targets people is held, never admitted",
    "status": "PASS",
    "detail": "held (reject); it cannot change any route",
-   "ms": 3
+   "ms": 51
   },
   {
    "feature": "F6 street report",
    "check": "phone numbers and emails are removed before storage or any model",
    "status": "PASS",
    "detail": "stored text: 'Call me on [phone removed] or mail [email removed], the light is out'; unknown street sent to review",
-   "ms": 3
+   "ms": 86
   },
   {
    "feature": "F6 street report",
    "check": "a concrete street-condition report is processed and queued",
    "status": "PASS",
-   "detail": "George Street: approve (lighting)",
-   "ms": 4
+   "detail": "University Mall: approve (lighting)",
+   "ms": 43
   },
   {
    "feature": "F7 operations",
    "check": "per-client rate limit",
    "status": "PASS",
    "detail": "request 31 within a minute from one client gets 429; another client is unaffected",
-   "ms": 134
+   "ms": 14941
   }
  ]
 }
