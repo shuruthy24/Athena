@@ -11,6 +11,29 @@ def rate(num: int, den: int) -> float | None:
     return None if den == 0 else round(num / den, 4)
 
 
+def wilson(num: int, den: int, z: float = 1.96) -> list[float] | None:
+    """95% Wilson score interval for a proportion. Our eval sets are small (tens of cases), so every rate in the
+    evaluation report carries this interval: 16/16 is [0.81, 1.0], not "100%"."""
+    if den == 0:
+        return None
+    p = num / den
+    centre = (p + z * z / (2 * den)) / (1 + z * z / den)
+    half = z * ((p * (1 - p) / den + z * z / (4 * den * den)) ** 0.5) / (1 + z * z / den)
+    return [round(max(0.0, centre - half), 4), round(min(1.0, centre + half), 4)]
+
+
+def binary_scores(truth: list[bool], pred: list[bool]) -> dict:
+    """Precision, recall and false-positive rate (positive class = True) with Wilson intervals and counts."""
+    tp = sum(t and p for t, p in zip(truth, pred))
+    fp = sum((not t) and p for t, p in zip(truth, pred))
+    fn = sum(t and not p for t, p in zip(truth, pred))
+    tn = sum((not t) and not p for t, p in zip(truth, pred))
+    return {"n": len(truth), "positives": tp + fn, "negatives": tn + fp, "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+            "precision": rate(tp, tp + fp), "precision_ci95": wilson(tp, tp + fp),
+            "recall": rate(tp, tp + fn), "recall_ci95": wilson(tp, tp + fn),
+            "false_positive_rate": rate(fp, fp + tn), "false_positive_rate_ci95": wilson(fp, fp + tn)}
+
+
 def tpr_tnr(truth: list[bool], pred: list[bool | None]) -> dict:
     """Positive class = True. A None prediction (malformed output) stays in the denominator and counts as
     wrong, as in Tech 6."""

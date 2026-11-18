@@ -69,7 +69,7 @@ def fetch_osm(out: Path | None = None, session=None) -> Path:
                 "attribution": ATTRIBUTION, "fetched": datetime.now(timezone.utc).isoformat(), "bbox": list(BBOX),
                 "query": query, "elements": body.get("elements", [])}
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(snapshot, ensure_ascii=False) + "\n")
+    out.write_text(json.dumps(snapshot, ensure_ascii=False) + "\n", encoding="utf-8")
     return out
 
 
@@ -88,7 +88,7 @@ def main(argv=None) -> int:
         print(GTFS_HELP)
         return 0
     path = fetch_osm()
-    n = len(json.loads(path.read_text())["elements"])
+    n = len(json.loads(path.read_text(encoding="utf-8"))["elements"])
     print(f"wrote {path.relative_to(ROOT)} ({n} elements). Track it with: dvc add data/raw && git add data/raw.dvc")
     return 0
 

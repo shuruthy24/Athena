@@ -48,14 +48,14 @@ def precompute(otp_url: str, places: dict[str, dict], out: Path | None = None, s
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"source": "OpenTripPlanner precompute", "otp_url": otp_url,
                                "fetched": datetime.now(timezone.utc).isoformat(),
-                               "places": sorted(places), "trips": trips, "failures": failures}) + "\n")
+                               "places": sorted(places), "trips": trips, "failures": failures}) + "\n", encoding="utf-8")
     return out
 
 
 def main() -> int:
-    places = {p["id"]: p for p in json.loads((ROOT / "data/places.json").read_text())["rows"]}
+    places = {p["id"]: p for p in json.loads((ROOT / "data/places.json").read_text(encoding="utf-8"))["rows"]}
     path = precompute(os.environ["OTP_URL"], places)
-    body = json.loads(path.read_text())
+    body = json.loads(path.read_text(encoding="utf-8"))
     routed = sum(1 for t in body["trips"] if t["legs"])
     print(f"wrote {path.relative_to(ROOT)}: {routed}/{len(body['trips'])} trips routed, "
           f"{len(body['failures'])} failures")

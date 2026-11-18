@@ -25,7 +25,7 @@ def measure() -> dict:
     os.environ["ATHENA_DATA_DIR"] = str(PROCESSED)
     from evals.run_evals import eval_routes
     routes = eval_routes()
-    manifest = json.loads((PROCESSED / "manifest.json").read_text())
+    manifest = json.loads((PROCESSED / "manifest.json").read_text(encoding="utf-8"))
     st, tr = manifest["stats"]["streets"], manifest["stats"]["trips"]
     return {
         "trips": routes["n"], "trips_without_risk_comparison": routes["n_without_risk"],
@@ -49,13 +49,13 @@ def main(argv=None) -> int:
     if not (PROCESSED / "manifest.json").exists():
         print("no data/processed/manifest.json: run `make data` first")
         return 2
-    body = json.loads(OUT.read_text()) if OUT.exists() else {"runs": {}}
+    body = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {"runs": {}}
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     body["runs"][args.label] = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None,
                                 "calls_used": 0, **measure()}
     body.update(generated_at=body["runs"][args.label]["generated_at"], git_sha=sha or None, calls_used=0,
                 config={"labels": list(body["runs"])})
-    OUT.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n")
+    OUT.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     r = body["runs"][args.label]
     print(f"{args.label}: {r['trips_without_risk_comparison']}/{r['trips']} trips without a risk comparison; "
           f"walk/bike distance by location {r['walk_bike_distance_by_location']}; "

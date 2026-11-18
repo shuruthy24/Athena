@@ -69,7 +69,7 @@ def active_data_dir() -> Path:
     if os.environ.get("ATHENA_DATA_DIR"):
         return Path(os.environ["ATHENA_DATA_DIR"])
     manifest = PROCESSED / "manifest.json"
-    if manifest.exists() and json.loads(manifest.read_text()).get("routes") == "otp":
+    if manifest.exists() and json.loads(manifest.read_text(encoding="utf-8")).get("routes") == "otp":
         return PROCESSED
     return ROOT / "data"
 
@@ -82,7 +82,7 @@ def read_table(data_dir: Path, name: str) -> list[dict]:
         return pq.read_table(pq_path).to_pylist()
     json_path = data_dir / f"{name}.json"
     if json_path.exists():
-        return json.loads(json_path.read_text())["rows"]
+        return json.loads(json_path.read_text(encoding="utf-8"))["rows"]
     raise FileNotFoundError(f"no {name}.parquet or {name}.json in {data_dir}")
 
 
@@ -97,6 +97,9 @@ class LocalSource:
         self.processed = (self.data_dir / "manifest.json").exists()
         if self.processed:
             self.name = "processed.parquet"
+        else:   # the hackathon sample was drawn by hand from a pre-existing route map, not planned by OTP
+            self.freshness = {"source": "sample", "live": False,
+                              "note": "Hand-made sample routes from the hackathon, precomputed by hand: not live and not planned by OTP."}
 
     def route_legs(self, origin, destination, band, mode):
         t0 = time.perf_counter()
@@ -117,6 +120,39 @@ class LocalSource:
     def _label(self) -> str:
         return ("processed data files (Parquet, same table shape)" if self.processed
                 else "sample mode (local JSON, same table shape)")
+
+    def provenance(self) -> dict:
+        """What data this source serves, for the UI badge, /api/health and every trace: the processed OSM +
+        OTP rebuild (with the raw snapshots and hashes from manifest.json) or the hand-made hackathon sample.
+        The interface shows this so nobody mistakes the sample for real streets."""
+        if getattr(self, "_provenance", None) is not None:
+            return self._provenance
+        try:
+            pairs = sorted({r["trip"] for r in self._rows("route_legs.json")})
+        except FileNotFoundError:
+            pairs = []
+        out = {"mode": "processed" if self.processed else "sample", "routable_pairs": pairs,
+               "routable_pair_count": len(pairs)}
+        if self.processed:
+            m = json.loads((self.data_dir / "manifest.json").read_text(encoding="utf-8"))
+            src = m.get("sources", {})
+            osm, otp = src.get("osm", {}), src.get("otp", {})
+            out.update(built_at=m.get("built_at"), routes=m.get("routes"),
+                       sources={k: {f: v.get(f) for f in ("file", "sha256", "fetched", "licence") if v.get(f)}
+                                for k, v in src.items()},
+                       content_sha256=m.get("content_sha256"),
+                       label=(f"OpenStreetMap snapshot {str(osm.get('fetched') or osm.get('file', '?'))[:10]} and "
+                              f"OpenTripPlanner trips ({otp.get('file', 'none')}); timetable times, not live"))
+        else:
+            try:
+                names = {r["id"]: r["name"] for r in read_table(self.data_dir, "places")}
+            except FileNotFoundError:
+                names = {}
+            trips = ", ".join(" → ".join(names.get(x, x) for x in p.split("|")) for p in pairs)
+            out.update(label=("Hand-made sample routes from the hackathon, not real measurements "
+                              f"({len(pairs)} routable trips: {trips})"))
+        self._provenance = out
+        return out
 
     def _rows(self, file: str) -> list[dict]:
         return read_table(self.data_dir, file.rsplit(".", 1)[0])

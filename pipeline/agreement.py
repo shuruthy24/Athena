@@ -122,14 +122,14 @@ def main() -> int:
         w.writerows(disagreements)
     labelled_path = ROOT / "data" / "reports" / "labelled.jsonl"
     labelled_path.parent.mkdir(parents=True, exist_ok=True)
-    labelled_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in reports))
+    labelled_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in reports), encoding="utf-8")
     result = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": git_sha(),
               "config": {"sheet": str(SHEET.relative_to(ROOT))}, "calls_used": 0, **summary,
               "labelled_rows": len(reports), "label_counts": dict(Counter(r["action"] for r in reports)),
               "cleaning": clean_stats}
     res_path = ROOT / "evals" / "results" / "label_agreement.json"
     res_path.parent.mkdir(parents=True, exist_ok=True)
-    res_path.write_text(json.dumps(result, indent=1) + "\n")
+    res_path.write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({k: result[k] for k in ("double_labelled", "kappa_action", "kappa_category", "disagreements",
                                              "unsettled", "labelled_rows")}, indent=1))
     return 0

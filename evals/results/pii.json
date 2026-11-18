@@ -1,0 +1,274 @@
+{
+ "generated_at": "2026-11-18T04:20:02.714378+00:00",
+ "git_sha": null,
+ "calls_used": 0,
+ "config": {
+  "cases": "evals/privacy/pii_cases_v1.jsonl",
+  "n_texts": 29,
+  "n_pii_spans": 17,
+  "n_clean_texts": 12
+ },
+ "redactors": {
+  "app_guard": {
+   "recall": 0.8235,
+   "recall_ci95": [
+    0.5897,
+    0.9381
+   ],
+   "recall_by_kind": {
+    "address": {
+     "removed": 2,
+     "n": 2
+    },
+    "card": {
+     "removed": 1,
+     "n": 1
+    },
+    "email": {
+     "removed": 2,
+     "n": 2
+    },
+    "name": {
+     "removed": 0,
+     "n": 2
+    },
+    "phone": {
+     "removed": 6,
+     "n": 6
+    },
+    "plate": {
+     "removed": 2,
+     "n": 2
+    },
+    "student_id": {
+     "removed": 0,
+     "n": 1
+    },
+    "url": {
+     "removed": 1,
+     "n": 1
+    }
+   },
+   "over_redaction_rate": 0.1667,
+   "over_redaction_rate_ci95": [
+    0.047,
+    0.448
+   ],
+   "missed": [
+    {
+     "id": "pii-010",
+     "kind": "name"
+    },
+    {
+     "id": "pii-011",
+     "kind": "name"
+    },
+    {
+     "id": "pii-017",
+     "kind": "student_id"
+    }
+   ],
+   "over_redacted": [
+    {
+     "id": "clean-007",
+     "output": "Outside [address removed] the footpath is narrow",
+     "note": "a business address used as a location, not personal"
+    },
+    {
+     "id": "clean-009",
+     "output": "The 7-Eleven at [address removed] is open all night",
+     "note": "a business address used as a location, not personal"
+    }
+   ]
+  },
+  "ingest_cleaner": {
+   "recall": 0.8235,
+   "recall_ci95": [
+    0.5897,
+    0.9381
+   ],
+   "recall_by_kind": {
+    "address": {
+     "removed": 2,
+     "n": 2
+    },
+    "card": {
+     "removed": 1,
+     "n": 1
+    },
+    "email": {
+     "removed": 2,
+     "n": 2
+    },
+    "name": {
+     "removed": 0,
+     "n": 2
+    },
+    "phone": {
+     "removed": 6,
+     "n": 6
+    },
+    "plate": {
+     "removed": 2,
+     "n": 2
+    },
+    "student_id": {
+     "removed": 0,
+     "n": 1
+    },
+    "url": {
+     "removed": 1,
+     "n": 1
+    }
+   },
+   "over_redaction_rate": 0.1667,
+   "over_redaction_rate_ci95": [
+    0.047,
+    0.448
+   ],
+   "missed": [
+    {
+     "id": "pii-010",
+     "kind": "name"
+    },
+    {
+     "id": "pii-011",
+     "kind": "name"
+    },
+    {
+     "id": "pii-017",
+     "kind": "student_id"
+    }
+   ],
+   "over_redacted": [
+    {
+     "id": "clean-007",
+     "output": "Outside [address removed] the footpath is narrow",
+     "note": "a business address used as a location, not personal"
+    },
+    {
+     "id": "clean-009",
+     "output": "The 7-Eleven at [address removed] is open all night",
+     "note": "a business address used as a location, not personal"
+    }
+   ]
+  },
+  "none": {
+   "recall": 0.0,
+   "recall_ci95": [
+    0.0,
+    0.1843
+   ],
+   "recall_by_kind": {
+    "address": {
+     "removed": 0,
+     "n": 2
+    },
+    "card": {
+     "removed": 0,
+     "n": 1
+    },
+    "email": {
+     "removed": 0,
+     "n": 2
+    },
+    "name": {
+     "removed": 0,
+     "n": 2
+    },
+    "phone": {
+     "removed": 0,
+     "n": 6
+    },
+    "plate": {
+     "removed": 0,
+     "n": 2
+    },
+    "student_id": {
+     "removed": 0,
+     "n": 1
+    },
+    "url": {
+     "removed": 0,
+     "n": 1
+    }
+   },
+   "over_redaction_rate": 0.0,
+   "over_redaction_rate_ci95": [
+    0.0,
+    0.2425
+   ],
+   "missed": [
+    {
+     "id": "pii-001",
+     "kind": "phone"
+    },
+    {
+     "id": "pii-002",
+     "kind": "phone"
+    },
+    {
+     "id": "pii-003",
+     "kind": "phone"
+    },
+    {
+     "id": "pii-004",
+     "kind": "email"
+    },
+    {
+     "id": "pii-005",
+     "kind": "phone"
+    },
+    {
+     "id": "pii-006",
+     "kind": "address"
+    },
+    {
+     "id": "pii-007",
+     "kind": "address"
+    },
+    {
+     "id": "pii-008",
+     "kind": "plate"
+    },
+    {
+     "id": "pii-009",
+     "kind": "plate"
+    },
+    {
+     "id": "pii-010",
+     "kind": "name"
+    },
+    {
+     "id": "pii-011",
+     "kind": "name"
+    },
+    {
+     "id": "pii-012",
+     "kind": "url"
+    },
+    {
+     "id": "pii-013",
+     "kind": "card"
+    },
+    {
+     "id": "pii-014",
+     "kind": "phone"
+    },
+    {
+     "id": "pii-015",
+     "kind": "email"
+    },
+    {
+     "id": "pii-016",
+     "kind": "phone"
+    },
+    {
+     "id": "pii-017",
+     "kind": "student_id"
+    }
+   ],
+   "over_redacted": []
+  }
+ }
+}

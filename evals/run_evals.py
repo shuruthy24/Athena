@@ -22,6 +22,7 @@ import argparse
 import json
 import os
 import random
+import re
 import statistics
 import subprocess
 import sys
@@ -37,6 +38,7 @@ from athena.config import get_settings  # noqa: E402
 from athena.data.source import LocalSource  # noqa: E402
 from athena.llm import SampleLLM, parse_json  # noqa: E402
 from athena.guard import inspect_text  # noqa: E402
+from evals.metrics import binary_scores, wilson  # noqa: E402
 
 THRESHOLDS = {  # Meterless scout-intent evals/config/thresholds.yaml (v1), injection rows only
     "injection_precision": {"target": 0.95, "hard_floor": 0.90},
@@ -45,7 +47,7 @@ THRESHOLDS = {  # Meterless scout-intent evals/config/thresholds.yaml (v1), inje
 
 
 def load_jsonl(p: Path) -> list[dict]:
-    return [json.loads(line) for line in p.read_text().splitlines() if line.strip()]
+    return [json.loads(line) for line in p.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def gate(metric: str, value: float) -> str:
@@ -53,21 +55,63 @@ def gate(metric: str, value: float) -> str:
     return "meets target" if value >= t["target"] else "above floor" if value >= t["hard_floor"] else "BELOW FLOOR"
 
 
+# The guard's evaluation sets and their roles. Only "dev" was used while writing the patterns; the others are
+# held back (frozen in evals/checksums.txt) and must never be used to tune the guard.
+GUARD_SETS = {
+    "dev": ("evals/guard/injection.jsonl", "tuning set: the patterns were written and fixed against it"),
+    "heldout_probes": ("evals/guard/heldout_probes_v1.jsonl",
+                       "held-out synthetic probes written after the patterns, never used for tuning"),
+    "redteam": ("evals/guard/redteam.csv", "held-out real attempts by people outside the team (evals/guard/README.md)"),
+}
+NAIVE_PHRASE = re.compile(r"ignore (all )?(previous|prior) instructions", re.I)
+
+
+def guard_baselines(text: str) -> dict[str, bool]:
+    """Detectors compared on the same rows: Athena's guard and two baselines (no guard; a one-phrase filter)."""
+    return {"athena_guard": bool(inspect_text(text)[1]), "no_guard": False,
+            "naive_phrase_filter": bool(NAIVE_PHRASE.search(text))}
+
+
+def load_guard_set(path: Path) -> list[dict]:
+    if path.suffix == ".csv":
+        import csv
+        with path.open(newline="", encoding="utf-8") as fh:
+            return [{"id": r["id"], "prompt": r["text"], "source": r.get("author_group", "redteam"),
+                     "expected": {"injection": r["intended_injection"].strip().lower() in ("1", "true", "yes")}}
+                    for r in csv.DictReader(fh) if r.get("text", "").strip()]
+    return load_jsonl(path)
+
+
 def eval_injection() -> dict:
-    inj = load_jsonl(ROOT / "evals/guard/injection.jsonl")
-    tp = fp = fn = tn = 0
-    rows = []
-    for ex in inj:
-        _, evidence, _ = inspect_text(ex["prompt"])
-        got, want = bool(evidence), ex["expected"]["injection"]
-        tp += got and want
-        fp += got and not want
-        fn += (not got) and want
-        tn += (not got) and not want
-        rows.append({"id": ex["id"], "expected": want, "detected": got, "evidence": evidence, "source": ex["source"]})
-    m = {"injection_precision": tp / (tp + fp) if tp + fp else 0.0, "injection_recall": tp / (tp + fn) if tp + fn else 0.0}
-    return {"metrics": m, "n_injection": len(inj), "confusion_injection": {"tp": tp, "fp": fp, "fn": fn, "tn": tn},
-            "injection_rows": rows}
+    """Guard precision, recall and false-block rate (with 95% Wilson intervals) on every guard set, for the guard
+    and both baselines. The top-level `metrics` stay the dev-set numbers (README table, Meterless thresholds)."""
+    sets = {}
+    for name, (rel, role) in GUARD_SETS.items():
+        path = ROOT / rel
+        if not path.exists():
+            sets[name] = {"file": rel, "role": role, "status": "not collected yet"}
+            continue
+        rows = load_guard_set(path)
+        truth = [r["expected"]["injection"] for r in rows]
+        preds = {k: [] for k in ("athena_guard", "no_guard", "naive_phrase_filter")}
+        errors = []
+        for r in rows:
+            got = guard_baselines(r["prompt"])
+            for k in preds:
+                preds[k].append(got[k])
+            if got["athena_guard"] != r["expected"]["injection"]:
+                errors.append({"id": r["id"], "expected": r["expected"]["injection"], "detected": got["athena_guard"],
+                               "evidence": inspect_text(r["prompt"])[1]})
+        sets[name] = {"file": rel, "role": role, "n": len(rows),
+                      "detectors": {k: binary_scores(truth, v) for k, v in preds.items()}, "athena_guard_errors": errors}
+    dev = sets["dev"]["detectors"]["athena_guard"]
+    m = {"injection_precision": dev["precision"] or 0.0, "injection_recall": dev["recall"] or 0.0}
+    inj = load_jsonl(ROOT / GUARD_SETS["dev"][0])
+    rows = [{"id": ex["id"], "expected": ex["expected"]["injection"], "detected": bool(inspect_text(ex["prompt"])[1]),
+             "evidence": inspect_text(ex["prompt"])[1], "source": ex["source"]} for ex in inj]
+    return {"metrics": m, "n_injection": len(inj),
+            "confusion_injection": {k: dev[k] for k in ("tp", "fp", "fn", "tn")},
+            "injection_rows": rows, "sets": sets}
 
 
 def corrupt(claim: dict, kind: str, facts: dict, rng: random.Random) -> dict:
@@ -97,6 +141,8 @@ def eval_critic(athena: Athena) -> dict:
     tp = fp = fn = tn = 0
     by_kind: dict[str, list[int]] = {}
     cases = 0
+    truth_all: list[bool] = []
+    preds = {"athena_rules": [], "no_critic": [], "citation_only": []}   # same cases, three checkers
     for trip in ("unsw|townhall", "townhall|unsw"):
         o, dst = trip.split("|")
         for band in ("18", "22", "01"):
@@ -112,6 +158,12 @@ def eval_critic(athena: Athena) -> dict:
                         cl = c if kind == "clean" else corrupt(c, kind, facts, rng)
                         flagged = not athena.check_claims([cl], facts)[0]["supported"]
                         bad = kind != "clean"
+                        keys = [k for k in cl.get("facts", []) if isinstance(k, str)]
+                        truth_all.append(bad)
+                        preds["athena_rules"].append(flagged)
+                        preds["no_critic"].append(False)
+                        # Baseline: a checker that only asks "does the claim cite real fact keys?"
+                        preds["citation_only"].append(not keys or any(k not in facts for k in keys))
                         tp += flagged and bad
                         fp += flagged and not bad
                         fn += (not flagged) and bad
@@ -120,12 +172,14 @@ def eval_critic(athena: Athena) -> dict:
                         cases += 1
     return {"cases": cases, "precision": tp / (tp + fp) if tp + fp else 0.0, "recall": tp / (tp + fn) if tp + fn else 0.0,
             "confusion": {"tp": tp, "fp": fp, "fn": fn, "tn": tn},
-            "accuracy_by_kind": {k: round(sum(v) / len(v), 3) for k, v in by_kind.items()}}
+            "accuracy_by_kind": {k: round(sum(v) / len(v), 3) for k, v in by_kind.items()},
+            "role": "synthetic by construction (fact-only claims corrupted five ways); tests the rules, not real drafts",
+            "detectors": {k: binary_scores(truth_all, v) for k, v in preds.items()}}
 
 
 def eval_reports(athena: Athena, live_llm=None) -> dict:
-    reports = json.loads((ROOT / "data/reports.json").read_text())["rows"]
-    streets = {s["name"]: s for s in json.loads((ROOT / "data/streets.json").read_text())["rows"]}
+    reports = json.loads((ROOT / "data/reports.json").read_text(encoding="utf-8"))["rows"]
+    streets = {s["name"]: s for s in json.loads((ROOT / "data/streets.json").read_text(encoding="utf-8"))["rows"]}
     rows, correct, calls = [], 0, 0
     moderator_prompt = athena.prompts["moderator"]
     llm = live_llm or SampleLLM()
@@ -208,7 +262,7 @@ def main() -> int:
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     name = "live" if args.live else "offline"
-    (out_dir / f"{name}.json").write_text(json.dumps(res, indent=1) + "\n")
+    (out_dir / f"{name}.json").write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
     write_report(res, out_dir / f"{name}_report.md")
     print("guard:", {k: round(v, 3) for k, v in res["guard"]["metrics"].items()})
     print("critic: precision=%.3f recall=%.3f cases=%d" % (res["critic"]["precision"], res["critic"]["recall"], res["critic"]["cases"]))
@@ -233,6 +287,16 @@ def write_report(res: dict, out: Path) -> None:
         L.append(f"| {k} | {v:.3f} | {t['target']} / {t['hard_floor']} | {gate(k, v)} |")
     missed = [r for r in gd["injection_rows"] if r["expected"] != r["detected"]]
     L += ["", "Injection errors:", ""] + ([f"- `{r['id']}` expected {r['expected']}, detected {r['detected']}" for r in missed] or ["- none"])
+    L += ["", "### Every guard set, with baselines (95% Wilson intervals)", "",
+          "Only `dev` was used to write the patterns; the other sets are held back (evals/guard/README.md).", "",
+          "| Set | Role | Detector | Precision | Recall | False-block rate |", "|---|---|---|---|---|---|"]
+    for name, st in gd.get("sets", {}).items():
+        if "detectors" not in st:
+            L.append(f"| {name} | {st['role']} | - | {st['status']} | | |")
+            continue
+        for det, sc in st["detectors"].items():
+            L.append(f"| {name} (n={st['n']}) | {st['role'].split(':')[0]} | {det} | {sc['precision']} {sc['precision_ci95'] or ''} | "
+                     f"{sc['recall']} {sc['recall_ci95']} | {sc['false_positive_rate']} {sc['false_positive_rate_ci95']} |")
     L += ["", "## 2. Evidence Critic (deterministic layer)", "",
           f"{cr['cases']} claims built from the 18 trip/time/mode comparisons; each fact-only claim is tested clean and with "
           "five corruptions. Positive class = unsupported claim.", "",
@@ -240,6 +304,10 @@ def write_report(res: dict, out: Path) -> None:
           "History: the first run caught 0% of reversed-direction claims (recall 0.789 overall); the direction rule was "
           "added after that run. This set is generated by construction, so it tests the rules, not real model drafts.", "",
           "| Case | Accuracy |", "|---|---|"] + [f"| {k} | {v} |" for k, v in cr["accuracy_by_kind"].items()]
+    L += ["", "Baselines on the same cases (positive class = unsupported claim):", "",
+          "| Checker | Precision | Recall | False-flag rate |", "|---|---|---|---|"]
+    L += [f"| {k} | {v['precision']} | {v['recall']} {v['recall_ci95']} | {v['false_positive_rate']} |"
+          for k, v in cr.get("detectors", {}).items()]
     L += ["", "## 3. Report moderation (synthetic reports)", "",
           f"{rp['n']} synthetic reports with expected actions (approve, redact, review, reject). Model: `{rp['model']}`. "
           f"Accuracy {rp['accuracy']:.3f}.", "", "| Report | Expected | Got | Reason |", "|---|---|---|---|"]
@@ -254,7 +322,7 @@ def write_report(res: dict, out: Path) -> None:
     L += [f"| {r['trip']} | {r['band']} | {r['mode']} | {r['extra_min']} | {r['risk_reduction_pct']} | {r['fastest_lit']} | {r['athena_lit']} |"
           for r in ro["rows"]]
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text("\n".join(L) + "\n")
+    out.write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

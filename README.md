@@ -8,17 +8,24 @@ prototype (tag `hackathon-final`). Athena shows **risk indicators, never safety*
 
 ![Athena journey planner](docs/submission/img/plan_desktop.png)
 
+![check](https://github.com/shuruthy24/Athena/actions/workflows/check.yml/badge.svg)
+
 ## Results
 
-Generated from `evals/results/` by `make readme`; `make check` fails if this table and the files disagree. Rows
-that say "not run yet" are waiting for a live run or human labels (see [Status](#status)).
+Generated from `evals/results/` by `make eval` (or `make readme`); `make check` fails if this table and the files
+disagree. Rows that say "not run yet" are waiting for a live run, human labels or participants
+([docs/STATUS.md](docs/STATUS.md)). Method, baselines, intervals and verdicts: [docs/evaluation.md](docs/evaluation.md).
 
 <!-- results:start -->
 | Evaluation | Result | Source (evals/results/) |
 | --- | --- | --- |
-| Prompt-injection guard (26 prompts, incl. indirect) | precision 1.000, recall 1.000 | `offline.json` |
+| Prompt-injection guard, dev set it was tuned on (26 prompts) | precision 1.000, recall 1.000 | `offline.json` |
+| Prompt-injection guard, held-out probes (50, never tuned on) | recall 0.208 [0.0924, 0.4047], false-block rate 0.038; baseline phrase filter recall 0.000 | `offline.json` |
 | Evidence critic rules (276 generated claims) | precision 1.000, recall 1.000 | `offline.json` |
 | Route outcome vs fastest (18 trips, hand-made sample) | median risk-indicator reduction 36.3%, median extra 0.8 min | `offline.json` |
+| Injected reports admitted by the whole report pipeline (lower is better) | baseline: guard + keyword rule (no model): 0.792 (19/24); baseline: guard + offline stub moderator (SAMPLE_MODE, no model): 0.792 (19/24); live classifier not run yet (`python evals/eval_injection_e2e.py --live`) | `injection_e2e.json` |
+| PII redaction before any model (17 synthetic spans) | app path recall 0.824, over-redaction 0.167; no-redaction baseline 0.0; names are not found by regex | `pii.json` |
+| Route ranking vs baselines (sample data, all modes, 6 trips) | least_walking 0.0% for +0.0 min; fewest_transfers 0.0% for +0.0 min; most_lit 36.3% for +0.8 min; lower_risk 52.3% for +17.0 min; balanced 44.3% for +0.8 min | `route_baselines.json` |
 | Route outcome on real data (377 trips, OSM + OTP, `option4-direct-walk-timed`) | Athena's route differs from the fastest on 61; median risk-indicator reduction 0.0%, median extra 0.0 min; median unknown lighting on Athena's route 72.3% | `data_coverage.json` |
 | Report labeller agreement | not run yet (`make labels`) | `label_agreement.json` |
 | Explainer model comparison | 3 models; best first-draft pass rate 1.000 (scx-gemma-4-31B-it) | `model_comparison.json` |
@@ -27,6 +34,8 @@ that say "not run yet" are waiting for a live run or human labels (see [Status](
 | Assertions on real explanation traces | 36/36 traces pass every assertion | `assertions.json` |
 | LLM judge audit (held-out human labels) | not run yet (`python evals/judge.py audit ...`) | `judge_audit.json` |
 | Blind A/B: LLM vs fact-only explanation | not run yet (`python evals/ab.py`) | `ab.json` |
+| Task study with people (lower-risk choice share, Athena vs plain list) | not run yet (docs/user_study.md) | `user_study.json` |
+| Demonstrated features verified end to end (offline) | 17 passed, 0 failed | `verify.json` |
 | Deployed service | not run yet (`make load-test BASE_URL=...` after deploying) | `ops.json` |
 <!-- results:end -->
 
@@ -68,56 +77,93 @@ the ordered work plan: [AGENTS.md](AGENTS.md).
 
 ## Quick start
 
+You need **Python 3.12 or 3.13** (`python --version`; on Windows the command is `python` or `py`, not `python3`).
+No key and no server setup are needed to see and verify the app: `SAMPLE_MODE=true` uses a labelled offline
+stand-in instead of the course models.
+
+**macOS / Linux**
+
 ```bash
 git clone https://github.com/shuruthy24/Athena.git && cd Athena
 python3 -m venv .venv && source .venv/bin/activate
-make install
-SAMPLE_MODE=true make serve        # offline: sample data and a labelled stand-in model, no key needed
+python -m pip install -r requirements-lock.txt      # exact versions behind every committed result
+SAMPLE_MODE=true python -m uvicorn athena.server:app --port 8001
 ```
 
-Open http://localhost:8001. For live models, copy `.env.example` to `.env`, add your course key and the models
-listed by `GET $COMP3110_MODEL_BASE_URL/models`, then `make serve`. Check the stack with
+**Windows (PowerShell)**
+
+```powershell
+git clone https://github.com/shuruthy24/Athena.git; cd Athena
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements-lock.txt
+$env:SAMPLE_MODE="true"
+.venv\Scripts\python -m uvicorn athena.server:app --port 8001
+```
+
+Open http://localhost:8001 (planner), http://localhost:8001/map (street map) and http://localhost:8001/prototype.
+The box above the results says which data and which model are answering. It is amber for the hand-made
+hackathon sample, which only routes UNSW Library ↔ Town Hall station. Once `data/processed/` is committed (see
+[docs/STATUS.md](docs/STATUS.md)) the real OSM + OTP data covering 42 place pairs is served automatically. Stop the
+server with Ctrl+C.
+
+**Verify it works** (in a second terminal, same folder):
+
+```bash
+python scripts/verify_demo.py                                  # every demonstrated feature, in-process, offline
+python scripts/verify_demo.py --base-url http://127.0.0.1:8001 # the server you just started (or a deployed URL)
+python scripts/check.py                                        # = make check: tests, reproduce results, data, docs
+```
+
+Each prints PASS/FAIL per feature. On Windows, use `.venv\Scripts\python` instead of `python`. Troubleshooting:
+if PowerShell refuses to run `Activate.ps1`, you do not need it (the commands above call the venv's Python
+directly). If the project is inside OneDrive and the install is slow or fails with "file in use", move the folder
+out of OneDrive.
+
+**Live models:** copy `.env.example` to `.env`, add your COMP3110 key and the models listed by
+`GET $COMP3110_MODEL_BASE_URL/models`, and start without `SAMPLE_MODE`. Check the stack with
 `python scripts/check_stack.py`.
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `make check` | tests, offline evals, frozen checksums, secrets scan, `pipeline.check`, README table in sync |
-| `make test` / `make eval` | pytest / offline evals (no model calls) to `evals/results/offline.json` |
-| `make ingest` / `make data` | fetch a raw OSM snapshot / rebuild `data/processed/` from raw snapshots |
-| `make labels` | labeller agreement (Cohen's kappa) and the group split of labelled reports |
-| `make train` | TF-IDF report classifier on the train split |
-| `python evals/compare_models.py` | model comparison, Tech 2/3 shape, 200-call budget (live) |
-| `python evals/eval_classifier.py` | report classifiers on the dev split (prompted candidates are live) |
-| `python scripts/run_traces.py` | real explanation traces for error analysis (live) |
-| `python evals/judge.py audit ...` / `python evals/ab.py ...` | judge audit against human labels / blind A/B (live) |
-| `make docker` / `make load-test BASE_URL=...` | container image / load test of a deployed URL |
-| `make readme` | regenerate the results table above |
+Every `make` target has a plain-Python equivalent, so nothing needs `make` on Windows.
+
+| Command | Without make | What it does |
+| --- | --- | --- |
+| `make check` | `python scripts/check.py` | tests; regenerate every offline result and compare with the committed files; frozen held-out sets; secrets scan; data checks; README and docs/evaluation.md in sync; demo features. Changes no file. |
+| `make verify` | `python scripts/verify_demo.py [--base-url URL]` | every demonstrated feature end to end → `evals/results/verify.json` |
+| `make reproduce` | `python scripts/reproduce.py` | one line per result file: regenerated and identical, or what it needs (key, labels, raw data) |
+| `make eval` | `python scripts/eval_all.py` | rewrite the offline results (sample data, no model calls), the README table and docs/evaluation.md |
+| `make eval-real` | see Makefile | the same evaluations on `data/processed` (real data) |
+| `make fetch-raw` / `make data` / `make data-verify` | `python -m pipeline.fetch_raw` / `python -m pipeline.run` / `python -m pipeline.verify` | download the raw snapshots and check their sha256 / rebuild `data/processed/` / prove the rebuild is identical |
+| `make labels` / `make train` | `python -m pipeline.agreement`, `python -m pipeline.split` | labeller agreement and the frozen group split / TF-IDF classifier |
+| `python evals/label.py ...` | | labelling helper: reports (`add-reports`, `reports --as a`), trace PASS/FAIL for the judge audit |
+| `python evals/compare_models.py`, `evals/eval_classifier.py`, `evals/eval_injection_e2e.py --live`, `evals/judge.py audit`, `evals/ab.py` | | live evaluations (course key; each has a call budget) |
+| `make docker` / `make load-test BASE_URL=...` | | container image / load test of a deployed URL |
 
 ## Status
 
-Built and tested offline (`make check`): the course gateway client with per-role models, one retry and cost
-logging; prompts as versioned files; the data pipeline (OSM and OTP snapshots to Parquet, schemas, checks);
-the labelling workflow (guide, kappa, leak-free group split, frozen test checksum); report classifiers and their
-eval; the explanation eval suite (traces, assertions, strict judge, blind A/B); indirect-injection and
-prompt-leak defences; the explanation cache; the container and load test.
-
-Waiting for the team (nothing here is invented): the live gateway runs (stack check, model comparison,
-classifier prompts, traces, judge audit); 150+ human-written labelled reports and the judge labels; the OSM
-snapshot and the OTP precompute; the blind A/B choices; deployment; the release memo (`evals/release.md`).
+What is built, what was demonstrated and how to verify each feature, what is not finished, the known limitations,
+and how the demo differs from this submission: **[docs/STATUS.md](docs/STATUS.md)**. Evaluation method, data,
+baselines and every result: **[docs/evaluation.md](docs/evaluation.md)**. Data sources, licences, privacy and the
+reproducible data workflow: **[data_sources.md](data_sources.md)**.
 
 ## Repository map
 
 ```
-athena/            app: agents, text guard, gateway client, pricing, prompts loader, cache, classifiers, data sources
+athena/            app: agents, text guard (injection + PII), gateway client, prompts, cache, classifiers, data sources
 prompts/           versioned prompt files with front matter
-pipeline/          ingest -> clean -> features -> trips -> run -> check; labelling agreement, split, synth
-evals/             offline evals, model comparison, classifier eval, assertions, judge, A/B, results/
-data/              sample data the app serves until `make data`; labelling/ sheet and guide; reports/ splits
-scripts/           stack check, traces, load test, secrets scan, results table, hackathon export tools
-docs/              design, metrics, model card, deploy; submission/ and evidence/ are the frozen hackathon record
+pipeline/          ingest -> clean -> features -> trips -> run -> check; lineage, verify (rebuild), fetch_raw;
+                   labelling agreement, split, synth
+evals/             offline and live evals, metrics (Wilson intervals), guard/ and privacy/ sets, label.py, user_study/,
+                   traces/, labels/, results/ (every number in the docs comes from here)
+data/              sample data (regression set); processed/ (real OSM + OTP, committed); raw_manifest.json;
+                   labelling/ sheet and guide; reports/ splits
+scripts/           check.py, eval_all.py, reproduce.py, verify_demo.py, build_eval_report.py, results table,
+                   stack check, traces, load test, secrets scan
+docs/              STATUS (features, gaps, demo differences), evaluation (method + generated results), metrics,
+                   design, model card, deploy, user study; submission/ and evidence/ are the frozen hackathon record
 tests/             pytest suite with a mock gateway server
+.github/workflows/ check.yml: make check and an HTTP verification on Linux and Windows for every push
 ```
 
 ## Data, licences and attribution

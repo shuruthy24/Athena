@@ -106,7 +106,7 @@ def main() -> int:
     ap.add_argument("--from-file", type=Path, help="parse a saved Overpass JSON response instead of fetching")
     ap.add_argument("--out", type=Path, default=OUT)
     args = ap.parse_args()
-    elements = json.loads(args.from_file.read_text())["elements"] if args.from_file else fetch()
+    elements = json.loads(args.from_file.read_text(encoding="utf-8"))["elements"] if args.from_file else fetch()
     rows = to_rows(elements)
     if not rows:
         print("Overpass returned no help locations; not overwriting the existing file.", file=sys.stderr)
@@ -114,7 +114,7 @@ def main() -> int:
     body = {"rows": rows, "attribution": ATTRIBUTION, "bbox": list(BBOX),
             "fetched": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "query": overpass_query()}
-    args.out.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n")
+    args.out.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     counts = {c: sum(1 for r in rows if r["category"] == c) for c in ("police", "hospital", "station")}
     print(f"wrote {len(rows)} help locations to {args.out.relative_to(ROOT) if args.out.is_relative_to(ROOT) else args.out}: "
           + ", ".join(f"{k}={v}" for k, v in counts.items()))

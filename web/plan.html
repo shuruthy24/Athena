@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/web/vendor/maplibre-gl.css">
-<link rel="stylesheet" href="/web/athena.css?v=2026-11-15">
+<link rel="stylesheet" href="/web/athena.css?v=2026-11-18">
 <style>
 body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 .app{flex:1;display:grid;grid-template-columns:420px minmax(0,1fr);min-height:0}
@@ -134,6 +134,7 @@ details.data pre{margin:0;padding:10px;background:var(--code);border-radius:0 0 
           <div class="chips" id="modes" role="group" aria-labelledby="modes-l"></div>
         </div>
       </form>
+      <p class="provenance" id="provenance" data-mode="" aria-live="polite"></p>
       <section class="results" id="results" aria-live="polite" aria-busy="false"></section>
       <p class="foot">Athena describes routes by their <em>risk indicators</em>, never as safe. Risk is a rule-based street score (lighting, path type, late-night activity), not an incident count. Missing lighting data lowers confidence and is never treated as dark.</p>
     </div>
@@ -152,7 +153,7 @@ details.data pre{margin:0;padding:10px;background:var(--code);border-radius:0 0 
 </div>
 
 <script src="/web/vendor/maplibre-gl.js"></script>
-<script src="/web/athena.js?v=2026-11-15"></script>
+<script src="/web/athena.js?v=2026-11-18"></script>
 <script>
 "use strict";
 const MODES = [["transit", "Public transport"], ["walk", "Walk"], ["bike", "Cycle"]];
@@ -273,7 +274,7 @@ async function plan(){
 
 function notices(d){
   const f = d.freshness || {};
-  const base = f.live ? f.note : "Routes precomputed with OpenTripPlanner, not live.";
+  const base = f.live ? f.note : f.source === "sample" ? "Hand-made sample routes (hackathon), not live." : "Routes precomputed with OpenTripPlanner, not live.";
   const timing = d.timing_note ? " Moved to your departure time: walking and cycling times are exact, public transport times (marked ≈) are estimates." : " Times are scheduled.";
   let html = `<p class="notice">${ICON.info}<span>${esc(base + timing)}</span></p>`;
   if(d.degraded) html += `<p class="notice warn">${ICON.info}<span>${esc(d.degraded)}</span></p>`;
@@ -355,8 +356,9 @@ async function explainTrip(j){
     const claims = (r.claims || []).map(c => `<li>${esc(c.text)}</li>`).join("");
     const verdict = r.critic_verdict === "approve" ? "Every claim passed the evidence checks."
       : "Shown from the route facts only: the model draft was unavailable or did not pass the evidence checks.";
+    const by = r.drafted_by?.note ? ` ${r.drafted_by.note}` : "";
     out.innerHTML = `<p><b>${esc(r.answer)}</b></p>${claims ? `<ul class="why">${claims}</ul>` : ""}
-      <p class="notice">${ICON.info}<span>${esc(verdict)} ${esc(r.confidence_note || "")}</span></p>`;
+      <p class="notice">${ICON.info}<span>${esc(verdict)}${esc(by)} ${esc(r.confidence_note || "")}</span></p>`;
   } catch(e){
     out.innerHTML = `<p class="notice warn">${ICON.info}<span>Couldn't explain this trip (${esc(e.message)}). The rating above still applies.</span></p>`;
   } finally { btn.disabled = false; }
@@ -424,7 +426,7 @@ function detailHTML(j){
         <datalist id="rp-streets">${streetNames(j).map(n => `<option value="${esc(n)}">`).join("")}</datalist>
         <label for="rp-text">What did you see? (a street condition, not a person)</label>
         <textarea id="rp-text" maxlength="500" rows="3" required></textarea>
-        <span class="hint muted">Anonymous. Phone numbers and emails are removed. Reports are checked before they affect any route.</span>
+        <span class="hint muted">Anonymous. Please leave out names and ID numbers: phone numbers, emails, house addresses and links are removed automatically, names are not. Reports are checked before they affect any route.</span>
         <button class="btn" type="submit">Send report</button>
         <div id="rp-out" aria-live="polite"></div>
       </form></details>
@@ -564,6 +566,7 @@ if(innerWidth > 860) $("legendbox").open = true;
 document.documentElement.style.setProperty("--tb-mobile", document.querySelector(".topbar").offsetHeight + "px");
 setTime(state.time, state.now);
 renderLegend();
+showProvenance($("provenance"));
 (async () => {
   try {
     const {places} = await getJSON("/api/places");

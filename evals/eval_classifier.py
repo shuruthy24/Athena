@@ -44,7 +44,7 @@ def load_split(name: str, reports: Path = REPORTS) -> list[dict]:
     p = reports / f"{name}.jsonl"
     if not p.exists():
         raise FileNotFoundError(f"{p.relative_to(ROOT)} is missing: label reports and run `make labels` first")
-    return [json.loads(x) for x in p.read_text().splitlines() if x.strip()]
+    return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
 
 
 def evaluate(clf, rows: list[dict], streets: dict[str, dict]) -> dict:
@@ -152,8 +152,8 @@ def main(argv=None) -> int:
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     res = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None, **res}
     RESULTS.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(res, indent=1) + "\n")
-    (RESULTS / f"classifier_{args.split}.md").write_text(table(res))
+    out.write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
+    (RESULTS / f"classifier_{args.split}.md").write_text(table(res), encoding="utf-8")
     print(table(res))
     return 0
 

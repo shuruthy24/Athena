@@ -120,7 +120,7 @@ def main(argv=None) -> int:
            "calls_used": None, "endpoints": endpoints}
     res["calls_used"] = round((endpoints["explain_route"].get("model_calls_per_request") or 0) * args.n)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(json.dumps(res, indent=1) + "\n")
+    Path(args.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
     for name, e in endpoints.items():
         extra = f" cost/req {e.get('cost_usd_per_request')} cache hits {e.get('cache_hit_share')}" if name == "explain_route" else ""
         print(f"{name:14} n={e['n']} p50={e['p50_ms']} ms p95={e['p95_ms']} ms errors={e['error_rate']}{extra}")

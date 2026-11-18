@@ -51,8 +51,33 @@ def scan_text(text: str) -> list[tuple[int, str]]:
     return hits
 
 
+# Folders a source download (zip, no .git) may contain that are never part of the submission.
+WALK_SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache", "runs", "node_modules", ".dvc"}
+WALK_SKIP_PREFIXES = ("data/raw/", "models/")
+
+
+def walked_files(root: Path = ROOT) -> list[str]:
+    """Every file under root except virtualenvs, caches and git-ignored data folders. Used when the code is
+    not a git checkout (a zip download), so `make check` still scans what would be submitted."""
+    out = []
+    for p in sorted(root.rglob("*")):
+        rel = p.relative_to(root).as_posix()
+        if not p.is_file() or set(p.relative_to(root).parts[:-1]) & WALK_SKIP_DIRS:
+            continue
+        if rel.startswith(WALK_SKIP_PREFIXES):
+            continue
+        if p.name.startswith(".env") and p.name != ".env.example":
+            continue  # local, git-ignored config; main() warns so it never ends up in a submission zip
+        out.append(rel)
+    return out
+
+
 def tracked_files() -> list[str]:
-    out = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    """Files git tracks; outside a git checkout (a zip download), every file that would be submitted."""
+    try:
+        out = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return walked_files()
     return [f for f in out.splitlines() if f]
 
 
@@ -82,6 +107,8 @@ def main() -> int:
         findings += [(f, n, kind) for n, kind in scan_text(text)]
     for f, n, kind in findings:
         print(f"SECRET? {f}:{n} {kind}")
+    if not args.staged and (ROOT / ".env").exists() and not (ROOT / ".git").exists():
+        print("note: .env exists in this folder (not a git checkout); leave it out of any zip you submit")
     print(f"secrets scan: {len(files)} files, {len(findings)} findings")
     return 1 if findings else 0
 

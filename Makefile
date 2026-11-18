@@ -2,18 +2,31 @@
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 PORT ?= 8001
 
-.PHONY: help install data ingest dvc-track labels train test eval eval-live check checksums secrets serve docker load-test readme hooks
+.PHONY: help install install-lock data data-verify fetch-raw ingest dvc-track labels train test eval eval-real eval-live check checksums secrets serve verify reproduce report docker load-test readme hooks
 
 help:
-	@echo "make install | ingest | data | dvc-track | labels | train | test | eval | eval-live | check | serve | docker | load-test | readme | hooks"
+	@echo "make install | serve | verify | check | eval | reproduce | data | data-verify | fetch-raw | eval-real | labels | train | eval-live | docker | load-test"
+	@echo "Without make: python scripts/check.py, python scripts/eval_all.py, python scripts/verify_demo.py (see README)"
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
 
+# The exact versions behind the committed results (Python 3.12 or 3.13).
+install-lock:
+	$(PYTHON) -m pip install -r requirements-lock.txt
+
 # raw -> processed, then pipeline.check (AGENTS.md Step 2). Fetch raw first with `make ingest`.
 data:
 	$(PYTHON) -m pipeline.run
-	$(PYTHON) -m pipeline.check
+	$(PYTHON) -m pipeline.check --write-quality
+
+# Prove data/processed rebuilds identically from the raw snapshots named in its manifest (content hashes).
+data-verify:
+	$(PYTHON) -m pipeline.verify
+
+# Download the raw snapshots listed in data/raw_manifest.json and check their sha256.
+fetch-raw:
+	$(PYTHON) -m pipeline.fetch_raw
 
 # Writes a new dated raw snapshot (never overwrites). Needs network access to overpass-api.de.
 ingest:
@@ -37,11 +50,31 @@ train:
 test:
 	SAMPLE_MODE=true $(PYTHON) -m pytest -q
 
-# Offline evals: no model calls. Writes evals/results/offline.json; never touches the hackathon evidence.
-# Pinned to the hand-made sample data so it stays a fixed regression gate; a local `make data` rebuild is
-# measured separately (see data/processed/manifest.json).
+# Offline evals: no model calls. Pinned to the hand-made sample so they stay a fixed regression gate; rewrites
+# evals/results/{offline,pii,route_baselines,injection_e2e,data_quality}.json, the README table and docs/evaluation.md.
 eval:
-	SAMPLE_MODE=true ATHENA_DATA_DIR=data $(PYTHON) evals/run_evals.py
+	$(PYTHON) scripts/eval_all.py
+
+# The same evaluations on the real data (data/processed). LABEL names the data version in data_coverage.json.
+eval-real:
+	$(PYTHON) -m pipeline.check --write-quality
+	$(PYTHON) evals/eval_data_coverage.py --label $(or $(LABEL),final)
+	$(PYTHON) evals/eval_route_baselines.py
+	$(PYTHON) scripts/verify_demo.py
+	$(PYTHON) scripts/results_table.py --write
+	$(PYTHON) scripts/build_eval_report.py --write
+
+# Regenerate every offline result into a temp folder and compare with the committed files (changes nothing).
+reproduce:
+	$(PYTHON) scripts/reproduce.py
+
+# Every demonstrated feature end to end, in-process (BASE_URL=... to check a running or deployed server).
+verify:
+	$(PYTHON) scripts/verify_demo.py $(if $(BASE_URL),--base-url $(BASE_URL),)
+
+report:
+	$(PYTHON) scripts/results_table.py --write
+	$(PYTHON) scripts/build_eval_report.py --write
 
 # Budgeted live evals through the COMP3110 gateway (needs COMP3110_MODEL_BASE_URL and COMP3110_API_KEY).
 eval-live:
@@ -49,18 +82,16 @@ eval-live:
 	@for s in evals/compare_models.py evals/eval_classifier.py evals/judge.py; do \
 		if [ -f $$s ]; then echo "run $$s explicitly; each has its own call budget (AGENTS.md section 7)"; fi; done
 
-# Frozen eval sets must not change: the report test split, once it exists.
+# Frozen held-out sets must not change (evals/checksums.txt: guard probes, PII cases, report test split).
 checksums:
-	@if [ -f evals/checksums.txt ]; then sha256sum -c --quiet evals/checksums.txt; fi
-	@echo "checksums: ok"
+	$(PYTHON) -m pipeline.lineage
 
 secrets:
 	$(PYTHON) scripts/scan_secrets.py
 
-check: test eval checksums secrets
-	$(PYTHON) -m pipeline.check
-	$(PYTHON) scripts/results_table.py --check
-	@echo "make check: all green"
+# Tests, reproduce (compare, never rewrite), frozen sets, secrets, data checks, docs in sync, demo features.
+check:
+	$(PYTHON) scripts/check.py
 
 # Regenerate the README results table from evals/results/.
 readme:

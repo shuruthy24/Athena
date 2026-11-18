@@ -21,7 +21,7 @@ FIX = ROOT / "tests" / "fixtures"
 
 @pytest.fixture(scope="module")
 def streets():
-    rows, stats = build_streets(json.loads((FIX / "osm_tiny.json").read_text()))
+    rows, stats = build_streets(json.loads((FIX / "osm_tiny.json").read_text(encoding="utf-8")))
     return {r["name"]: r for r in rows}, stats
 
 
@@ -127,7 +127,7 @@ def raw_dir(tmp_path):
     places = tmp_path / "places.json"
     places.write_text(json.dumps({"rows": [
         {"id": "unsw", "name": "UNSW Library", "lat": -33.9175, "lon": 151.2333},
-        {"id": "townhall", "name": "Town Hall station", "lat": -33.8731, "lon": 151.2068}]}))
+        {"id": "townhall", "name": "Town Hall station", "lat": -33.8731, "lon": 151.2068}]}), encoding="utf-8")
     return raw, places
 
 
@@ -141,7 +141,7 @@ def test_build_without_routes_keeps_serving_the_sample(raw_dir, tmp_path):
 
 def test_full_build_passes_check_and_is_served(raw_dir, tmp_path):
     raw, places = raw_dir
-    (raw / "otp_trips_2026-11-14.json").write_text(json.dumps(_otp_snapshot("George Street", "Moore Park path")))
+    (raw / "otp_trips_2026-11-14.json").write_text(json.dumps(_otp_snapshot("George Street", "Moore Park path")), encoding="utf-8")
     out = tmp_path / "processed"
     m = build(raw=raw, out=out, places_file=places)
     assert m["routes"] == "otp"
@@ -154,7 +154,7 @@ def test_full_build_passes_check_and_is_served(raw_dir, tmp_path):
 
 def test_unknown_otp_street_names_become_unknown_steps(raw_dir, tmp_path):
     raw, places = raw_dir
-    (raw / "otp_trips_2026-11-14.json").write_text(json.dumps(_otp_snapshot("George Street", "Nowhere Road")))
+    (raw / "otp_trips_2026-11-14.json").write_text(json.dumps(_otp_snapshot("George Street", "Nowhere Road")), encoding="utf-8")
     out = tmp_path / "processed"
     manifest = build(raw=raw, out=out, places_file=places)
     assert "Nowhere Road" not in {r["street"] for r in read_table(out, "route_steps")}
@@ -167,7 +167,7 @@ def test_check_fails_when_a_route_street_is_missing(raw_dir, tmp_path):
     import pyarrow as pa
     import pyarrow.parquet as pq
     raw, places = raw_dir
-    (raw / "otp_trips_2026-11-14.json").write_text(json.dumps(_otp_snapshot("George Street", "George Street")))
+    (raw / "otp_trips_2026-11-14.json").write_text(json.dumps(_otp_snapshot("George Street", "George Street")), encoding="utf-8")
     out = tmp_path / "processed"
     build(raw=raw, out=out, places_file=places)
     rows = read_table(out, "route_steps")
@@ -188,7 +188,7 @@ def test_overpass_query_and_raw_files_are_never_overwritten(tmp_path):
     q = overpass_query()
     assert "-33.93,151.17,-33.85,151.26" in q and "street_lamp" in q and "out geom" in q
     existing = tmp_path / "osm_2026-11-14.json"
-    existing.write_text("{}")
+    existing.write_text("{}", encoding="utf-8")
     with pytest.raises(FileExistsError):
         fetch_osm(out=existing, session=object())
 

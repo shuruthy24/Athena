@@ -85,7 +85,7 @@ def test_test_split_is_frozen_by_checksum(tmp_path):
     parts = split(_generated_reports())
     sums = tmp_path / "checksums.txt"
     path = write_split(parts, out_dir=tmp_path, checksums=sums)
-    assert sums.read_text().split()[1] == str(path)
+    assert sums.read_text(encoding="utf-8").split()[1] == str(path)
     with pytest.raises(FileExistsError):
         write_split(parts, out_dir=tmp_path, checksums=sums)
     write_split(parts, out_dir=tmp_path, checksums=sums, refreeze=True)
@@ -126,7 +126,7 @@ def test_strict_variant_parser():
 def test_prompt_files_load_with_front_matter(tmp_path):
     p = load("synth")
     assert p.version == 1 and "variants" in p.body and len(p.sha) == 12
-    (tmp_path / "x.v1.md").write_text("---\nrole: y\nversion: 1\n---\nbody\n")
+    (tmp_path / "x.v1.md").write_text("---\nrole: y\nversion: 1\n---\nbody\n", encoding="utf-8")
     with pytest.raises(ValueError):
         load("x", folder=tmp_path)
     assert parse("---\nrole: a\n---\nhi")[0] == {"role": "a"}

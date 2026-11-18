@@ -1,0 +1,116 @@
+{
+ "datasets": {
+  "sample": {
+   "generated_at": "2026-11-18T04:20:03.016927+00:00",
+   "git_sha": null,
+   "tables": {
+    "streets": {
+     "rows": 12,
+     "missing_share": {
+      "lit": 0.0,
+      "highway": 0.0,
+      "risk_18": 0.0,
+      "risk_22": 0.0,
+      "risk_01": 0.0,
+      "venues_22": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "name"
+     ],
+     "coordinates_outside_study_area": 0
+    },
+    "route_steps": {
+     "rows": 186,
+     "missing_share": {
+      "street": 0.0968,
+      "distance_m": 0.0,
+      "duration_min": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "trip",
+      "band",
+      "mode",
+      "variant",
+      "leg",
+      "step"
+     ],
+     "coordinates_outside_study_area": 0
+    },
+    "route_legs": {
+     "rows": 108,
+     "missing_share": {
+      "polyline": 0.0,
+      "distance_m": 0.0,
+      "from_lat": 0.0,
+      "to_lat": 0.0,
+      "start_time": 0.0,
+      "total_min": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "journey",
+      "leg"
+     ],
+     "coordinates_outside_study_area": 0
+    },
+    "leg_streets": {
+     "rows": 204,
+     "missing_share": {
+      "street": 0.0,
+      "distance_m": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "journey",
+      "leg",
+      "step"
+     ],
+     "coordinates_outside_study_area": 0
+    },
+    "places": {
+     "rows": 7,
+     "missing_share": {
+      "lat": 0.0,
+      "lon": 0.0,
+      "name": 0.0
+     },
+     "exact_duplicate_rows": 0,
+     "duplicate_keys": 0,
+     "key": [
+      "id"
+     ],
+     "coordinates_outside_study_area": 0
+    }
+   },
+   "failures": [],
+   "warnings": [],
+   "staleness": {
+    "sample": {
+     "note": "hand-made hackathon sample, no fetch date (not real measurements)"
+    }
+   }
+  }
+ },
+ "generated_at": "2026-11-18T04:20:03.016927+00:00",
+ "git_sha": null,
+ "calls_used": 0,
+ "config": {
+  "stale_days": 180,
+  "study_area": {
+   "lat": [
+    -34.2,
+    -33.6
+   ],
+   "lon": [
+    150.9,
+    151.4
+   ]
+  }
+ }
+}

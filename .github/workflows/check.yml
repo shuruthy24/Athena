@@ -1,0 +1,41 @@
+# Independent verification on clean machines: the README instructions, on Linux and Windows, on every push.
+# Runs only what needs no secrets: tests, the reproduce check against the committed results, frozen sets, the
+# secrets scan, data checks, docs in sync and every demonstrated feature (scripts/check.py), then starts the
+# server the way the README says and verifies it over HTTP.
+name: check
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    env:
+      SAMPLE_MODE: "true"
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install the locked dependencies
+        run: python -m pip install -r requirements-lock.txt
+      - name: make check (without make)
+        run: python scripts/check.py
+      - name: Start the server as in the README and verify it over HTTP
+        shell: bash
+        run: |
+          python -m uvicorn athena.server:app --port 8001 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8001/api/health > /dev/null && break; sleep 1; done
+          python scripts/verify_demo.py --base-url http://127.0.0.1:8001 --out verify_http.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verify-${{ matrix.os }}-py${{ matrix.python }}
+          path: verify_http.json

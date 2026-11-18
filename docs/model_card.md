@@ -47,6 +47,12 @@ See [metrics.md](metrics.md) for definitions and proposed targets and the README
 | Blind A/B, LLM vs fact-only | not run yet (`evals/ab.py`) |
 | Report classifier TNR on hold / TPR on admit | not run yet (`evals/eval_classifier.py`) |
 | Critic rules on generated corruptions | `evals/results/offline.json` (tests the rules, not model drafts) |
+| Text guard on held-out probes (never tuned on) and with no-guard / phrase-filter baselines | `offline.json` → `guard.sets` |
+| Injected reports admitted end to end (guard + classifier + verifier) | `injection_e2e.json` (offline baselines; live run not yet) |
+| PII redaction before any model call | `pii.json` (before the 18 Nov fix: `pii_before_fixes.json`) |
+| Route ranking vs fastest, least walking, fewest transfers, most lit | `route_baselines.json` |
+
+All results, with baselines, 95% intervals and verdicts against the targets: [evaluation.md](evaluation.md).
 
 ## How a route is scored
 
@@ -71,8 +77,9 @@ A rule, not a model (there are no risk labels):
   classifier is measured on first (TNR on hold).
 - **Risk indicators can stigmatise places.** The rule uses lighting, path type, venues open and lamp density,
   not crime counts or demographics. Unknown lighting stays unknown.
-- **Privacy:** no accounts; PII is redacted before any model call; rate-limit ids are keyed hashes; report text
-  is stored only in the container and lost on redeploy.
+- **Privacy:** no accounts; PII (phones, emails, house addresses, links, card numbers, plates) is redacted before
+  any model call with one policy for the app and ingest; names are not found by regex, so the form asks people to
+  leave them out; rate-limit ids are keyed hashes; report text is stored only in the container and lost on redeploy.
 - **Sovereignty:** check where each gateway model is hosted before sending user report text to it.
 
 ## Caveats

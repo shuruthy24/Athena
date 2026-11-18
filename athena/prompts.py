@@ -80,7 +80,7 @@ def load(role: str, version: int | None = None, folder: Path = PROMPTS) -> Promp
     if not found:
         raise FileNotFoundError(f"no prompt file for role {role!r} in {folder}")
     v = version if version is not None else max(found)
-    meta, body = parse(found[v].read_text())
+    meta, body = parse(found[v].read_text(encoding="utf-8"))
     if meta.get("role") != role or int(meta.get("version", -1)) != v:
         raise ValueError(f"{found[v].name}: front matter role/version does not match the file name")
     return Prompt(role=role, version=v, body=body, meta=meta)

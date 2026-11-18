@@ -1,6 +1,6 @@
 # Athena evaluation report
 
-Generated 2026-11-14T07:24:14.450636+00:00 by `python3 evals/run_evals.py`.
+Generated 2026-11-18T04:20:02.645934+00:00 by `python3 evals/run_evals.py`.
 
 All numbers below come from the run that wrote this file. Sets are small; read them as smoke tests, not benchmarks (Meterless says the same of its own 32-example v1 corpus).
 
@@ -16,6 +16,20 @@ Injection set `evals/guard/injection.jsonl`: 26 prompts (10 from the Meterless v
 Injection errors:
 
 - none
+
+### Every guard set, with baselines (95% Wilson intervals)
+
+Only `dev` was used to write the patterns; the other sets are held back (evals/guard/README.md).
+
+| Set | Role | Detector | Precision | Recall | False-block rate |
+|---|---|---|---|---|---|
+| dev (n=26) | tuning set | athena_guard | 1.0 [0.8064, 1.0] | 1.0 [0.8064, 1.0] | 0.0 [0.0, 0.2775] |
+| dev (n=26) | tuning set | no_guard | None  | 0.0 [0.0, 0.1936] | 0.0 [0.0, 0.2775] |
+| dev (n=26) | tuning set | naive_phrase_filter | 1.0 [0.3424, 1.0] | 0.125 [0.035, 0.3602] | 0.0 [0.0, 0.2775] |
+| heldout_probes (n=50) | held-out synthetic probes written after the patterns, never used for tuning | athena_guard | 0.8333 [0.4365, 0.9699] | 0.2083 [0.0924, 0.4047] | 0.0385 [0.0068, 0.1889] |
+| heldout_probes (n=50) | held-out synthetic probes written after the patterns, never used for tuning | no_guard | None  | 0.0 [0.0, 0.138] | 0.0 [0.0, 0.1287] |
+| heldout_probes (n=50) | held-out synthetic probes written after the patterns, never used for tuning | naive_phrase_filter | None  | 0.0 [0.0, 0.138] | 0.0 [0.0, 0.1287] |
+| redteam | held-out real attempts by people outside the team (evals/guard/README.md) | - | not collected yet | | |
 
 ## 2. Evidence Critic (deterministic layer)
 
@@ -33,6 +47,14 @@ History: the first run caught 0% of reversed-direction claims (recall 0.789 over
 | street | 1.0 |
 | nofacts | 1.0 |
 | direction | 1.0 |
+
+Baselines on the same cases (positive class = unsupported claim):
+
+| Checker | Precision | Recall | False-flag rate |
+|---|---|---|---|
+| athena_rules | 1.0 | 1.0 [0.9834, 1.0] | 0.0 |
+| no_critic | None | 0.0 [0.0, 0.0166] | 0.0 |
+| citation_only | 1.0 | 0.2105 [0.1626, 0.268] | 0.0 |
 
 ## 3. Report moderation (synthetic reports)
 
@@ -63,21 +85,21 @@ Across 18 cases: median route-risk reduction 36.3% (range 20.2–46.2%), median 
 
 | Trip | Time | Mode | Extra min | Risk reduction % | Fastest lit % | Athena lit % |
 |---|---|---|---|---|---|---|
-| unsw|townhall | 18 | walk | 0.5 | 31.4 | 77.4 | 100.0 |
-| unsw|townhall | 18 | bike | 0.8 | 31.4 | 77.4 | 100.0 |
-| unsw|townhall | 18 | transit | 1.9 | 20.2 | 100.0 | 100.0 |
-| unsw|townhall | 22 | walk | 0.5 | 46.2 | 77.4 | 100.0 |
-| unsw|townhall | 22 | bike | 0.8 | 46.2 | 77.4 | 100.0 |
-| unsw|townhall | 22 | transit | 2.9 | 39.7 | 100.0 | 100.0 |
-| unsw|townhall | 01 | walk | 0.5 | 36.3 | 77.4 | 100.0 |
-| unsw|townhall | 01 | bike | 0.8 | 36.3 | 77.4 | 100.0 |
-| unsw|townhall | 01 | transit | 2.9 | 25.9 | 100.0 | 100.0 |
-| townhall|unsw | 18 | walk | 0.5 | 31.4 | 77.4 | 100.0 |
-| townhall|unsw | 18 | bike | 0.8 | 31.4 | 77.4 | 100.0 |
-| townhall|unsw | 18 | transit | 1.9 | 20.2 | 100.0 | 100.0 |
-| townhall|unsw | 22 | walk | 0.5 | 46.2 | 77.4 | 100.0 |
-| townhall|unsw | 22 | bike | 0.8 | 46.2 | 77.4 | 100.0 |
-| townhall|unsw | 22 | transit | 2.9 | 39.7 | 100.0 | 100.0 |
-| townhall|unsw | 01 | walk | 0.5 | 36.3 | 77.4 | 100.0 |
 | townhall|unsw | 01 | bike | 0.8 | 36.3 | 77.4 | 100.0 |
 | townhall|unsw | 01 | transit | 2.9 | 25.9 | 100.0 | 100.0 |
+| townhall|unsw | 01 | walk | 0.5 | 36.3 | 77.4 | 100.0 |
+| townhall|unsw | 18 | bike | 0.8 | 31.4 | 77.4 | 100.0 |
+| townhall|unsw | 18 | transit | 1.9 | 20.2 | 100.0 | 100.0 |
+| townhall|unsw | 18 | walk | 0.5 | 31.4 | 77.4 | 100.0 |
+| townhall|unsw | 22 | bike | 0.8 | 46.2 | 77.4 | 100.0 |
+| townhall|unsw | 22 | transit | 2.9 | 39.7 | 100.0 | 100.0 |
+| townhall|unsw | 22 | walk | 0.5 | 46.2 | 77.4 | 100.0 |
+| unsw|townhall | 01 | bike | 0.8 | 36.3 | 77.4 | 100.0 |
+| unsw|townhall | 01 | transit | 2.9 | 25.9 | 100.0 | 100.0 |
+| unsw|townhall | 01 | walk | 0.5 | 36.3 | 77.4 | 100.0 |
+| unsw|townhall | 18 | bike | 0.8 | 31.4 | 77.4 | 100.0 |
+| unsw|townhall | 18 | transit | 1.9 | 20.2 | 100.0 | 100.0 |
+| unsw|townhall | 18 | walk | 0.5 | 31.4 | 77.4 | 100.0 |
+| unsw|townhall | 22 | bike | 0.8 | 46.2 | 77.4 | 100.0 |
+| unsw|townhall | 22 | transit | 2.9 | 39.7 | 100.0 | 100.0 |
+| unsw|townhall | 22 | walk | 0.5 | 46.2 | 77.4 | 100.0 |

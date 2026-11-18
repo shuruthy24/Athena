@@ -67,7 +67,7 @@ def main(argv=None) -> int:
     ap.add_argument("--n", type=int, default=2)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
-    seeds = [json.loads(x) for x in (REPORTS / "train.jsonl").read_text().splitlines() if x.strip()]
+    seeds = [json.loads(x) for x in (REPORTS / "train.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
     seeds = [s for s in seeds if s.get("source") != "synthetic"]
     budget = min(len(seeds), math.ceil(args.max_rows / args.n))
     print(f"{len(seeds)} train seeds; budget {budget} calls for up to {args.max_rows} rows")
@@ -79,9 +79,9 @@ def main(argv=None) -> int:
     llm = GatewayLLM(os.environ["COMP3110_MODEL_BASE_URL"], os.environ["COMP3110_API_KEY"],
                      timeout_s=s.llm_timeout_s, fallback_model=s.fallback_model)
     rows, stats = generate(seeds[:budget], llm, s.moderator_model, args.n, args.max_rows)
-    (REPORTS / "train_synthetic.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+    (REPORTS / "train_synthetic.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     stats["generated_at"] = datetime.now(timezone.utc).isoformat()
-    (ROOT / "evals/results/synth.json").write_text(json.dumps(stats, indent=1) + "\n")
+    (ROOT / "evals/results/synth.json").write_text(json.dumps(stats, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(stats, indent=1))
     return 0
 

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/web/vendor/maplibre-gl.css">
-<link rel="stylesheet" href="/web/athena.css?v=2026-11-15">
+<link rel="stylesheet" href="/web/athena.css?v=2026-11-18">
 <style>
 body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 .app{flex:1;display:grid;grid-template-columns:380px minmax(0,1fr);min-height:0}
@@ -73,6 +73,7 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
         <p class="hint" id="profile-hint"></p>
       </div>
       <div class="tiles" id="tiles" aria-live="polite"></div>
+      <p class="provenance" id="provenance" data-mode="" aria-live="polite" style="margin:8px 0 0"></p>
     </section>
     <section class="listsec">
       <div class="listhead"><h2>Streets</h2>
@@ -101,10 +102,11 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 </div>
 
 <script src="/web/vendor/maplibre-gl.js"></script>
-<script src="/web/athena.js?v=2026-11-15"></script>
+<script src="/web/athena.js?v=2026-11-18"></script>
 <script>
 "use strict";
 const q = new URLSearchParams(location.search);
+showProvenance($("provenance"));
 const state = {now: !q.get("time"), time: q.get("time") || sydneyNow(), filter: "all", selected: null,
                geo: null, help: {points: [], available: false}, showHelp: q.get("help") !== "0"};
 const {map, ready: mapReady} = createMap("map", {zoom: 13, noteEl: $("basemap-note")});

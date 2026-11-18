@@ -145,8 +145,12 @@ class Athena:
                    ms=ev1["ms"] + ev2["ms"], tool=source.name)
         evidence = [ev1, ev2]
         if not steps:
+            pairs = source.provenance().get("routable_pairs", []) if hasattr(source, "provenance") else []
+            covered = ", ".join(f"{PLACE_NAMES.get(a, a)} → {PLACE_NAMES.get(b, b)}"
+                                for a, b in (x.split("|") for x in pairs[:6]))
             return {"answer": f"Athena has no routes for {PLACE_NAMES[p['origin']]} to {PLACE_NAMES[p['destination']]} "
-                              "yet. The current data covers UNSW Library and Town Hall in both directions.",
+                              "in the current data." + (f" It covers {covered}" + (" and more." if len(pairs) > 6 else ".")
+                                                        if covered else ""),
                     "confidence": None, "evidence": evidence, "trip": p}
         cmp = compare(steps, streets, p["band"])
         facts = flatten_facts(cmp)
@@ -178,7 +182,20 @@ class Athena:
             "comparison": {k: cmp[k] for k in ("extra_min", "risk_reduction_pct", "avoided_streets", "added_streets",
                                                "report_penalties")},
             "critic_verdict": verdict, "evidence": evidence,
+            # Who wrote the text the user reads (additive field): the gateway explainer model, the offline
+            # stand-in in SAMPLE_MODE, or nobody (fact-only text built by code from the facts).
+            "drafted_by": self._drafted_by(verdict),
         }
+
+    def _drafted_by(self, verdict: str) -> dict:
+        if str(verdict).startswith("fallback"):
+            return {"kind": "fact-only", "model": None,
+                    "note": "Built by code from the route facts; no model text is shown."}
+        if getattr(self.llm, "provider", "") == "local":
+            return {"kind": "offline-stub", "model": getattr(self.llm, "MODEL", "sample-offline-stub"),
+                    "note": "Offline stand-in (SAMPLE_MODE): template text from the facts, not a language model."}
+        return {"kind": "model", "model": self.s.model_for("explainer"),
+                "note": f"Drafted by {self.s.model_for('explainer')} through the COMP3110 gateway, then checked."}
 
     def check_claims(self, claims: list[dict], facts: dict) -> list[dict]:
         """Deterministic part of the Evidence Critic. Returns one result per claim."""

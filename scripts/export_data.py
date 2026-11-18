@@ -169,12 +169,12 @@ def export_reports() -> list[dict]:
 
 def write(name: str, rows: list[dict]) -> None:
     DATA.mkdir(exist_ok=True)
-    (DATA / name).write_text(json.dumps({"rows": rows}, indent=1, ensure_ascii=False) + "\n")
+    (DATA / name).write_text(json.dumps({"rows": rows}, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def main() -> int:
-    routes = json.loads((WEB / "routes.json").read_text())
-    geo = json.loads((WEB / "streets.geojson").read_text())
+    routes = json.loads((WEB / "routes.json").read_text(encoding="utf-8"))
+    geo = json.loads((WEB / "streets.geojson").read_text(encoding="utf-8"))
     streets = export_streets(geo)
     steps = export_steps(routes)
     places = [{"id": p["id"], "name": p["name"], "area": p["area"], "lat": p["lat"], "lon": p["lon"]}

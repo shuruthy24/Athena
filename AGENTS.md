@@ -533,3 +533,15 @@ scored by time with waits at stops and time on board (0.10); planner labels rela
 `data/raw` is versioned with DVC (local remote). `make eval` stays pinned to the hand-made sample as the regression
 set; real-data numbers are in `evals/results/data_coverage.json`. Decisions and limits: `data_sources.md`,
 `docs/model_card.md`.
+
+**Rubric pass (18 Nov 2026).** Audited against the Final 1 rubric (Evals 70, Data practices 50, Completion 50) and
+changed what was missing: `make check` now works from a zip (secrets scan without git) and compares, never rewrites,
+results (`scripts/check.py`, `scripts/reproduce.py`); every demonstrated feature has an end-to-end check
+(`scripts/verify_demo.py`, also against a URL; CI on Linux and Windows); the UI and `/api/health` say which data and
+which model answer; `data/processed/` is committed with per-table content hashes and `make data-verify`; raw files
+get hashes and mirrors (`data/raw_manifest.json`, `pipeline.fetch_raw`); data quality is measured
+(`data_quality.json`); new evaluations with baselines and Wilson intervals: guard held-out probes (frozen),
+injection end to end, PII redaction, route ranking vs heuristics; one PII policy for app and ingest (landline bug
+fixed); UTF-8 everywhere (Windows); `requirements-lock.txt`; labelling, red-team and task-study kits;
+`docs/evaluation.md` (generated results), `docs/STATUS.md` (features, gaps, limits, demo differences). What is
+left needs people, the key or the raw data: docs/STATUS.md "Not finished".

@@ -5,8 +5,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 runs/
-# Data: raw snapshots are versioned with DVC (data/raw.dvc), derived tables are rebuilt by `make data`
+# Data: raw snapshots are versioned with DVC (data/raw.dvc) and listed with hashes and mirrors in
+# data/raw_manifest.json. data/processed/ (derived tables) IS committed so the submitted app serves the real OSM + OTP
+# data out of the box (check its size first: GitHub rejects files over 100 MB); `make data-verify` proves it rebuilds identically from the raw snapshots.
 data/raw/
-data/processed/
 # Trained classifier: rebuilt from the train split by `make train`
 models/

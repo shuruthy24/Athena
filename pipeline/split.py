@@ -13,11 +13,12 @@ split. The test split is frozen by its sha256 in evals/checksums.txt and is not 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import random
 import sys
 from pathlib import Path
+
+from .lineage import freeze
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "data" / "reports"
@@ -98,19 +99,15 @@ def leaks(parts: dict[str, list[dict]]) -> list[str]:
 def write_split(parts: dict[str, list[dict]], out_dir: Path = REPORTS, checksums: Path = CHECKSUMS,
                 refreeze: bool = False) -> Path:
     test_path = out_dir / "test.jsonl"
-    if test_path.exists() and checksums.exists() and not refreeze:
+    frozen = checksums.exists() and any(line.rstrip().endswith("test.jsonl") for line in checksums.read_text(encoding="utf-8").splitlines())
+    if test_path.exists() and frozen and not refreeze:
         raise FileExistsError("the test split is frozen (evals/checksums.txt); rerun with --refreeze only "
                               "after the team agrees to change it")
     out_dir.mkdir(parents=True, exist_ok=True)
     for name, rows in parts.items():
-        (out_dir / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
-    digest = hashlib.sha256(test_path.read_bytes()).hexdigest()
-    try:
-        rel = test_path.relative_to(ROOT)
-    except ValueError:
-        rel = test_path
-    checksums.parent.mkdir(parents=True, exist_ok=True)
-    checksums.write_text(f"{digest}  {rel}\n")
+        (out_dir / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+    # Replace only this split's line: evals/checksums.txt also freezes other held-out sets (guard probes).
+    freeze(test_path, checksums, ROOT)
     return test_path
 
 
@@ -118,7 +115,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--refreeze", action="store_true")
     args = ap.parse_args(argv)
-    rows = [json.loads(line) for line in (REPORTS / "labelled.jsonl").read_text().splitlines() if line.strip()]
+    rows = [json.loads(line) for line in (REPORTS / "labelled.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
     parts = split(rows)
     problems = leaks(parts)
     if problems:

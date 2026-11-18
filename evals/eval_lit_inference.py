@@ -58,14 +58,14 @@ def main() -> int:
         print("data/processed/streets.parquet has no lit_osm column: run `make data` first")
         return 2
     res = agreement(rows)
-    manifest = json.loads((folder / "manifest.json").read_text()) if (folder / "manifest.json").exists() else {}
+    manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8")) if (folder / "manifest.json").exists() else {}
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     out = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None,
            "config": {"lamp_infer_min": LAMP_INFER_MIN, "lamp_infer_per_100m": LAMP_INFER_PER_100M,
                       "raw": manifest.get("raw")},
            "calls_used": 0, **res}
     path = ROOT / "evals/results/lit_inference.json"
-    path.write_text(json.dumps(out, indent=1) + "\n")
+    path.write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
     print(f"tagged streets {res['tagged']} (yes {res['tagged_yes']}, no {res['tagged_no']}); "
           f"lamps say yes on {res['predicted_yes_on_tagged']}: precision {res['precision']}, "
           f"recall {res['recall_on_osm_yes']}, false 'lit' {res['false_positive_lit_but_osm_no']}")

@@ -143,7 +143,7 @@ def test_unknown_classifier_name_fails_loudly():
 @pytest.fixture()
 def reports(tmp_path):
     for name, rows in (("train", toy(40)), ("dev", toy(15, 100)), ("test", toy(15, 200))):
-        (tmp_path / f"{name}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+        (tmp_path / f"{name}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
     return tmp_path
 
 
@@ -168,5 +168,5 @@ def test_prompted_eval_counts_cost_and_respects_budget(reports):
 def test_test_split_needs_an_explicit_flag(monkeypatch, tmp_path):
     monkeypatch.setattr(ec, "RESULTS", tmp_path)
     assert ec.main(["--split", "test", "--offline"]) == 2
-    (tmp_path / "classifier_test.json").write_text("{}")
+    (tmp_path / "classifier_test.json").write_text("{}", encoding="utf-8")
     assert ec.main(["--split", "test", "--offline", "--touch-test"]) == 2

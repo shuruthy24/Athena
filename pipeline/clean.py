@@ -10,16 +10,8 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from athena.guard import PII_PATTERNS
+from athena.guard import ALL_PII, EXTRA_PII, PII_PATTERNS  # noqa: F401 (one policy, defined in the guard)
 
-EXTRA_PII = [
-    ("address", re.compile(r"\b\d{1,4}[A-Za-z]?\s+(?:[A-Z][a-z]+\s){1,3}(?:Street|St|Road|Rd|Avenue|Ave|Lane|Ln|"
-                           r"Parade|Pde|Place|Pl|Drive|Dr|Crescent|Cres|Way|Terrace|Tce)\b")),
-    ("url", re.compile(r"\bhttps?://\S+|\bwww\.\S+", re.I)),
-    ("phone", re.compile(r"(?:\+?61\s?|\(0\d\)\s?|\b0)[2378][\s-]?\d{4}[\s-]?\d{4}\b")),  # landlines
-    ("card", re.compile(r"\b(?:\d[ -]?){13,16}\b")),
-    ("ip", re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")),
-]
 CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f​-‏‪-‮⁦-⁩]")
 
 
@@ -31,7 +23,7 @@ def normalise(text: str | None) -> str:
 def remove_pii(text: str) -> tuple[str, list[str]]:
     """Replace PII with '[<kind> removed]' markers. Returns the new text and the kinds found."""
     kinds = []
-    for kind, rx in EXTRA_PII[:2] + list(PII_PATTERNS) + EXTRA_PII[2:]:
+    for kind, rx in ALL_PII:
         if rx.search(text):
             kinds.append(kind)
             text = rx.sub(f"[{kind} removed]", text)

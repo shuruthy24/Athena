@@ -67,7 +67,7 @@ def run(athena: Athena, src: LocalSource, out_dir: Path, limit: int | None = Non
                          "tokens_out": sum(s.get("tokens_out") or 0 for s in model_steps),
                          "cost_usd": None if any(s.get("cost_usd") is None for s in model_steps)
                          else round(sum(s["cost_usd"] for s in model_steps), 6)}}
-        (out_dir / f"{rec['trace_id']}.json").write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n")
+        (out_dir / f"{rec['trace_id']}.json").write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         saved.append(rec)
     return saved
 
@@ -75,10 +75,10 @@ def run(athena: Athena, src: LocalSource, out_dir: Path, limit: int | None = Non
 def add_to_analysis(trace_ids: list[str], path: Path = ANALYSIS) -> None:
     existing = set()
     if path.exists():
-        with path.open(newline="") as fh:
+        with path.open(newline="", encoding="utf-8") as fh:
             existing = {r["trace_id"] for r in csv.DictReader(fh)}
     new = not path.exists()
-    with path.open("a", newline="") as fh:
+    with path.open("a", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=ANALYSIS_COLS)
         if new:
             w.writeheader()
@@ -108,7 +108,7 @@ def main(argv=None) -> int:
         saved = run(Athena(s, llm, src), src, out_dir, args.limit)
     except BudgetExceeded as exc:
         print(f"stopped: {exc}; traces saved so far are in {out_dir.relative_to(ROOT)}")
-        saved = [json.loads(p.read_text()) for p in sorted(out_dir.glob("*.json"))]
+        saved = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(out_dir.glob("*.json"))]
     if not args.offline:
         add_to_analysis([r["trace_id"] for r in saved])
     print(f"{len(saved)} traces in {out_dir.relative_to(ROOT)}; "

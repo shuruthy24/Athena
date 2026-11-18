@@ -139,7 +139,7 @@ class FakeJudge:
 def test_audit_reads_labels_after_predictions_and_respects_budget(traces, tmp_path):
     out, recs = traces
     ids = sorted(r["trace_id"] for r in recs[:4])  # the audit judges held-out cases in id order
-    (tmp_path / "heldout.json").write_text(json.dumps(dict(zip(ids, ["PASS", "PASS", "FAIL", "FAIL"]))))
+    (tmp_path / "heldout.json").write_text(json.dumps(dict(zip(ids, ["PASS", "PASS", "FAIL", "FAIL"]))), encoding="utf-8")
     replies = ['{"verdict": "PASS", "reason": "a"}', "nonsense", '{"verdict": "FAIL", "reason": "c"}',
                '{"verdict": "PASS", "reason": "d"}']
     res = J.audit(FakeJudge(replies), "judge-m", out, labels_dir=tmp_path, budget=60)
@@ -158,7 +158,7 @@ def ab_dir(traces, tmp_path):
     for i, r in enumerate(traces[1][:10]):
         r = copy.deepcopy(r)
         r["explanation"]["claims"] = [{"text": f"Model wording {i}.", "facts": ["extra_min"]}]
-        (src / f"{r['trace_id']}.json").write_text(json.dumps(r))
+        (src / f"{r['trace_id']}.json").write_text(json.dumps(r), encoding="utf-8")
     out = tmp_path / "ab"
     info = ab.prepare(src, n=4, out=out)
     assert info["presentations"] == 4
@@ -175,9 +175,9 @@ def fill(out, prefs):
 
 
 def test_review_sheet_is_blind(ab_dir):
-    sheet = (ab_dir / "review.md").read_text()
+    sheet = (ab_dir / "review.md").read_text(encoding="utf-8")
     assert "llm" not in sheet.lower().replace("mapping", "") and "fact_only" not in sheet
-    mapping = json.loads((ab_dir / "mapping.json").read_text())
+    mapping = json.loads((ab_dir / "mapping.json").read_text(encoding="utf-8"))
     assert {m["A"] for m in mapping.values()} <= {"llm", "fact_only"} and len(mapping) == 4
 
 
@@ -193,10 +193,10 @@ def test_reveal_refuses_incomplete_choices_then_aggregates(ab_dir):
 
 def test_reveal_detects_a_changed_mapping(ab_dir):
     fill(ab_dir, ["A", "A", "B", "TIE"])
-    m = json.loads((ab_dir / "mapping.json").read_text())
+    m = json.loads((ab_dir / "mapping.json").read_text(encoding="utf-8"))
     first = sorted(m)[0]
     m[first]["A"], m[first]["B"] = m[first]["B"], m[first]["A"]
-    (ab_dir / "mapping.json").write_text(json.dumps(m, indent=1, sort_keys=True) + "\n")
+    (ab_dir / "mapping.json").write_text(json.dumps(m, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     with pytest.raises(ValueError):
         ab.reveal(ab_dir, require_commit=False)
 

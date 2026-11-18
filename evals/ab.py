@@ -37,7 +37,7 @@ def _render(expl: dict) -> str:
 
 
 def prepare(trace_dir: Path, n: int = 6, out: Path = AB, seed: int = SEED) -> dict:
-    recs = [json.loads(p.read_text()) for p in sorted(trace_dir.glob("*.json"))]
+    recs = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(trace_dir.glob("*.json"))]
     # Only cases where the user actually saw a model-written explanation that differs from the fact-only one.
     eligible = [r for r in recs if r.get("critic_verdict") == "approve"
                 and r["explanation"]["claims"] != r["fact_only"]["claims"]]
@@ -54,10 +54,10 @@ def prepare(trace_dir: Path, n: int = 6, out: Path = AB, seed: int = SEED) -> di
                               "A": a, "B": b, "facts": r["facts"]})
     out.mkdir(parents=True, exist_ok=True)
     mapping_text = json.dumps(mapping, indent=1, sort_keys=True) + "\n"
-    (out / "mapping.json").write_text(mapping_text)
+    (out / "mapping.json").write_text(mapping_text, encoding="utf-8")
     digest = hashlib.sha256(mapping_text.encode()).hexdigest()
     (out / "presentations.json").write_text(json.dumps({"mapping_sha256": digest, "presentations": presentations},
-                                                       indent=1, ensure_ascii=False) + "\n")
+                                                       indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     md = ["# Blind review", "",
           "For each trip, which explanation would help a person deciding how to get home act more confidently?",
           "Prefer the one that is specific, supported by the route facts, and honest about missing data.",
@@ -67,8 +67,8 @@ def prepare(trace_dir: Path, n: int = 6, out: Path = AB, seed: int = SEED) -> di
         t = p["trip"]
         md += [f"## {p['presentation_id']}: {t['origin']} to {t['destination']}, band {t['band']}, {t['mode']}", "",
                "### A", "", _render(p["A"]), "", "### B", "", _render(p["B"]), ""]
-    (out / "review.md").write_text("\n".join(md))
-    with (out / "choices.csv").open("w", newline="") as fh:
+    (out / "review.md").write_text("\n".join(md), encoding="utf-8")
+    with (out / "choices.csv").open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["presentation_id", "preference", "rationale"])
         w.writeheader()
         for p in presentations:
@@ -77,7 +77,7 @@ def prepare(trace_dir: Path, n: int = 6, out: Path = AB, seed: int = SEED) -> di
 
 
 def read_choices(path: Path) -> dict[str, dict]:
-    with path.open(newline="") as fh:
+    with path.open(newline="", encoding="utf-8") as fh:
         rows = list(csv.DictReader(fh))
     bad = [r["presentation_id"] for r in rows
            if (r.get("preference") or "").strip().upper() not in ("A", "B", "TIE") or not (r.get("rationale") or "").strip()]
@@ -97,8 +97,8 @@ def reveal(out: Path = AB, judge_llm=None, judge_model: str | None = None, requi
     if require_commit and not choices_committed(out / "choices.csv"):
         raise PermissionError("commit evals/ab/choices.csv before reveal, so the blind choices are locked")
     choices = read_choices(out / "choices.csv")
-    pres = json.loads((out / "presentations.json").read_text())
-    mapping_text = (out / "mapping.json").read_text()
+    pres = json.loads((out / "presentations.json").read_text(encoding="utf-8"))
+    mapping_text = (out / "mapping.json").read_text(encoding="utf-8")
     if hashlib.sha256(mapping_text.encode()).hexdigest() != pres["mapping_sha256"]:
         raise ValueError("mapping.json changed after the review sheet was made")
     mapping = json.loads(mapping_text)
@@ -157,7 +157,7 @@ def main(argv=None) -> int:
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     res = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None,
            "config": {"judge": bool(args.judge), "judge_model": model}, **res}
-    (ROOT / "evals/results/ab.json").write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n")
+    (ROOT / "evals/results/ab.json").write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     h = res["human"]
     print(f"human preferences: LLM {h['llm']}, fact-only {h['fact_only']}, tie {h['tie']}")
     return 0

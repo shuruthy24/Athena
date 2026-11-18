@@ -63,3 +63,28 @@ Pick the one category that best describes the street condition. Use `other` only
 `data/labelling/disagreements.csv`. For each one, read the report together, fill `final_action` and
 `final_category` in the sheet, and write one sentence in `decision_note`. Do not let the first labeller's
 choice win by default. Rows where both labellers agree need no final columns.
+
+## Collecting reports from people outside the team (`source=collected`)
+
+Reports from other people are the strongest evaluation data: they go to the test split first. Collect them with
+consent, and store nothing that identifies the writer.
+
+**Consent (read or show it before they write anything; record only reports given after a clear yes):**
+
+> We're a UNSW course team building a night-time journey planner. Would you write one to five short notes about
+> streets you walk or cycle at night: what you noticed (lights, footpaths, how busy it was)? Please don't name
+> anyone or include contact details. We keep only the note, the street and the time of night, under a code
+> instead of your name. It's used only to test our project and deleted after marking. You can ask us to remove
+> your notes until 27 November 2026.
+
+**Then:** `python evals/label.py add-reports --author-group int-01 --source collected`, with one `author_group`
+per person (`int-01`, `int-02`, ...). Never write the person's name in the sheet, a commit message or a chat.
+
+**Retention:** the sheet and `data/reports/` are deleted after the course is marked. Report text sent to the app
+(`/api/report`) is stored only in the container's `runs/` folder, which is not in git and is lost on redeploy.
+
+**Target:** 150 or more labelled reports, at least 30 of them collected, so the frozen test split (20%, about 30
+rows) can be all collected reports (`pipeline.split` puts collected groups in test first; AGENTS.md's 60-row
+test needs about 300 reports). A team of three can write and double-label 150 reports in about three hours: about 50
+reports each (about 45 minutes), then two labellers (about 40 minutes each with `evals/label.py reports`), then
+settling disagreements together (about 20 minutes).

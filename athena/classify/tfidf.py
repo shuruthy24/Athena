@@ -93,7 +93,7 @@ def train_rows(reports_dir: Path = ROOT / "data" / "reports") -> list[dict]:
     for name in ("train.jsonl", "train_synthetic.jsonl"):
         p = reports_dir / name
         if p.exists():
-            rows += [json.loads(x) for x in p.read_text().splitlines() if x.strip()]
+            rows += [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
     return rows
 
 

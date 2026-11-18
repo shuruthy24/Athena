@@ -99,18 +99,80 @@ synthetic.
 | BOCSAR crime counts | Suburb-level counts are too coarse for street routing and would steer routes away from poorer and more diverse areas. |
 | Free to Be (Plan International, Monash XYX Lab) | No download or licence stated. Used only as a reference for report categories until permission is granted. |
 
-## Versioning with DVC
+## Provenance and a repeatable rebuild
 
-`data/raw/` (4 files, 324 MB: the GTFS zip, both OSM snapshots, the OTP precompute) is tracked by DVC. Git holds
-only the pointer `data/raw.dvc` (directory hash, size, file count); the data itself is git-ignored. The remote
-is a local directory outside the repository, configured with `--local` so its path stays out of git; a pull from
-it was checked with the working copy and the DVC cache moved away.
+Every derived number can be traced to raw files with known hashes, and anyone can rebuild them:
 
-```bash
-dvc remote add --local -d localstore <a folder outside the repo>   # once per machine
-dvc pull                                                           # restore data/raw/
-make data                                                          # rebuild data/processed/
+```
+data/raw_manifest.json  ->  python -m pipeline.fetch_raw   download each raw snapshot from its mirror, check sha256
+data/raw/               ->  make data (pipeline/run.py)    clean, match, score; write data/processed/*.parquet
+data/processed/manifest.json                               raw file names + sha256, row counts, content hash per table
+make data-verify (pipeline/verify.py)                      rebuild into a temp folder, compare every content hash
+python -m pipeline.check --write-quality                   schema, keys, area, references -> data_quality.json
 ```
 
-The remote is on one team member's laptop, so other machines need their own remote (or a shared one, added the
-same way) before `dvc pull` works there.
+- **Raw snapshots** are never edited (`pipeline/ingest.py` refuses to overwrite). `data/raw_manifest.json` lists
+  each one with its source, licence, retrieval time, size, sha256 and a mirror URL. `fetch_raw` rejects a file whose
+  hash differs.
+- **Derived tables** (`data/processed/`) are committed, so the submitted app serves the real data without any
+  download. Each table's content hash (sha256 of its rows as canonical JSON, independent of Parquet metadata and row
+  order) is in the manifest; `make data-verify` proves the committed tables are exactly what the code produces from
+  the raw snapshots.
+- **Results** name their inputs: `data_coverage.json` and `route_baselines.json` carry the manifest's sources and
+  hashes; every result file has `generated_at` and `git_sha`.
+- **DVC** still versions `data/raw/` (`data/raw.dvc`). Its remote was a folder on one laptop, so the mirror URLs in
+  `raw_manifest.json` are the route for everyone else; a shared DVC remote (`dvc remote add -d ...`) works too.
+- **Environment:** `requirements-lock.txt` pins every package behind the committed results.
+
+## Evaluation datasets
+
+Roles: *tuning* data may be used to change the system; *held-out* data is frozen by sha256 in
+`evals/checksums.txt`, is never used for tuning, and `make check` fails if it changes.
+
+| Dataset | Origin | Licence / consent | Role | Size |
+| --- | --- | --- | --- | --- |
+| `evals/guard/injection.jsonl` | 10 rows from the Meterless v1 adversarial set, 16 written by the team | Apache-2.0 (`NOTICE`) / team | tuning (guard dev) | 26 |
+| `evals/guard/heldout_probes_v1.jsonl` | synthetic, written by Claude on 18 Nov 2026 after reading the guard's patterns; labels by construction | project | held-out, frozen | 50 |
+| `evals/guard/redteam.csv` | attempts by people outside the team | consent, pseudonymous `author_group` | held-out (to collect) | – |
+| `evals/privacy/pii_cases_v1.jsonl` | synthetic, fictional people and numbers | project | regression set (it motivated the 18 Nov PII fix) | 29 |
+| `data/labelling/reports_to_label.csv` → `data/reports/{train,dev,test}.jsonl` | team-written (`seed`) and collected (`collected`) street reports | consent text in `data/labelling/guide.md` | train / dev / **test frozen, touched once**; group split by street and writer | target 150+ |
+| `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` | live explainer outputs on the sample routes | course gateway | error analysis, assertions | 36 |
+| `evals/labels/{dev,heldout}.json` | human PASS/FAIL, split by `assignment.json` (seeded, written before labelling) | team | judge dev / held-out | 36 |
+| `evals/user_study/sessions.csv` | task-study answers | consent text in `docs/user_study.md` | outcome | – |
+| `data/reports.json` | 14 synthetic hackathon reports with expected actions | project | regression set | 14 |
+
+## Synthetic data: how it was made and what it cannot show
+
+| Set | How it was generated | Represents | Limits |
+| --- | --- | --- | --- |
+| Hand-made routes and street risks (`data/*.json`) | drawn by the team from a pre-existing route map during the hackathon; risks assigned by hand | the app's data shapes and a few plausible trade-offs | not measurements; regression use only |
+| Critic corruptions | fact-only claims corrupted five ways in `evals/run_evals.py` | wrong numbers, "safe", streets on neither route, missing citations, reversed direction | tests the rules, not how real models fail |
+| Guard held-out probes | written to imitate realistic attempts (instructions to the moderator, JSON payloads, other languages, obfuscation) and realistic benign reports with trigger words | how the guard generalises beyond its dev set | the writer had read the patterns; real attempts (red-team) are better evidence |
+| PII cases | fictional names, numbers and addresses in report-like sentences | phone, email, address, plate, URL, card, name, student id | covers formats we thought of; real reports will contain others |
+| Synthetic report variants (`pipeline/synth.py`) | model paraphrases of train-split reports only | training volume | never in dev or test |
+
+## Privacy
+
+- **Street reports** can say where someone felt unsafe. No accounts; text is redacted (phones, emails, house
+  addresses, links, card numbers, plates) before any model call and before storage, with one policy for the app and
+  for ingest (`athena/guard.py`). It was measured on `evals/results/pii.json`: names and student ids are not found,
+  so the report form asks people to leave them out and labellers read every report.
+- **Collected reports and study answers** are given with consent (texts in `data/labelling/guide.md` and
+  `docs/user_study.md`), stored under pseudonymous group ids, never names, and deleted after marking.
+- **App storage:** report text and traces go to the container's `runs/` folder (git-ignored, lost on redeploy).
+  Rate limiting uses a keyed hash of the client address, so no IP address is stored.
+- **Model hosting:** report text is sent only to models behind the course gateway; check where each model is
+  hosted before using it for user text (docs/model_card.md).
+- **Secrets** come only from the environment; `scripts/scan_secrets.py` runs in `make check` and as a pre-commit
+  hook.
+
+## Licences when redistributing
+
+| Material | Licence | What we must do | Where we do it |
+| --- | --- | --- | --- |
+| OpenStreetMap data and anything derived from it (`data/processed/`, `data/safety_points.json`) | ODbL 1.0 | attribute; offer derived databases under ODbL | map attribution; `data/processed/LICENCE.md` |
+| TfNSW GTFS (behind the precomputed trips) | CC BY 4.0 | attribute Transport for NSW | map attribution ("Timetables: Transport for NSW (CC BY 4.0)"); this file |
+| Meterless adversarial prompts and guard patterns | Apache-2.0 | keep the notice | `NOTICE` |
+| MapLibre GL JS (`web/vendor/`) | BSD-3-Clause | keep the licence | vendored file header |
+| OpenFreeMap tiles | attribution | attribute | map attribution |
+| City of Sydney light poles, BOCSAR, Free to Be | unknown or unsuitable | **not ingested** | "Excluded" above |

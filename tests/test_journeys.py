@@ -146,7 +146,9 @@ def test_journey_endpoints(client):
     body = r.json()
     assert body["coverage"] and body["origin"]["name"] == "UNSW Library" and len(body["journeys"]) == 2
     none = c.get("/api/journeys", params={"origin": "quay", "destination": "unsw"}).json()
-    assert none["coverage"] is False and "UNSW Library and Town Hall" in none["message"]
+    # The message names the trips the served data actually covers (not a hard-coded corridor).
+    assert none["coverage"] is False and "UNSW Library → Town Hall station" in none["message"]
+    assert "hand-made sample" in none["message"]
     assert c.get("/api/journeys", params={"origin": "unsw", "destination": "townhall", "sort": "nope"}).status_code == 422
     assert c.get("/api/journeys", params={"origin": "mars", "destination": "townhall"}).status_code == 422
     assert len(c.get("/api/places").json()["places"]) == 7
@@ -170,7 +172,7 @@ def test_safety_points_absent_then_present(client, tmp_path, monkeypatch):
     (tmp_path / "data" / "safety_points.json").write_text(json.dumps(
         {"rows": [{"id": "osm:node/1", "name": "P", "category": "police", "lat": -33.9, "lon": 151.2},
                   {"id": "osm:node/2", "name": None, "category": "phone", "lat": -33.9, "lon": 151.2}],
-         "attribution": "© OpenStreetMap contributors, ODbL", "fetched": "2026-10-28T00:00:00+00:00"}))
+         "attribution": "© OpenStreetMap contributors, ODbL", "fetched": "2026-10-28T00:00:00+00:00"}), encoding="utf-8")
     body = c.get("/api/safety-points").json()
     assert body["available"] and "ODbL" in body["attribution"]
     assert [p["category"] for p in body["points"]] == ["police"]       # phones filtered out of older files
@@ -233,7 +235,7 @@ def test_live_otp_rows_are_scored_like_precomputed():
         "start": {"scheduledTime": "s"}, "end": {"scheduledTime": "e"},
         "steps": [{"streetName": "George Street", "distance": 800}]}]}
     session = FakeSession({"data": {"planConnection": {"edges": [{"node": node}]}}})
-    places = {p["id"]: p for p in json.loads((ROOT / "data" / "places.json").read_text())["rows"]}
+    places = {p["id"]: p for p in json.loads((ROOT / "data" / "places.json").read_text(encoding="utf-8"))["rows"]}
     otp = OTPSource("http://otp:8080", LocalSource(), places, session=session)
     r = JourneyPlanner(otp).plan("unsw", "townhall", "22", "walk", use_reports=False)
     assert r["freshness"]["live"] is True and len(r["journeys"]) == 1

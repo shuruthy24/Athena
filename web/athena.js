@@ -100,6 +100,18 @@ async function postJSON(url, body, ms = 60000){
   } finally { clearTimeout(t); }
 }
 
+// Which data and which "model" answer on this server, from /api/health. Shown on every page so the hand-made
+// sample or the offline stand-in is never mistaken for real streets or a language model.
+async function showProvenance(el){
+  if(!el) return;
+  try {
+    const h = await getJSON("/api/health", 8000);
+    const p = h.data_provenance || {};
+    el.dataset.mode = p.mode || "";
+    el.innerHTML = `<b>Data:</b> ${esc(p.label || "unknown")}. <b>Explanations:</b> ${esc(h.llm || "unknown")}.`;
+  } catch(e) { el.textContent = "Data source unavailable (could not reach /api/health)."; }
+}
+
 /* ---------- map ---------- */
 // Starts on a plain background so Athena's layers render even if basemap tiles are blocked;
 // the OpenFreeMap basemap is slotted in underneath afterwards.
@@ -112,7 +124,7 @@ function createMap(container, {center = [151.218, -33.895], zoom = 12.4, noteEl}
   map.addControl(new maplibregl.NavigationControl({showCompass: false}), "top-right");
   map.addControl(new maplibregl.GeolocateControl({positionOptions: {enableHighAccuracy: true}}), "top-right");
   map.addControl(new maplibregl.AttributionControl({compact: true,
-    customAttribution: 'Routes: OpenTripPlanner · Street data: Athena · <a href="https://openfreemap.org">OpenFreeMap</a> <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>'}));
+    customAttribution: 'Routes: OpenTripPlanner · Timetables: <a href="https://opendata.transport.nsw.gov.au/">Transport for NSW</a> (CC BY 4.0) · Street scores: Athena · <a href="https://openfreemap.org">OpenFreeMap</a> <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a> (ODbL)'}));
   const ready = new Promise(r => map.on("load", r));
   ready.then(() => {
     document.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");

@@ -33,6 +33,12 @@ TNR on hold for the report pipeline, with every reject-labelled report held.
 | Security | injection precision and recall (direct and indirect); no prompt text in any output | none | `evals/guard/injection.jsonl`, `tests/test_leakage.py` | `make eval`, `make test` | recall ≥ 0.9, precision ≥ 0.95, zero leaks | release gate |
 | Operations | p50/p95 latency, error rate, cost per request, cache hit share on the deployed URL | none | `scripts/load_test.py`, 50 requests per endpoint | `make load-test` → `ops.json` | p95 for /api/explain ≤ 10 s; errors ≤ 1% | model tier, cache, host |
 | Data | `pipeline.check` passes; frozen test checksum unchanged | none | `data/processed` | `make check` | always | release gate |
+| Report guardrail, end to end (added 18 Nov 2026, before its first live run) | injection admit rate: injected reports approved or redacted by guard + classifier + verifier | guard + keyword rule (no model) | held-out guard probes; red-team attempts when collected | `evals/eval_injection_e2e.py [--live]` → `injection_e2e.json` | 0 admitted | whether the classifier model is a real second layer |
+| Security, held out (added 18 Nov 2026) | guard recall / precision / false-block rate on sets it was never tuned on | no guard; one-phrase filter | `evals/guard/heldout_probes_v1.jsonl` (frozen), `redteam.csv` | `make eval` → `offline.json` (`guard.sets`) | as Security above | whether the guard can be relied on alone |
+| Route choice vs heuristics (added 18 Nov 2026) | median risk reduction and extra minutes of each ranking's first pick | fastest, least walking, fewest transfers, most lit | every trip in the served data | `evals/eval_route_baselines.py` → `route_baselines.json` | balanced beats most-lit at ≤ the same extra time | whether the risk rule adds anything over "stay on lit streets" |
+| Privacy (descriptive) | PII span recall and over-redaction, app path and ingest | no redaction | `evals/privacy/pii_cases_v1.jsonl` (synthetic regression set) | `evals/eval_pii.py` → `pii.json` | none set in advance | which PII kinds need another safeguard |
+| Data repeatability | rebuild of `data/processed` from `data/raw` has identical content hashes | none | `data/raw` snapshots (`pipeline.fetch_raw`) | `make data-verify` → `data_rebuild.json` | identical | release gate for the data |
+| Completion | every demonstrated feature passes end to end | none | the served data, offline and on the deployed URL | `scripts/verify_demo.py` → `verify.json` | all pass | release gate for the demo |
 
 ## Rules
 
@@ -40,3 +46,5 @@ TNR on hold for the report pipeline, with every reject-labelled report held.
   `evals/release.md` saying what changed and why.
 - The report test split is touched once per release and is checksummed.
 - Every number quoted in the talk, the design doc or the README traces to a file in `evals/results/`.
+- Every rate is reported with its 95% Wilson interval (`evals/metrics.py`); the sets are small.
+- Results: [evaluation.md](evaluation.md) (generated; `make check` fails if it is out of date).

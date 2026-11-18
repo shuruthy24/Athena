@@ -68,7 +68,7 @@ def main() -> int:
     out.write_text(json.dumps({"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None,
                                "config": {"models": roles,
                                           "fallback_model": s.fallback_model or None},
-                               "calls_used": calls, "checks": rows}, indent=1) + "\n")
+                               "calls_used": calls, "checks": rows}, indent=1) + "\n", encoding="utf-8")
     passed = sum(r["ok"] for r in rows)
     print(f"\n{passed}/{len(rows)} passed; written to {out.relative_to(ROOT)}")
     return 0 if passed == len(rows) else 1

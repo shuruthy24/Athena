@@ -66,7 +66,7 @@ def explainer_cases(src: LocalSource) -> list[dict]:
 def moderator_cases() -> list[dict]:
     if not DEV.exists():
         return []
-    return [json.loads(x) for x in DEV.read_text().splitlines() if x.strip()]
+    return [json.loads(x) for x in DEV.read_text(encoding="utf-8").splitlines() if x.strip()]
 
 
 def _usage(rows: list[dict]) -> dict:
@@ -204,8 +204,8 @@ def main(argv=None) -> int:
     res = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None, **res}
     out = ROOT / "evals/results/model_comparison.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(res, indent=1) + "\n")
-    (ROOT / "evals/results/model_comparison.md").write_text(to_markdown(res))
+    out.write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
+    (ROOT / "evals/results/model_comparison.md").write_text(to_markdown(res), encoding="utf-8")
     print(to_markdown(res))
     return 0
 

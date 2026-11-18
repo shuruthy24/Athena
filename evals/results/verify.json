@@ -1,0 +1,146 @@
+{
+ "generated_at": "2026-11-18T04:20:03.611698+00:00",
+ "git_sha": null,
+ "calls_used": null,
+ "config": {
+  "target": "in-process",
+  "sample_mode": true,
+  "llm": "offline stand-in (SAMPLE_MODE, no language model)",
+  "data_provenance": {
+   "mode": "sample",
+   "routable_pair_count": 2,
+   "label": "Hand-made sample routes from the hackathon, not real measurements (2 routable trips: Town Hall station → UNSW Library, UNSW Library → Town Hall station)"
+  },
+  "golden_trip": {
+   "origin": "townhall",
+   "destination": "unsw",
+   "band": "01"
+  }
+ },
+ "summary": {
+  "PASS": 17,
+  "FAIL": 0,
+  "SKIP": 0
+ },
+ "checks": [
+  {
+   "feature": "F0 health and provenance",
+   "check": "/api/health reports data source, model route and gateway",
+   "status": "PASS",
+   "detail": "data=sample (2 routable trips); llm=offline stand-in (SAMPLE_MODE, no language model)",
+   "ms": 21
+  },
+  {
+   "feature": "F1 pages",
+   "check": "planner, street map and prototype pages and their scripts load",
+   "status": "PASS",
+   "detail": "served /, /map, /prototype, /web/athena.js, /web/vendor/maplibre-gl.js",
+   "ms": 34
+  },
+  {
+   "feature": "F2 trip planner",
+   "check": "places list loads",
+   "status": "PASS",
+   "detail": "7 places",
+   "ms": 3
+  },
+  {
+   "feature": "F2 trip planner",
+   "check": "options for the golden trip (all modes, 1 am) each carry a relative risk label",
+   "status": "PASS",
+   "detail": "townhall|unsw 1 am: 6 options (bike, transit, walk); labels ['Fastest option', 'Lower risk than fastest', 'Similar risk to fastest']",
+   "ms": 8
+  },
+  {
+   "feature": "F2 trip planner",
+   "check": "all five rankings work and fastest / lower-risk put the right option first",
+   "status": "PASS",
+   "detail": "ranked by fastest, lower_risk, balanced, fewest_transfers, least_walking",
+   "ms": 30
+  },
+  {
+   "feature": "F2 trip planner",
+   "check": "any departure time maps to the nearest street-risk profile",
+   "status": "PASS",
+   "detail": "23:40 uses the 1 am street profile",
+   "ms": 4
+  },
+  {
+   "feature": "F3 street map",
+   "check": "street risk overlay returns GeoJSON for a time band",
+   "status": "PASS",
+   "detail": "12 street features at 10 pm",
+   "ms": 3
+  },
+  {
+   "feature": "F4 help near route",
+   "check": "police, hospital and station locations load (no model call)",
+   "status": "PASS",
+   "detail": "64 help locations (hospital, police, station)",
+   "ms": 3
+  },
+  {
+   "feature": "F5 explain trade-off",
+   "check": "explanation: every shown claim cites facts and passed the checks",
+   "status": "PASS",
+   "detail": "3 claims, verdict approve, drafted by offline-stub (sample-offline-stub), trace 5 steps",
+   "ms": 5
+  },
+  {
+   "feature": "F5 explain trade-off",
+   "check": "a repeat explanation is served from the cache",
+   "status": "PASS",
+   "detail": "repeat request served from cache (hits 0 -> 1)",
+   "ms": 9
+  },
+  {
+   "feature": "F5 explain trade-off",
+   "check": "a gateway outage degrades to fact-only text and report review",
+   "status": "PASS",
+   "detail": "gateway down: fact-only explanation (confidence low); report sent to human review",
+   "ms": 1
+  },
+  {
+   "feature": "F5 explain trade-off",
+   "check": "inputs are validated at the boundary",
+   "status": "PASS",
+   "detail": "unknown place and unknown band rejected with 422 before any model call",
+   "ms": 5
+  },
+  {
+   "feature": "F6 street report",
+   "check": "an injection inside report text is blocked before any model",
+   "status": "PASS",
+   "detail": "blocked by the text guard; no model call in the trace",
+   "ms": 3
+  },
+  {
+   "feature": "F6 street report",
+   "check": "a report that targets people is held, never admitted",
+   "status": "PASS",
+   "detail": "held (reject); it cannot change any route",
+   "ms": 3
+  },
+  {
+   "feature": "F6 street report",
+   "check": "phone numbers and emails are removed before storage or any model",
+   "status": "PASS",
+   "detail": "stored text: 'Call me on [phone removed] or mail [email removed], the light is out'; unknown street sent to review",
+   "ms": 3
+  },
+  {
+   "feature": "F6 street report",
+   "check": "a concrete street-condition report is processed and queued",
+   "status": "PASS",
+   "detail": "George Street: approve (lighting)",
+   "ms": 4
+  },
+  {
+   "feature": "F7 operations",
+   "check": "per-client rate limit",
+   "status": "PASS",
+   "detail": "request 31 within a minute from one client gets 429; another client is unaffected",
+   "ms": 134
+  }
+ ]
+}

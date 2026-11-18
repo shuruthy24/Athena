@@ -29,7 +29,7 @@ def report_penalties(band: str, now: datetime | None = None, path: Path | None =
     out: dict[str, float] = {}
     if not path.exists():
         return out
-    for line in path.read_text().splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         try:
             r = json.loads(line)
         except json.JSONDecodeError:

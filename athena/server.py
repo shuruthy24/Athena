@@ -120,7 +120,7 @@ def report(req: ReportRequest, request: Request) -> dict:
 
 @lru_cache(maxsize=1)
 def places() -> dict[str, dict]:
-    rows = json.loads((ROOT / "data" / "places.json").read_text())["rows"]
+    rows = json.loads((ROOT / "data" / "places.json").read_text(encoding="utf-8"))["rows"]
     return {p["id"]: p for p in rows}
 
 
@@ -186,10 +186,17 @@ def journeys(origin: str, destination: str, band: str = "22", mode: str = "trans
     result["destination"] = d
     result["profile"] = {"band": band, "label": {"18": "6 pm", "22": "10 pm", "01": "1 am"}[band]}
     if not result.get("coverage"):
+        prov = athena().source.provenance() if hasattr(athena().source, "provenance") else {}
+        names = {k: v["name"] for k, v in places().items()}
+        covered = [p.split("|") for p in prov.get("routable_pairs", [])]
+        cover_text = ("Routes exist for: " + ", ".join(f"{names.get(a, a)} → {names.get(b, b)}" for a, b in covered[:8])
+                      + (f" and {len(covered) - 8} more." if len(covered) > 8 else ".")) if covered else ""
         result["message"] = (
-            f"No routes for {o['name'] if o else origin} to {d['name'] if d else destination} yet. "
-            "Athena's validated corridor covers UNSW Library and Town Hall station in both directions."
+            f"No routes for {o['name'] if o else origin} to {d['name'] if d else destination} in the "
+            f"{'hand-made sample' if prov.get('mode') == 'sample' else 'current'} data. {cover_text}"
             + ("" if get_settings().otp_url else " Set OTP_URL to plan any trip live."))
+    result["data_provenance"] = {k: v for k, v in (athena().source.provenance().items()
+                                                  if hasattr(athena().source, "provenance") else []) if k != "routable_pairs"}
     return result
 
 
@@ -216,7 +223,7 @@ def street_safety(band: str = "22", time: str | None = None) -> dict:
             features.append({"type": "Feature", "geometry": {"type": "MultiLineString", "coordinates": lines},
                              "properties": props(a["name"], a)})
     else:
-        geo = json.loads((ROOT / "web" / "streets.geojson").read_text())
+        geo = json.loads((ROOT / "web" / "streets.geojson").read_text(encoding="utf-8"))
         attrs, seen = {r["name"]: r for r in rows}, set()
         for f in geo["features"]:
             name = f["properties"].get("name")
@@ -241,7 +248,7 @@ def safety_points() -> dict:
     if not path.exists():
         return {"points": [], "available": False,
                 "note": "Run scripts/fetch_safety_points.py to load help locations from OpenStreetMap."}
-    body = json.loads(path.read_text())
+    body = json.loads(path.read_text(encoding="utf-8"))
     # Emergency phones are excluded: OpenStreetMap lists hundreds of them (lift and bus-stop intercoms
     # among them), which buried the police stations, hospitals and stations people actually look for.
     points = [p for p in body.get("rows", []) if p.get("category") in HELP_CATEGORIES]
@@ -254,6 +261,10 @@ def health() -> dict:
     a = athena()
     s = get_settings()
     out = {"version": __version__, "sample_mode": s.sample_mode, "report_classifier": s.report_classifier, "explanation_cache": a.cache.stats()}
+    # Provenance for the interface badge and for anyone verifying a demo: which data and which models answer.
+    prov = a.source.provenance() if hasattr(a.source, "provenance") else {"mode": "unknown"}
+    out["data_provenance"] = prov
+    out["llm"] = "offline stand-in (SAMPLE_MODE, no language model)" if s.sample_mode else "COMP3110 gateway"
     if s.sample_mode:
         out.update(gateway="skipped (sample mode)")
         return out

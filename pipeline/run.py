@@ -12,13 +12,13 @@ are still rebuilt and the app keeps using the hand-made sample routes in data/*.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from .features import build_segments, build_streets
+from .lineage import PROCESSED_LICENCE, file_sha256, rows_sha256
 from .trips import build_trip_tables
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +32,7 @@ def latest(prefix: str, raw: Path = RAW) -> Path | None:
 
 
 def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return file_sha256(path)
 
 
 def write_parquet(rows: list[dict], path: Path) -> None:
@@ -49,32 +49,38 @@ def build(raw: Path = RAW, out: Path = PROCESSED, places_file: Path = ROOT / "da
     osm = latest("osm", raw)
     if osm is None:
         raise FileNotFoundError("no data/raw/osm_<date>.json snapshot: run `python3 -m pipeline.ingest osm`")
-    snapshot = json.loads(osm.read_text())
+    snapshot = json.loads(osm.read_text(encoding="utf-8"))
     streets, street_stats = build_streets(snapshot)
     write_parquet(streets, out / "streets.parquet")
-    places = json.loads(places_file.read_text())["rows"]
+    places = json.loads(places_file.read_text(encoding="utf-8"))["rows"]
     write_parquet(places, out / "places.parquet")
     manifest = {"built_at": datetime.now(timezone.utc).isoformat(),
+                "built_by": "make data (pipeline/run.py)",
                 "sources": {"osm": {"file": osm.name, "sha256": sha256(osm), "fetched": snapshot.get("fetched"),
                                     "licence": snapshot.get("licence"), "attribution": snapshot.get("attribution")}},
                 "tables": {"streets": len(streets), "places": len(places)}, "stats": {"streets": street_stats},
+                # Lineage: content hash of every table, compared by `python -m pipeline.verify` after a rebuild.
+                "content_sha256": {"streets": rows_sha256(streets), "places": rows_sha256(places)},
                 "routes": "sample"}
     otp = latest("otp_trips", raw)
     if otp is not None:
         segments, segment_stats = build_segments(snapshot, streets)
         manifest["stats"]["segments"] = segment_stats
-        legs, leg_streets, steps, trip_stats = build_trip_tables(json.loads(otp.read_text()), streets, segments)
+        legs, leg_streets, steps, trip_stats = build_trip_tables(json.loads(otp.read_text(encoding="utf-8")), streets, segments)
         write_parquet(legs, out / "route_legs.parquet")
         write_parquet(leg_streets, out / "leg_streets.parquet")
         write_parquet(steps, out / "route_steps.parquet")
         manifest["sources"]["otp"] = {"file": otp.name, "sha256": sha256(otp)}
         manifest["tables"].update(route_legs=len(legs), leg_streets=len(leg_streets), route_steps=len(steps))
+        manifest["content_sha256"].update(route_legs=rows_sha256(legs), leg_streets=rows_sha256(leg_streets),
+                                          route_steps=rows_sha256(steps))
         manifest["stats"]["trips"] = trip_stats
         manifest["routes"] = "otp"
     else:
         for name in ("route_legs", "leg_streets", "route_steps"):  # never mix new streets with stale routes
             (out / f"{name}.parquet").unlink(missing_ok=True)
-    (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n", encoding="utf-8")
+    (out / "LICENCE.md").write_text(PROCESSED_LICENCE, encoding="utf-8")
     return manifest
 
 

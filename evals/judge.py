@@ -104,8 +104,8 @@ def audit(llm, model: str, trace_dir: Path, labels_dir: Path = LABELS, budget: i
     heldout_path = labels_dir / "heldout.json"
     if not heldout_path.exists():
         raise FileNotFoundError("evals/labels/heldout.json is missing: the team labels held-out traces first")
-    heldout_ids = sorted(json.loads(heldout_path.read_text()))  # ids only until predictions are in
-    recs = {json.loads(p.read_text())["trace_id"]: json.loads(p.read_text()) for p in trace_dir.glob("*.json")}
+    heldout_ids = sorted(json.loads(heldout_path.read_text(encoding="utf-8")))  # ids only until predictions are in
+    recs = {json.loads(p.read_text(encoding="utf-8"))["trace_id"]: json.loads(p.read_text(encoding="utf-8")) for p in trace_dir.glob("*.json")}
     missing = [t for t in heldout_ids if t not in recs]
     if missing:
         raise KeyError(f"held-out ids without a saved trace: {missing[:5]}")
@@ -114,7 +114,7 @@ def audit(llm, model: str, trace_dir: Path, labels_dir: Path = LABELS, budget: i
         outcomes = judge_cases(counted, model, [recs[t] for t in heldout_ids])
     except BudgetExceeded as exc:
         raise RuntimeError(f"{exc}: the audit needs one call per held-out case") from exc
-    human = json.loads(heldout_path.read_text())  # labels revealed only now
+    human = json.loads(heldout_path.read_text(encoding="utf-8"))  # labels revealed only now
     for o in outcomes:
         o["human"] = human[o["trace_id"]]
     metrics = binary_metrics([o["human"] for o in outcomes], [o["judge"] for o in outcomes])
@@ -136,7 +136,7 @@ def main(argv=None) -> int:
     res = audit(llm, s.judge_model, Path(args[1]))
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     res = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None, **res}
-    (ROOT / "evals/results/judge_audit.json").write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n")
+    (ROOT / "evals/results/judge_audit.json").write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     b = res["binary"]
     print(f"judge {s.judge_model}: TPR {b['tpr']} TNR {b['tnr']} malformed {b['malformed']} on {b['n']} held-out cases")
     return 0

@@ -131,12 +131,12 @@ def main(argv=None) -> int:
     if not folder.is_dir():
         print("usage: python evals/assertions.py evals/traces/<run>")
         return 2
-    recs = [json.loads(p.read_text()) for p in sorted(folder.glob("*.json"))]
+    recs = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(folder.glob("*.json"))]
     res = run_all(recs)
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     out = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None,
            "config": {"traces": str(folder)}, "calls_used": 0, **res}
-    (ROOT / "evals/results/assertions.json").write_text(json.dumps(out, indent=1) + "\n")
+    (ROOT / "evals/results/assertions.json").write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
     for name, r in res["assertions"].items():
         print(f"{name:28} {r['passed']}/{r['passed'] + r['failed']}")
     print(f"traces passing every assertion: {res['traces_passing_all']}/{res['traces']}")

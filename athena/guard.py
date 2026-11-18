@@ -26,6 +26,22 @@ PII_PATTERNS = [
     ("email", re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")),
     ("plate", re.compile(r"\b(rego|plate)\s*[:#]?\s*[A-Z0-9]{2,7}\b", re.I)),
 ]
+# Patterns the ingest cleaner always had; since 18 Nov 2026 the app applies them too, so every report gets the same
+# redaction before any model call (evals/results/pii_before_fixes.json showed the app path missing these kinds).
+# Addresses with a house number are removed even when they are a business used as a location: the report's street
+# is a separate field, and a home address is worse to leak than a shop's number is to lose.
+EXTRA_PII = [
+    ("address", re.compile(r"\b\d{1,4}[A-Za-z]?\s+(?:[A-Z][a-z]+\s){1,3}(?:Street|St|Road|Rd|Avenue|Ave|Lane|Ln|"
+                           r"Parade|Pde|Place|Pl|Drive|Dr|Crescent|Cres|Way|Terrace|Tce)\b")),
+    ("url", re.compile(r"\bhttps?://\S+|\bwww\.\S+", re.I)),
+    # Landlines: +61 2 9123 4567, (02) 9123 4567, 02 9123 4567. (The old pattern expected a second area-code digit
+    # after "(02)" and so never matched the bracketed form.)
+    ("phone", re.compile(r"(?:\+?61\s?[2378]|\(0[2378]\)|\b0[2378])[\s-]?\d{4}[\s-]?\d{4}\b")),
+    ("card", re.compile(r"\b(?:\d[ -]?){13,16}\b")),
+    ("ip", re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")),
+]
+# One redaction policy for the app and for ingest, in this order (URLs before emails, addresses first).
+ALL_PII = EXTRA_PII[:2] + PII_PATTERNS + EXTRA_PII[2:]
 
 
 def inspect_text(text: str) -> tuple[str, list[str], list[dict]]:
@@ -34,7 +50,7 @@ def inspect_text(text: str) -> tuple[str, list[str], list[dict]]:
     if BIDI_CONTROL.search(text):
         inj.append("embedded-control-unicode")
     redacted, redactions = text, []
-    for kind, rx in PII_PATTERNS:
+    for kind, rx in ALL_PII:
         if rx.search(redacted):
             redacted = rx.sub(f"[{kind} removed]", redacted)
             redactions.append({"kind": kind})

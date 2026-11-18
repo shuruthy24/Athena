@@ -1,0 +1,48 @@
+{
+ "about": "Raw snapshots behind data/processed/. Never edited after download. sha256 and bytes are written by `python -m pipeline.fetch_raw --write` on the machine that holds data/raw/; url is a public mirror (for example a GitHub Release asset) added by the data owner. `python -m pipeline.fetch_raw` downloads and verifies them. Hashes marked null have not been recorded yet.",
+ "files": {
+  "osm_2026-11-15T0130.json": {
+   "needed_by_make_data": true,
+   "source": "OpenStreetMap via the Overpass API (pipeline/ingest.py; the query is stored in the file)",
+   "licence": "ODbL-1.0, attribution '© OpenStreetMap contributors'",
+   "retrieved": "2026-11-15T01:30:55Z",
+   "sha256": "0dc877ce6d9eb809d0074cbafebd5ccc77ea0e3738ffa8f1726a5d730937d32a",
+   "bytes": null,
+   "url": null
+  },
+  "otp_trips_2026-11-15T0638.json": {
+   "needed_by_make_data": true,
+   "source": "pipeline/precompute_trips.py: OpenTripPlanner 2.7.0 over the TfNSW GTFS below and a Geofabrik OSM extract",
+   "licence": "derived from CC BY 4.0 (TfNSW) and ODbL-1.0 (OpenStreetMap) inputs",
+   "retrieved": "2026-11-15T06:38Z",
+   "sha256": null,
+   "bytes": null,
+   "url": null
+  },
+  "osm_2026-11-15.json": {
+   "needed_by_make_data": false,
+   "source": "earlier Overpass snapshot, named streets only; kept for history",
+   "licence": "ODbL-1.0",
+   "sha256": null,
+   "bytes": null,
+   "url": null
+  },
+  "otp_trips_2026-11-15.json": {
+   "needed_by_make_data": false,
+   "source": "earlier OTP precompute without direct-only walk/bike; kept for history",
+   "licence": "derived from CC BY 4.0 and ODbL-1.0 inputs",
+   "sha256": "002a849c29cf1eedc793078671a388dd76c357bab11e6b2e4bbe7ea1fc7f3981",
+   "bytes": null,
+   "url": null
+  },
+  "gtfs_2026-11-15.zip": {
+   "needed_by_make_data": false,
+   "source": "Transport for NSW Open Data Hub, Timetables Complete GTFS (free account); only needed to rebuild the OTP graph",
+   "licence": "CC BY 4.0",
+   "retrieved": "2026-11-15",
+   "sha256": null,
+   "bytes": null,
+   "url": null
+  }
+ }
+}
