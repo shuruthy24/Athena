@@ -45,9 +45,9 @@ KEYS = {"streets": ("name",), "places": ("id",),
         "route_legs": ("journey", "leg"),
         "route_steps": ("trip", "band", "mode", "variant", "leg", "step"),
         "leg_streets": ("journey", "leg", "step")}
-# Keys guaranteed unique by construction (pipeline/trips.py numbers steps per itinerary). leg_streets can hold both
-# name-matched and location-matched steps for one leg, so its key is reported but not enforced.
-FAIL_ON_DUPLICATE_KEYS = {"streets", "places", "route_steps", "route_legs"}
+# Every table key must be unique. leg_streets could in principle hold both a name-matched and a location-matched
+# step for one leg; that would now fail the check instead of passing as a warning.
+FAIL_ON_DUPLICATE_KEYS = {"streets", "places", "route_steps", "route_legs", "leg_streets"}
 
 
 def _missing(v) -> bool:

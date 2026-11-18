@@ -71,8 +71,6 @@ decisions; evaluation.md, "Evaluations deliberately not run", gives the reason f
 
 ## Known issues
 
-- `leg_streets` can hold both name-matched and location-matched steps for one leg, so its key could repeat.
-  `data_quality.json` reports duplicate keys (0 in the current data), but the pipeline does not enforce it.
 - `evals/assertions.py <dir>` and `evals/judge.py audit <dir>` overwrite committed results and read the shell's
   `.env`. Run directly under `SAMPLE_MODE=false`, `assertions.py` has produced spurious `streets_on_routes`
   failures. Check results with `python scripts/reproduce.py` instead ([evaluation.md](evaluation.md), "Results that

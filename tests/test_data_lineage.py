@@ -128,6 +128,18 @@ def test_quality_reports_missing_values_and_fails_duplicate_keys_and_out_of_area
     assert clean["failures"] == []
 
 
+def test_quality_fails_a_repeated_leg_streets_key():
+    step = {"journey": "j1", "leg": 0, "step": 0, "street": "A", "distance_m": 10}
+    q = quality({"leg_streets": [step, {**step, "street": "B"}]}, Path("/nonexistent"))
+    assert any("leg_streets: 1 duplicate keys" in f for f in q["failures"])
+
+
+def test_quality_passes_distinct_leg_streets_keys():
+    step = {"journey": "j1", "leg": 0, "step": 0, "street": "A", "distance_m": 10}
+    q = quality({"leg_streets": [step, {**step, "step": 1}]}, Path("/nonexistent"))
+    assert q["failures"] == [] and q["tables"]["leg_streets"]["duplicate_keys"] == 0
+
+
 def test_quality_warns_on_a_stale_snapshot(built):
     _, out, _, _ = built
     m = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
