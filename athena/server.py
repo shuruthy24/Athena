@@ -1,6 +1,6 @@
 """FastAPI server: the journey planner, the street map, and the explain/report API.
 
-Run:  uvicorn athena.server:app --port 8001      (or ./run.sh)
+Run:  uvicorn athena.server:app --port 8001
 Docs: http://localhost:8001/docs (OpenAPI generated from the models below)
 """
 from __future__ import annotations
