@@ -10,4 +10,4 @@ words in the question, is gone.
 Order of work (Tech 6): vibe verdicts in analysis.csv before reading traces -> error analysis columns ->
 `python evals/assertions.py evals/traces/<run>` -> labels in evals/labels/ -> judge audit ->
 `python evals/ab.py prepare evals/traces/<run>` -> blind choices committed -> `python evals/ab.py reveal --judge`
--> evals/release.md.
+-> readiness in docs/design.md §7.

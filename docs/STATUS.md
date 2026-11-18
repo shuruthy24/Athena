@@ -43,7 +43,6 @@ checks run on Linux and Windows for every push (`.github/workflows/check.yml`).
 | Red-team held-out set | needs people outside the team | `evals/guard/README.md` | 1 h |
 | Task study (outcome metric) | needs participants | `docs/user_study.md`, then `python evals/eval_user_study.py` | 2 h |
 | Deployment and load test | not deployed | `docs/deploy.md`, then `make load-test BASE_URL=...` and `python scripts/verify_demo.py --base-url ...` | 1 h |
-| Release memo and READY/NOT READY | waits for the evidence above | `evals/release.md`, `docs/design.md` §7 | 30 min |
 | Critic and moderator model choice | only the explainer was compared | `python evals/compare_models.py` with labelled reports | 15 min |
 
 Every row that is not finished shows as "not run yet" in [evaluation.md](evaluation.md) and the README, computed

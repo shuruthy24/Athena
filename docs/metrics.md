@@ -42,9 +42,9 @@ TNR on hold for the report pipeline, with every reject-labelled report held.
 
 ## Rules
 
-- A metric's definition, data and target are set before its first run; changing them afterwards needs a note in
-  `evals/release.md` saying what changed and why.
+- A metric's definition, data and target are set before its first run; changing them afterwards needs a dated note
+  next to the metric in this file saying what changed and why.
 - The report test split is touched once per release and is checksummed.
-- Every number quoted in the talk, the design doc or the README traces to a file in `evals/results/`.
+- Every number quoted in the design doc or the README traces to a file in `evals/results/`.
 - Every rate is reported with its 95% Wilson interval (`evals/metrics.py`); the sets are small.
 - Results: [evaluation.md](evaluation.md) (generated; `make check` fails if it is out of date).

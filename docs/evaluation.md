@@ -76,8 +76,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
   lighting never treated as dark, no route for a pair, unknown streets, injection in report text and OSM tags,
   system-prompt echo and leakage, streets named like numbers, rate limits per client, PII
   (`tests/`; `python scripts/verify_demo.py` for the running app).
-- Nothing in `evals/results/` is typed by hand. Labels, A/B choices and study answers come from people, and
-  `evals/release.md` is written by the team.
+- Nothing in `evals/results/` is typed by hand. Labels, A/B choices and study answers come from people.
 
 ## Results
 

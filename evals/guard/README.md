@@ -20,7 +20,7 @@ Add the failure you are fixing to `injection.jsonl` (dev) in your own words, fix
 Do not copy rows from the held-out sets. After a change, the held-out numbers are still honest for that change,
 but if you look at held-out errors to decide what to fix, the set stops being held out: write `heldout_probes_v2`
 (someone who has not seen v1), freeze it with `python -c "from pipeline.lineage import freeze; ..."` (see
-`pipeline/lineage.py`) and say so in `evals/release.md`.
+`pipeline/lineage.py`) and note the change in `docs/evaluation.md`.
 
 ## Red-team collection (real held-out cases)
 
