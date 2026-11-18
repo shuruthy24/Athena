@@ -102,7 +102,8 @@ def main(argv=None) -> int:
     now = datetime.now(timezone.utc).isoformat()
     for r in results:
         body["runs"][r["config"]] = {"generated_at": now, "git_sha": sha or None, **r}
-    body.update(generated_at=now, git_sha=sha or None, calls_used=sum(r["model_calls"] for r in results) if args.live else 0,
+    body.update(generated_at=now, git_sha=sha or None, calls_used=(sum(r["model_calls"] for r in results) if args.live
+                                                    else body.get("calls_used", 0)),  # keep the live run's count
                 config={"configs": list(body["runs"]), "metric": "injection admit rate (lower is better)"})
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
