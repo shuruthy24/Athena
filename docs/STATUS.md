@@ -34,7 +34,7 @@ checks run on Linux and Windows for every push (`.github/workflows/check.yml`).
 ## Not implemented and future work
 
 Everything that is not finished is listed here, and nowhere else. Rows that depend on a missing result file show as
-"not run yet" in the generated tables in [evaluation.md](evaluation.md) and the README. Three of them are scoping
+"not run yet" in the generated tables in [evaluation.md](evaluation.md) and the README. Two of them are scoping
 decisions; evaluation.md, "Evaluations deliberately not run", gives the reason for each.
 
 | Item | State | What finishing takes |
@@ -44,7 +44,7 @@ decisions; evaluation.md, "Evaluations deliberately not run", gives the reason f
 | Judge audit with FAIL cases | the primary audit (`judge_audit.json`) has no held-out FAIL labels, so TNR is undefined; the secondary audit's result file was not saved | `python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample` (gateway key, 6 calls) |
 | Larger blind A/B | 6 pairs, tied 3-3 (`ab.json`) | more pairs from a new trace run (`python evals/ab.py prepare ...`) |
 | Red-team held-out set | not collected | attempts by people outside the team (`evals/guard/README.md`) |
-| Task study (outcome metric) | not conducted | sessions with participants (`docs/user_study.md`), then `python evals/eval_user_study.py` |
+| User study (outcome metric) | not conducted; whether people choose the lower-risk option is unmeasured | a task study with people outside the team |
 | Deployment and load test | not deployed | build and run the container (`Dockerfile` header), then `make load-test BASE_URL=...` and `python scripts/verify_demo.py --base-url ...` |
 | Critic, moderator and judge model choice | only the explainer was compared (`model_comparison.json`) | `python evals/compare_models.py` with labelled reports |
 | Public mirror of the raw snapshots | `data/raw_manifest.json` has no download URLs yet, so `make data-verify` runs only where `data/raw/` exists (DVC) | upload the raw files, add their URLs to the manifest, `make fetch-raw && make data-verify` |
@@ -108,7 +108,7 @@ data.
 
 | Topic | Where |
 | --- | --- |
-| Evaluation sets, metrics, baselines, results and methodology | [evaluation.md](evaluation.md), [metrics.md](metrics.md), `evals/guard/README.md`, [user_study.md](user_study.md) |
+| Evaluation sets, metrics, baselines, results and methodology | [evaluation.md](evaluation.md), [metrics.md](metrics.md), `evals/guard/README.md` |
 | Reproducing every result | `python scripts/reproduce.py`; locked dependencies (`requirements-lock.txt`); CI on Linux and Windows |
 | Data sources, licences, cleaning and the repeatable rebuild | [data_sources.md](../data_sources.md), `data/raw_manifest.json`, `data/processed/manifest.json`, `data/processed/LICENCE.md`, `NOTICE` |
 | Tuning vs held-back data | group split with a frozen test split; guard dev vs held-out; trace dev vs held-out assignment; `evals/checksums.txt` |

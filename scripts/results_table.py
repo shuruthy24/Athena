@@ -122,11 +122,6 @@ def rows() -> list[tuple[str, str, str]]:
     out.append(("Blind A/B: LLM vs fact-only explanation",
                 f"humans preferred LLM {ab['human']['llm']}, fact-only {ab['human']['fact_only']}, tie {ab['human']['tie']}"
                 if ab else "not run yet (`python evals/ab.py`)", "ab.json"))
-    us = _load("user_study.json")
-    out.append(("Task study with people (lower-risk choice share, Athena vs plain list)",
-                f"{_f(us['conditions'].get('athena', {}).get('lower_risk_choice_share'))} vs "
-                f"{_f(us['conditions'].get('baseline', {}).get('lower_risk_choice_share'))} ({us['participants']} people)"
-                if us else "not run yet (docs/user_study.md)", "user_study.json"))
     ver = _load("verify.json")
     if ver:
         out.append(("Demonstrated features verified end to end (offline)",

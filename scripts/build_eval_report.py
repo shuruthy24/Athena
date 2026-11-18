@@ -4,8 +4,8 @@
   python scripts/build_eval_report.py --write   # replace the block between the markers in docs/evaluation.md
   python scripts/build_eval_report.py --check   # exit 1 if docs/evaluation.md is out of date (make check)
 
-Targets are the ones written in docs/metrics.md before each evaluation first ran (the injection admit rate and
-the task study were added on 18 Nov 2026, before their first live run). A verdict is computed, never typed:
+Targets are the ones written in docs/metrics.md before each evaluation first ran (the injection admit rate was
+added on 18 Nov 2026, before its first live run). A verdict is computed, never typed:
 "meets", "misses", "not run yet", or "descriptive" where no target was set in advance.
 """
 from __future__ import annotations
@@ -206,17 +206,6 @@ def rows() -> list[dict]:
             baseline="—", result=f"{len(q['failures'])} failures, {len(q['warnings'])} warnings; streets with unknown lighting {_f(miss)}",
             target="no failures", verdict=_verdict(not q["failures"]), cmd="python -m pipeline.check --write-quality",
             file="data_quality.json", when=_when(q))
-    us = _load("user_study.json")
-    add(cap="Outcome (people)", q="Do people choose the lower-risk option when it costs little?",
-        data="task study, 6+ participants outside the team (docs/user_study.md)",
-        metric="lower-risk choice share (≤ 5 extra min), misreading rate", baseline="plain fastest-first list",
-        result=(f"Athena {_f(us['conditions'].get('athena', {}).get('lower_risk_choice_share_when_cheap'))} vs "
-                f"baseline {_f(us['conditions'].get('baseline', {}).get('lower_risk_choice_share_when_cheap'))}" if us else "—"),
-        target="Athena share > baseline share; misreading 0",
-        verdict=(_verdict((us['conditions'].get('athena', {}).get('lower_risk_choice_share_when_cheap') or 0)
-                          > (us['conditions'].get('baseline', {}).get('lower_risk_choice_share_when_cheap') or 0)
-                          and (us['conditions'].get('athena', {}).get('misreading_rate') or 0) == 0) if us else "not run yet"),
-        cmd="python evals/eval_user_study.py", file="user_study.json", when=_when(us))
     ops = _load("ops.json")
     a = (ops or {}).get("endpoints", {}).get("explain_route") if ops and not ops["config"].get("sample_mode") else None
     add(cap="Operations", q="Is the deployed service fast and reliable enough?", data="50 requests per endpoint, deployed URL",

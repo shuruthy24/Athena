@@ -14,8 +14,8 @@ shows **risk indicators, never safety**: it never calls a route safe.
 ## Results
 
 Generated from `evals/results/` by `make eval` (or `make readme`); `make check` fails if this table and the files
-disagree. Three rows say "not run yet" by design: the report-classifier test split is held back, no user study was
-held, and the system is not deployed. [docs/evaluation.md](docs/evaluation.md#evaluations-deliberately-not-run)
+disagree. Two rows say "not run yet" by design: the report-classifier test split is held back, and the system is not
+deployed. No user study was conducted. [docs/evaluation.md](docs/evaluation.md#evaluations-deliberately-not-run)
 gives the reason for each. Method, baselines, intervals and verdicts: [docs/evaluation.md](docs/evaluation.md).
 
 <!-- results:start -->
@@ -37,7 +37,6 @@ gives the reason for each. Method, baselines, intervals and verdicts: [docs/eval
 | Assertions on real explanation traces | 36/36 traces pass every assertion | `assertions.json` |
 | LLM judge audit (held-out human labels) | TPR 1.000, TNR n/a, malformed 0 of 18 | `judge_audit.json` |
 | Blind A/B: LLM vs fact-only explanation | humans preferred LLM 3, fact-only 3, tie 0 | `ab.json` |
-| Task study with people (lower-risk choice share, Athena vs plain list) | not run yet (docs/user_study.md) | `user_study.json` |
 | Demonstrated features verified end to end (offline) | 17 passed, 0 failed | `verify.json` |
 | Deployed service | not run yet (`make load-test BASE_URL=...` after deploying) | `ops.json` |
 <!-- results:end -->
@@ -168,14 +167,14 @@ athena/            app: agents, text guard (injection + PII), gateway client, pr
 prompts/           versioned prompt files with front matter
 pipeline/          ingest -> clean -> features -> trips -> run -> check; lineage, verify (rebuild), fetch_raw;
                    labelling agreement, split, synth
-evals/             offline and live evals, metrics (Wilson intervals), guard/ and privacy/ sets, label.py, user_study/,
+evals/             offline and live evals, metrics (Wilson intervals), guard/ and privacy/ sets, label.py,
                    traces/, labels/, results/ (every number in the docs comes from here)
 data/              sample data (regression set); processed/ (real OSM + OTP, committed); raw_manifest.json;
                    labelling/ sheet and guide; reports/ splits
 scripts/           check.py, eval_all.py, reproduce.py, verify_demo.py, build_eval_report.py, results table,
                    stack check, traces, load test, secrets scan
 docs/              STATUS (features, gaps, demo differences), evaluation (method + generated results), metrics,
-                   design, model card, deploy, user study; img/ screenshots
+                   design, model card; img/ screenshots
 tests/             pytest suite with a mock gateway server
 .github/workflows/ check.yml: make check and an HTTP verification on Linux and Windows for every push
 ```

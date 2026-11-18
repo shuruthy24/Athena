@@ -17,7 +17,7 @@ change vs the fastest (% reduction, positive = lower risk indicator); median lit
 pick. Read with care: route risk is Athena's own rule, so "lower_risk" wins on it by construction. The useful
 comparisons are (a) what the lower-risk pick costs in minutes, (b) whether simple heuristics (most_lit,
 least_walking) already get the same reduction, and (c) lit / unknown shares, which are inputs, not the score.
-Whether people find the trade-off worth it is the user study's question (docs/user_study.md), not this script's.
+Whether people find the trade-off worth it is not measured (no user study was conducted).
 """
 from __future__ import annotations
 

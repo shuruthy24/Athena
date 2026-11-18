@@ -138,7 +138,6 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
 | `data/labelling/reports_to_label.csv` → `data/reports/{train,dev,test}.jsonl` | team-written (`seed`) and collected (`collected`) street reports | consent text in `data/labelling/guide.md` | train / dev / **test frozen, touched once**; group split by street and writer | target 150+ |
 | `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` | live explainer outputs on the sample routes | LiteLLM gateway | error analysis, assertions | 36 |
 | `evals/labels/{dev,heldout}.json` | human PASS/FAIL, split by `assignment.json` (seeded, written before labelling) | team | judge dev / held-out | 36 |
-| `evals/user_study/sessions.csv` | task-study answers | consent text in `docs/user_study.md` | outcome | – |
 | `data/reports.json` | 14 synthetic reports with expected actions | project | regression set | 14 |
 
 ## Synthetic data: how it was made and what it cannot show
@@ -159,8 +158,8 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
   Measured in `evals/results/pii.json`. The name and student-id patterns were written against that same regression
   set, so its recall is optimistic; a name with no introduction ("saw Priya near the station") is not found, so the
   report form asks people to leave names out and labellers read every report.
-- **Collected reports and study answers** are given with consent (texts in `data/labelling/guide.md` and
-  `docs/user_study.md`), stored under pseudonymous group ids, never names, and deleted after marking.
+- **Collected reports** are given with consent (text in `data/labelling/guide.md`), stored under pseudonymous group
+  ids, never names, and deleted after marking.
 - **App storage:** report text and traces go to the container's `runs/` folder (git-ignored, lost on redeploy).
   Rate limiting uses a keyed hash of the client address, so no IP address is stored.
 - **Model hosting:** report text is sent only to models behind the LiteLLM gateway; check where each model is

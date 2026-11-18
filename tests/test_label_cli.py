@@ -51,17 +51,3 @@ def test_report_labeller_sees_only_their_own_columns(tmp_path):
     assert rows[0]["label_b_action"] == "approve" and rows[0]["label_b_category"] == "lighting"
     assert "infrastructure" not in shown[0]                                  # labeller a's answer never shown
     assert rows[0]["source"] == "seed" and rows[0]["author_group"] == "team-1"
-
-
-def test_user_study_analysis_drops_rows_without_consent_and_compares_conditions():
-    import eval_user_study as us
-    base = {"participant_group": "p1", "consent": "yes", "trip": "unsw|central", "band": "01"}
-    rows = [{**base, "condition": "baseline", "chosen": "fastest", "lower_risk_extra_min": "3", "understood_not_safe": ""},
-            {**base, "condition": "athena", "chosen": "lower_risk", "lower_risk_extra_min": "3", "understood_not_safe": "yes"},
-            {**base, "participant_group": "p2", "consent": "no", "condition": "athena", "chosen": "lower_risk",
-             "lower_risk_extra_min": "9", "understood_not_safe": "no"}]
-    res = us.analyse(rows)
-    assert res["participants"] == 1 and res["tasks"] == 2
-    assert res["conditions"]["baseline"]["lower_risk_choice_share"] == 0.0
-    assert res["conditions"]["athena"]["lower_risk_choice_share"] == 1.0
-    assert res["conditions"]["athena"]["misreading_rate"] == 0.0

@@ -50,7 +50,6 @@ present (`python -m pipeline.fetch_raw`), it also rebuilds `data/processed/` and
 | Red-team attempts | **real**, people outside the team | **held out** | to collect | `evals/guard/redteam.csv` |
 | PII cases | synthetic, fictional people | regression set (it motivated the 18 Nov fix, so it is not held out) | 29 texts | `evals/privacy/pii_cases_v1.jsonl` |
 | Critic corruptions | synthetic by construction | tests the rules, not real drafts | 276 | generated in `evals/run_evals.py` |
-| Task study | **real** people | outcome | 6+ people | `evals/user_study/sessions.csv` |
 
 Synthetic sets are used only where real data cannot exist yet, or to test a rule on purpose: no one has
 labelled injection attempts against a street-report app, and PII cannot be collected ethically. Each synthetic set
@@ -70,7 +69,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 - Sets are small (tens of cases), so every rate has a 95% Wilson interval: 16/16 is [0.81, 1.00], not "100%".
 - **Route risk is Athena's own rule.** The lower-risk ranking minimises the number it is scored on, so a risk
   reduction is not evidence of safety. The informative comparisons are the extra minutes, whether a one-line
-  heuristic (most lit) already does as well, and what people choose in the task study.
+  heuristic (most lit) already does as well, and the lit share, which the rule does not score.
 - The dev guard numbers are optimistic by construction; the held-out rows are the ones to quote.
 - Failure modes and edge cases are tests, not prose: gateway outage and retries, malformed judge output, unknown
   lighting never treated as dark, no route for a pair, unknown streets, injection in report text and OSM tags,
@@ -104,24 +103,23 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Model choice (explainer) | Which model drafts passing explanations at the lowest cost? | 18 sample trips per model, live gateway | first-draft pass rate, p50/p95 latency, cost per call | cheapest model | scx-gpt-oss-120b 0.8333; scx-gemma-4-31B-it 1.0; scx-Meta-Llama-3.3-70B-Instruct 0.9444 | cheapest model within 0.05 of the best pass rate | **meets** | `python evals/compare_models.py` → `model_comparison.json` (2026-11-14 @ 341abce) |
 | Data quality | Is the served data complete, unique and in range? | processed dataset tables | schema, duplicate keys, out-of-area points, missing share, snapshot age | — | 0 failures, 0 warnings; streets with unknown lighting 0.836 | no failures | **meets** | `python -m pipeline.check --write-quality` → `data_quality.json` (2026-11-18 @ 62433e8) |
 | Data quality | Is the served data complete, unique and in range? | sample dataset tables | schema, duplicate keys, out-of-area points, missing share, snapshot age | — | 0 failures, 0 warnings; streets with unknown lighting 0.000 | no failures | **meets** | `python -m pipeline.check --write-quality` → `data_quality.json` (2026-11-18 @ 6517634) |
-| Outcome (people) | Do people choose the lower-risk option when it costs little? | task study, 6+ participants outside the team (docs/user_study.md) | lower-risk choice share (≤ 5 extra min), misreading rate | plain fastest-first list | — | Athena share > baseline share; misreading 0 | not run yet | `python evals/eval_user_study.py` → `user_study.json` |
 | Operations | Is the deployed service fast and reliable enough? | 50 requests per endpoint, deployed URL | p50/p95 latency, error rate, cost per request | — | — | p95 ≤ 10 s, errors ≤ 1% | not run yet | `make load-test BASE_URL=...` → `ops.json` |
 | Completion | Does every demonstrated feature run from the instructions? | 17 end-to-end checks, sample data, offline | checks passing | — | 17 pass, 0 fail | all pass | **meets** | `python scripts/verify_demo.py` → `verify.json` (2026-11-18 @ no git) |
 
-**Summary:** 8 meet their target, 6 miss it, 3 not run yet, 4 descriptive (no target set in advance), 2 baseline reference rows.
+**Summary:** 8 meet their target, 6 miss it, 2 not run yet, 4 descriptive (no target set in advance), 2 baseline reference rows.
 
 <!-- eval:end -->
 
 ## Evaluations deliberately not run
 
-`python scripts/reproduce.py` lists three result files as `NOT RUN`. Each is a scoping decision, made for the
-reason below. None is a missing step in the evaluations that were run. The generated table above shows them as
-"not run yet" because that verdict is computed from whether the file exists.
+`python scripts/reproduce.py` lists two result files as `NOT RUN` (plus the secondary judge audit, below). Each is a
+scoping decision, made for the reason below. The generated table shows them as "not run yet" because that verdict
+is computed from whether the file exists. No user study was conducted either, so the outcome metric in
+[metrics.md](metrics.md) (do people choose the lower-risk option?) is unmeasured.
 
 | Result file | Status | Why it was not run | What would change that |
 | --- | --- | --- | --- |
 | `classifier_test.json` | **held back on purpose.** The frozen test split (`data/reports/test.jsonl`, sha256 in `evals/checksums.txt`) has never been scored. | A test split is spent once, to confirm a decision. No decision depends on it here. The dev comparison (`classifier_dev.json`) could not separate the candidates: dev has only `approve` rows, so TNR on hold (the primary metric) is undefined and every candidate scores TPR 1.0. The test split also has only `approve` rows, so scoring it would give TNR undefined again and could not confirm or overturn anything. The app keeps the default `moderator-v1` (`docs/model_card.md`), and its behaviour on harmful input is measured on other sets: `injection_e2e.json` and the reject tests in `tests/`. | More labelled reports, including `review` and `reject` rows in dev and test (`docs/STATUS.md`). Then choose on dev and score the test split once: `python evals/eval_classifier.py --split test --touch-test`. |
-| `user_study.json` | **not conducted.** | The task study needs participants from outside the team (`docs/user_study.md`). No sessions were held, so there is no outcome measure of whether people choose the lower-risk option. Every other row measures system behaviour, not what people do. | Run the sessions in `docs/user_study.md`, then `python evals/eval_user_study.py`. |
 | `ops.json` | **not applicable: the system is not deployed.** | `ops.json` records latency, error rate and cost per request for a *deployed* URL. This system runs locally (README, Quick start). A load test against `localhost` would measure the marker's laptop, not a service, so it is not recorded as ops evidence. Whether the running app works end to end over HTTP is checked by `python scripts/verify_demo.py --base-url http://127.0.0.1:8001` (Completion row, `verify.json`). | Deploy the container (`Dockerfile`), then `make load-test BASE_URL=...`. |
 
 ## Secondary judge audit (12-trace sample with FAIL cases)
@@ -216,4 +214,4 @@ failures, and the secondary judge audit's output was lost (above). Rules:
   and ran out of output before emitting the required JSON — and agreed with the human pick on only 1 of the 3
   calls that did parse. With n=6 these numbers are indicative only; the sample should be grown and the judge
   prompt likely needs a stricter output-length constraint before the judge's agreement rate can be trusted.
-- The task study was not conducted (see "Evaluations deliberately not run").
+- No user study was conducted, so whether people act on the lower-risk option is not measured.

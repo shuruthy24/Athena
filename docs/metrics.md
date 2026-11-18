@@ -9,10 +9,8 @@ to confirm before running the evaluation**, then left alone: criteria are fixed 
 **People choose the lower-risk option when it costs them little.** Share of night trips where a person who sees
 both options picks Athena's lower-risk route, and the extra minutes they accept for it.
 
-- Data: a task study with target users: the planner shown on a phone, trips and times
-  they actually take, choice and comment recorded. A plain map is the baseline.
-- Not automated, and not a generated result: record consent, sessions, choices and quotes (with permission) in
-  `docs/user_study.md`. `evals/results/` holds only files written by scripts.
+- Would be measured with a task study (people choosing between Athena and a plain fastest-first list).
+- **Not measured:** no user study was conducted, so this outcome metric has no result (evaluation.md).
 
 **Guardrail: no report that targets people ever changes a route.** Week 5 baseline-review objective. Measured as
 TNR on hold for the report pipeline, with every reject-labelled report held.
