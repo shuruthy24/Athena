@@ -1,0 +1,7 @@
+presentation_id,preference,rationale
+AB-01,B,B names the specific hazard avoided (Devonshire St tunnel, risk 0.58) instead of just listing raw walk/transfer numbers
+AB-02,B,B's narrative framing and direct duration comparison (79.2 vs 79.7 min) make the trade-off easier to grasp than A's hazard-first phrasing
+AB-03,A,A names the specific hazard being avoided (Devonshire St tunnel, risk 0.72), giving a clearer picture of what the risk reduction protects against
+AB-04,B,B lays out the time cost, avoided hazard, and lit-share comparison as three separate clear stats rather than folding two of them into one sentence
+AB-05,B,B states both raw durations side by side (22.4 vs 23.2 min) rather than a single plus-time delta, making the time trade-off more concrete
+AB-06,B,B shows both raw durations (22.4 vs 23.2 min) and still names the avoided street and its risk score in the same line

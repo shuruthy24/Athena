@@ -1,0 +1,32 @@
+{
+ "AB-01": {
+  "A": "llm",
+  "B": "fact_only",
+  "trace_id": "259d0711b55f4c38"
+ },
+ "AB-02": {
+  "A": "fact_only",
+  "B": "llm",
+  "trace_id": "2b9d77e83bd24351"
+ },
+ "AB-03": {
+  "A": "fact_only",
+  "B": "llm",
+  "trace_id": "63fb7bea937a426e"
+ },
+ "AB-04": {
+  "A": "llm",
+  "B": "fact_only",
+  "trace_id": "85a9fba3d2c34076"
+ },
+ "AB-05": {
+  "A": "fact_only",
+  "B": "llm",
+  "trace_id": "d5bce8e639c54b9e"
+ },
+ "AB-06": {
+  "A": "fact_only",
+  "B": "llm",
+  "trace_id": "fc3ebc6d1087434c"
+ }
+}
