@@ -1,0 +1,137 @@
+{
+ "generated_at": "2026-11-18T11:05:44.686948+00:00",
+ "git_sha": "7218628",
+ "config": {
+  "judge": true,
+  "judge_model": "scx-GLM-5.3"
+ },
+ "human": {
+  "llm": 3,
+  "fact_only": 3,
+  "tie": 0,
+  "rows": [
+   {
+    "presentation_id": "AB-01",
+    "preference": "B",
+    "rationale": "B names the specific hazard avoided (Devonshire St tunnel",
+    "preferred": "fact_only",
+    "mapping": {
+     "A": "llm",
+     "B": "fact_only",
+     "trace_id": "259d0711b55f4c38"
+    }
+   },
+   {
+    "presentation_id": "AB-02",
+    "preference": "B",
+    "rationale": "B's narrative framing and direct duration comparison (79.2 vs 79.7 min) make the trade-off easier to grasp than A's hazard-first phrasing",
+    "preferred": "llm",
+    "mapping": {
+     "A": "fact_only",
+     "B": "llm",
+     "trace_id": "2b9d77e83bd24351"
+    }
+   },
+   {
+    "presentation_id": "AB-03",
+    "preference": "A",
+    "rationale": "A names the specific hazard being avoided (Devonshire St tunnel",
+    "preferred": "fact_only",
+    "mapping": {
+     "A": "fact_only",
+     "B": "llm",
+     "trace_id": "63fb7bea937a426e"
+    }
+   },
+   {
+    "presentation_id": "AB-04",
+    "preference": "B",
+    "rationale": "B lays out the time cost",
+    "preferred": "fact_only",
+    "mapping": {
+     "A": "llm",
+     "B": "fact_only",
+     "trace_id": "85a9fba3d2c34076"
+    }
+   },
+   {
+    "presentation_id": "AB-05",
+    "preference": "B",
+    "rationale": "B states both raw durations side by side (22.4 vs 23.2 min) rather than a single plus-time delta",
+    "preferred": "llm",
+    "mapping": {
+     "A": "fact_only",
+     "B": "llm",
+     "trace_id": "d5bce8e639c54b9e"
+    }
+   },
+   {
+    "presentation_id": "AB-06",
+    "preference": "B",
+    "rationale": "B shows both raw durations (22.4 vs 23.2 min) and still names the avoided street and its risk score in the same line",
+    "preferred": "llm",
+    "mapping": {
+     "A": "fact_only",
+     "B": "llm",
+     "trace_id": "fc3ebc6d1087434c"
+    }
+   }
+  ]
+ },
+ "judge": {
+  "model": "scx-GLM-5.3",
+  "prompt": "judge_pairwise.v1@bbaabe0cf989",
+  "rows": [
+   {
+    "presentation_id": "AB-01",
+    "verdict": null,
+    "error": "reply is not exactly one JSON object",
+    "raw": "Let me analyze both explanations.\n\nExplanation A:\n- Headline: Athena's route offers lower risk for a slightly longer trip\n- Claims:\n  1. Athena's route reduces risk by 39.7% compared to fastest route. (supported)\n  2. You will walk 728m with 0 transfers, though trip takes 39.4 minutes. (supported)\n  3. Fastest route takes 36.5 min but involves 1057m walk and 1 transfer. (supported)\n\nExplanation B:\n- Headline: Athena's route is lower risk for this trip.\n- Claims:\n  1. Athena's route takes +2.9 min and has 39.7% lower route risk than fastest route. (facts: extra_min, risk_reduction_pct)\n  2. It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.58). (facts: fastest.worst.name, fastest.worst.lit, fastest.worst.risk)\n\nBoth are supported by the facts. Let me check the facts:\n- extra_min: 2.9 (39.4 - 36.5 = 2.9) ✓\n- risk_reduction_pct: 39.7 ✓ (0.451 → 0.272 is about 39.7% reduction)\n- fastest.worst.name: Devonshire St tunnel ✓\n- fastest.worst.lit: \"yes\" ✓\n- fastest.worst.risk: 0.58 ✓\n\nA gives: risk reduction, walk distance, transfers, duration for both routes. This is actionable — you know the tradeoff: 2.9 more minutes, 329m less walking, no transfers, lower risk.\n\nB gives: risk reduction, extra time, and the specific reason (avoids Devonshire St tunnel, the highest-risk stretch). This explains WHY the risk is lower — it avoids a specific tunnel. That's more specific and gives a concrete reason.\n\nWhich is more actionable for a person deciding how to get home? A gives the full tradeoff picture (time, walking, transfers for both routes). B gives the time tradeoff and the specific reason for lower risk (avoiding a tunnel).\n\nHmm. A person deciding how to get home: A tells them walking distance and transfers, which matter practically. B tells them the risk difference is due to avoiding a tunnel — which is a concrete, verifiable detail.\n\nA's claims are all supported and marked as such. B's claims don't have \"supported\" flags but the facts check out.\n\nA covers: risk reduction %, walk 728m, 0 transfers, 39.4 min; fastest 36.5 min, 1057m walk, 1 transfer. That's a complete comparison of the practical tradeoffs.\n\nB covers: +2.9 min, 39.7% lower risk, avoids Devonshire St tunnel (highest-risk stretch, lit, risk 0.58).\n\nB is more specific about WHY — the tunnel avoidance. But B omits walking distance and transfers, which are important for deciding how to get home. A omits the reason for the risk difference.\n\nFor a decision: \"how to get home\" — you want to know time, effort (walking, transfers), and safety. A gives all three quantitatively for both routes. B gives time and safety, plus a qualitative reason for safety.\n\nHmm, which one could a person \"act on more confidently: specific, supported by the facts, honest about missing data\"?\n\nA is fully supported (marked supported: true). B's claims are also supported by facts.\n\nA's specificity: numbers for both routes. B's specificity: the tunnel detail, which is quite specific and actionable (you know you avoid a tunnel at night).\n\nI think B's mention of the Devonshire St tunnel is a key differentiator — it explains the mechanism of risk reduction, which is more convincing and specific. But A gives the complete tradeoff including walking and transfers.\n\nActually, let me think about what matters for a night trip home decision. The person wants to know: which route, how long, how much walking, how safe. A answers all. B answers time and safety reason but not walking/transfers.\n\nHowever, B's \"+2.9 min\" is a clearer framing of the time cost than A's separate durations. And B's tunnel avoidance is a concrete, checkable fact.\n\nThe prompt says \"specific, supported by the facts, honest about missing data.\" Both are honest. A is more comprehensive on the decision variables. B is more specific on the risk mechanism.\n\nHmm, I could argue either way. Let me weigh:\n\nA: Complete tradeoff (time, walk, transfers, risk %) for both routes. All supported. This lets a person decide: \"Do I care about 2.9 extra minutes vs 329m less walking, no transfers, and lower risk?\"\n\nB: Time delta, risk delta, and the specific avoided hazard. This lets a person decide: \"Is 2.9 min worth avoiding a tunnel?\" But they don't know about walking/transfers differences.\n\nFor \"how to get home,\" walking distance and transfers are quite relevant. A gives those. B doesn't. But B's tunnel detail is a strong specific point.\n\nI think A is slightly more useful for the decision because it presents the full comparison of the practical variables. But B's specificity about the tunnel... \n\nActually, the criterion is \"specific, supported by the facts, honest about missing data.\" B is more specific in its risk explanation (names the tunnel, its risk, that it's lit). A is more comprehensive but each claim is also specific.\n\nHmm, one consideration: B says \"It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.58).\" The \"(lit, risk 0.58)\" is a bit odd — mentioning it's lit while being highest risk. But it's factual.\n\nA's headline: \"lower risk for a slightly longer trip\" — accurate.\nB's headline: \"lower risk for this trip\" — accurate but less informative (doesn't mention the tradeoff).\n\nA's headline captures the tradeoff. B's headline is vaguer.\n\nI lean toward A because it provides the complete decision-relevant comparison (duration, walking, transfers for both routes) with all claims supported, enabling a confident choice. B provides the reason for risk difference but omits walking/transfer info.\n\nBut wait — B's claim 1 includes \"+2.9 min\" which directly gives the time cost, and \"39.7% lower route risk.\" So B gives time cost and risk benefit. The tunnel detail explains why. What B lacks: walking distance, transfers.\n\nWhat A lacks: the reason for the risk difference (which streets avoided).\n\nFor a person deciding: knowing you avoid a tunnel at night is quite compelling and specific. But knowing you walk 329m less and avoid a transfer is also compelling.\n\nHmm, the instruction: \"Pick the one a person deciding how to get home could act on more confidently: specific, supported by the facts, honest about missing data.\"\n\nBoth are supported. A is more complete on decision variables. I'll go with A.\n\nActually, let me reconsider. Many similar tasks favor the explanation that gives the \"why\" — the mechanism. B explains why the risk is lower (avoids the tunnel, the highest-risk stretch). That's specific and supported. A just states numbers.\n\nBut A's numbers include the full tradeoff. A person could act on A: \"I'll take Athena's route: 2.9 min longer, but 329m less walking, no transfers, 39.7% lower",
+    "preferred": null,
+    "llm_shown_as": "A"
+   },
+   {
+    "presentation_id": "AB-02",
+    "verdict": "A",
+    "error": null,
+    "raw": "{\"verdict\": \"A\", \"reason\": \"A gives the same supported numbers as B but adds the concrete, actionable detail of what is being avoided — the unlit Moore Park path (risk 0.82, the fastest route's worst stretch) — so a person knows exactly why the faster route is riskier; B only restates aggregate figures without explaining the source of risk.\"}",
+    "preferred": "fact_only",
+    "llm_shown_as": "B"
+   },
+   {
+    "presentation_id": "AB-03",
+    "verdict": "A",
+    "error": null,
+    "raw": "{\"verdict\": \"A\", \"reason\": \"A gives the decision-ready tradeoff (+2.9 min for 25.9% lower risk) plus a concrete mechanism — it avoids the Devonshire St tunnel, the fastest route's worst stretch (risk 0.72) — so the traveler knows exactly why and what they're accepting. B's facts are accurate but mostly descriptive (durations, Athena's transfers/walk) without comparison to the fastest route's 1 transfer and 1057 m walk, offering no explanation of the risk difference.\"}",
+    "preferred": "fact_only",
+    "llm_shown_as": "B"
+   },
+   {
+    "presentation_id": "AB-04",
+    "verdict": null,
+    "error": "reply is not exactly one JSON object",
+    "raw": "{\"verdict\": \"B\", \"reason\": \"Both are accurate and cover the same core tradeoff (+0.5 min, 46.2% lower risk, avoiding the unlit Moore Park path at risk 0.68), but B also quantifies lighting on",
+    "preferred": null,
+    "llm_shown_as": "A"
+   },
+   {
+    "presentation_id": "AB-05",
+    "verdict": null,
+    "error": "reply is not exactly one JSON object",
+    "raw": "Let me compare the two explanations.\n\nExplanation A:\n- Headline: \"Athena's route is lower risk for this trip.\"\n- Claims:\n  1. Athena's route takes +0.8 min and has 46.2% lower route risk than the fastest route. Facts: extra_min, risk_reduction_pct. Supported by facts: extra_min = 0.8, risk_reduction_pct = 46.2. ✓\n  2. It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.68). Facts: fastest.worst.name, fastest.worst.lit, fastest.worst.risk. Supported: Moore Park path, lit = no, risk = 0.68. ✓\n  3. 100.0% of Athena's street distance is lit, versus 77.4% on the fastest route. Facts: athena.lit_share_pct, fastest.lit_share_pct. Supported: 100.0 vs 77.4. ✓\n\nExplanation B:\n- Headline: \"Athena's route offers lower risk for a small time trade-off\"\n- Claims:\n  1. Athena's route is lower risk, reducing risk by 46.2%. Supported. ✓\n  2. The fastest route takes 22.4 minutes, while Athena's route takes 23.2 minutes. Supported. ✓\n  3. Athena's route is 100.0% lit, avoiding the unlit Moore Park path. Supported. ✓\n\nBoth are accurate and supported. Differences:\n- A gives the time trade-off as \"+0.8 min\" (relative), B gives absolute durations (22.4 vs 23.2). Both are actionable; B's absolute durations might be more informative for deciding how to get home (you know total time). A's \"+0.8 min\" is also clear.\n- A mentions the risk value of Moore Park path (0.68) and the comparison of lit share (100% vs 77.4%). B mentions 100% lit but doesn't mention the fastest route's lit share (77.4%).\n- A explicitly compares lit share between routes; B only says Athena is 100% lit.\n- B provides absolute durations for both routes, which A doesn't (A only gives the delta).\n\nWhich is more actionable for a person deciding how to get home? Both are quite similar. A gives: +0.8 min, 46.2% lower risk, avoids Moore Park path (unlit, risk 0.68), 100% lit vs 77.4% lit. B gives: 46.2% lower risk, 22.4 vs 23.2 min, 100% lit avoiding unlit Moore Park path.\n\nA has the lit share comparison (100 vs 77.4) which B lacks. B has absolute durations which A lacks (A has the delta, which is arguably equally useful for a trade-off decision). A also quantifies the worst stretch risk (0.68).\n\nHmm. For deciding how to get home: knowing the total trip time (22.4 vs 23.2 min) is useful; knowing the delta (+0.8) is also useful. The delta is actually the key trade-off info. A's lit share comparison is more complete than B's.\n\nA also mentions \"highest-risk stretch of the fastest route\" with risk 0.68 — more specific. B just says \"avoiding the unlit Moore Park path.\"\n\nI'd lean A slightly because it provides the comparative lit share (100% vs 77.4%) and quantifies the worst stretch risk, making the comparison more complete. But B provides absolute durations, which A doesn't. Hmm.\n\nActually, let's think about what a person deciding needs: total time of each option and risk. B gives total times for both routes. A gives only the delta. For \"how to get home,\" knowing each route takes ~22-23 min is useful context; the delta +0.8 also conveys the trade-off. Both convey the trade-off.\n\nA's extra info: fastest route's lit share 77.4%, Moore Park risk 0.68. B's extra info: absolute durations.\n\nThe difference in lit share is a comparative fact that supports the decision (how much of the fastest route is unlit). A's claim 3 is a direct comparison. B's claim 3 only states Athena's lit share.\n\nI think A is slightly more useful due to the comparative lighting stat and quantified worst-stretch risk. But one could argue B's absolute durations matter. Hmm.\n\nThe task says: \"Pick the one a person deciding how to get home could act on more confidently: specific, supported by the facts, honest about missing data.\"\n\nBoth are supported. Specificity: A gives more comparative details (lit share comparison, worst risk value). B gives absolute durations. A's headline is a bit more assertive; B's headline mentions \"small time trade-off.\"\n\nI'll go with A, reasoning: A provides the comparative lighting share (100% vs 77.4%) and quantifies the avoided stretch's risk, giving a fuller basis for the trade-off, while B omits the fastest route's lighting share. Alternatively, one could argue B's absolute durations... but the delta +0.8 min in A conveys the same trade-off.\n\nActually, wait — is there any issue with A? \"It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.68).\" Facts confirm: fastest.worst.name = Moore Park path, lit = no, risk = 0.68. Correct. Also athena's streets don't include Moore Park path. Correct.\n\nA claim 1: \"+0.8 min and has 46.2% lower route risk\" — extra_min = 0.8, risk_reduction_pct = 46.2. Correct.\n\nA claim 3: 100.0% vs 77.4% lit. Correct.\n\nB claims all correct too.\n\nSo both fully supported. The main difference: A includes the fastest route's lit share (77.4%) and the worst-stretch risk value (0.68), making the comparison more complete; B includes absolute durations but omits the fastest route's lighting comparison.\n\nHmm, but is absolute duration more valuable than the comparative lighting? For a decision, the delta time is what matters for the trade-off, and both routes are ~22-23 min either way. The lighting comparison helps assess how much worse the fastest route is. I'll pick A.\n\nActually, let me reconsider. B's claim 2 gives both durations, letting the person know total trip time — useful for planning when they'll arrive. A only gives the delta. But the delta is the decision-relevant part. Also A's headline is clear.\n\nAnother angle: A says \"46.2% lower route risk\" — matches risk_reduction_pct. B says \"reducing risk by 46.2%.\" Same.\n\nI'll go with A. Reason: A adds the fastest route's lighting share (77.4%) and the quantified risk of the avoided Moore Park path, giving a fuller side-by-side comparison, whereas B omits the fastest route's lighting level; both otherwise match on time trade-off and risk reduction.\n\nHmm, but B gives absolute times... The reason should capture the main difference. Let me phrase: \"A compares lighting on both routes (100% vs 77.4%) and quantifies the avoided path's risk (0.68), while B omits the fastest route's lighting share; both are accurate on time and risk.\"\n\nAlternatively TIE?",
+    "preferred": null,
+    "llm_shown_as": "B"
+   },
+   {
+    "presentation_id": "AB-06",
+    "verdict": "TIE",
+    "error": null,
+    "raw": "{\"verdict\": \"TIE\", \"reason\": \"Both explanations convey the same fully supported, decision-relevant facts — 31.4% risk reduction, a ~0.8 minute time cost (A as a delta, B as absolute durations 22.4 vs 23.2 min), 100% vs 77.4% lit share, and avoidance of the unlit Moore Park path (risk 0.32) — with equal specificity and no unsupported claims or missing data to disclose.\"}",
+    "preferred": "tie",
+    "llm_shown_as": "B"
+   }
+  ],
+  "agrees_with_humans": 1
+ },
+ "calls_used": 6
+}

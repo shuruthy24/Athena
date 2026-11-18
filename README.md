@@ -33,7 +33,7 @@ disagree. Rows that say "not run yet" are waiting for a live run, human labels o
 | Report classifier, test split | not run yet (`python evals/eval_classifier.py`) | `classifier_test.json` |
 | Assertions on real explanation traces | 36/36 traces pass every assertion | `assertions.json` |
 | LLM judge audit (held-out human labels) | TPR 1.000, TNR n/a, malformed 0 of 18 | `judge_audit.json` |
-| Blind A/B: LLM vs fact-only explanation | not run yet (`python evals/ab.py`) | `ab.json` |
+| Blind A/B: LLM vs fact-only explanation | humans preferred LLM 3, fact-only 3, tie 0 | `ab.json` |
 | Task study with people (lower-risk choice share, Athena vs plain list) | not run yet (docs/user_study.md) | `user_study.json` |
 | Demonstrated features verified end to end (offline) | 17 passed, 0 failed | `verify.json` |
 | Deployed service | not run yet (`make load-test BASE_URL=...` after deploying) | `ops.json` |

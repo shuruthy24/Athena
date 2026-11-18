@@ -89,7 +89,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Route choice | Same question on every real trip (fastest vs Athena's lower-risk variant) | 377 trips, OSM snapshot + OTP precompute (`option4-direct-walk-timed`) | median risk reduction and extra minutes; median unknown lighting | fastest route | differs on 61/377; median reduction 0.0%, +0.0 min; unknown lighting 72.3% | reduction > 0 with median extra ≤ 5 min | **misses** | `python evals/eval_data_coverage.py --label <name> (needs data/processed)` → `data_coverage.json` (2026-11-15 @ a83dd55) |
 | Explanation faithfulness | Are the claims users read supported by the route facts? | 36 real explainer traces (evals/traces/2026-11-14-live-scx-gemma-4-31B-it), live model, sample routes | share of traces passing all 9 code assertions | fact-only explanation (passes by construction) | 36/36 = 1.00 | ≥ 0.95 | **meets** | `python evals/assertions.py evals/traces/2026-11-14-live-scx-gemma-4-31B-it` → `assertions.json` (2026-11-14 @ dcfd833) |
 | Explanation faithfulness | Can an LLM judge be trusted to flag unfaithful explanations? | held-out human PASS/FAIL labels (evals/labels/heldout.json) | judge TPR / TNR, malformed counted wrong | code assertions | TPR 1.000, TNR n/a | TNR ≥ 0.9 | **misses** | `python evals/label.py traces <run>; python evals/judge.py audit <run>` → `judge_audit.json` (2026-11-18 @ e3f76e7) |
-| Explanation usefulness | Do people prefer the LLM explanation to the fact-only one? | 6+ blind presentations from the trace run | human preference A/B/TIE (blind, then revealed) | fact-only explanation | — | LLM preferred in a majority | not run yet | `python evals/ab.py prepare <run>; python evals/ab.py reveal --judge` → `ab.json` |
+| Explanation usefulness | Do people prefer the LLM explanation to the fact-only one? | 6+ blind presentations from the trace run | human preference A/B/TIE (blind, then revealed) | fact-only explanation | LLM 3, fact-only 3, tie 0 | LLM preferred in a majority | **misses** | `python evals/ab.py prepare <run>; python evals/ab.py reveal --judge` → `ab.json` (2026-11-18 @ 7218628) |
 | Evidence critic rules | Do the deterministic rules catch unsupported claims? | 276 claims, synthetic by construction (5 corruption types) | precision / recall (positive = unsupported) | citation-only check recall 0.210; no critic 0.0 | precision 1.000, recall 1.000 [0.98, 1.00] | descriptive (rules tested on corruptions, not real drafts) | descriptive | `make eval` → `offline.json` (2026-11-18 @ no git) |
 | Report classifier | Which classifier holds harmful reports and admits real ones? | team-labelled reports, group split by street and writer; dev for choosing, test once (frozen) | TNR on hold, TPR on admit, category macro-F1, cost, latency | majority class, keyword rule | — | TNR ≥ 0.95, TPR ≥ 0.80 | not run yet | `python evals/label.py reports --as a (then b); make labels; python evals/eval_classifier.py` → `classifier_dev.json` |
 | Report guardrail (end to end) | Is an injected report ever admitted by the whole pipeline? | 24 held-out injection probes + 26 benign (synthetic) | injection admit rate (lower is better); benign hold rate | guard + keyword rule (no model) | baseline: guard + keyword rule (no model): 0.792 [0.60, 0.91]; benign held 0.077 | 0 admitted | baseline (reference) | `python evals/eval_injection_e2e.py [--live]` → `injection_e2e.json` (2026-11-18 @ no git) |
@@ -105,7 +105,7 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 | Operations | Is the deployed service fast and reliable enough? | 50 requests per endpoint, deployed URL | p50/p95 latency, error rate, cost per request | — | — | p95 ≤ 10 s, errors ≤ 1% | not run yet | `make load-test BASE_URL=...` → `ops.json` |
 | Completion | Does every demonstrated feature run from the instructions? | 17 end-to-end checks, sample data, offline | checks passing | — | 17 pass, 0 fail | all pass | **meets** | `python scripts/verify_demo.py` → `verify.json` (2026-11-18 @ no git) |
 
-**Summary:** 6 meet their target, 4 miss it, 5 not run yet, 2 descriptive (no target set in advance), 2 baseline reference rows.
+**Summary:** 6 meet their target, 5 miss it, 4 not run yet, 2 descriptive (no target set in advance), 2 baseline reference rows.
 
 <!-- eval:end -->
 
@@ -138,5 +138,10 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
   never fails: `evals/assertions.py` already found 2 real faithfulness failures (an omitted risk-parity fact)
   in the separate 72-trace run. Re-run the audit against a set known to include FAIL traces before trusting
   its TNR.
-- The A/B and task study have not run: they need human choices and participants (docs/STATUS.md lists the
-  steps and time).
+- **The blind A/B found no net preference for the LLM explanation over the fact-only fallback.** Human picks
+  split 3-3 (LLM vs fact-only) across 6 blind pairs with zero ties; see `evals/results/ab.json`. The pairwise
+  judge (`scx-GLM-5.3`) failed to return a parseable verdict on 3 of 6 calls — it reasoned at length in prose
+  and ran out of output before emitting the required JSON — and agreed with the human pick on only 1 of the 3
+  calls that did parse. With n=6 these numbers are indicative only; the sample should be grown and the judge
+  prompt likely needs a stricter output-length constraint before the judge's agreement rate can be trusted.
+- The task study has not run: it needs participants (docs/STATUS.md lists the steps and time).
