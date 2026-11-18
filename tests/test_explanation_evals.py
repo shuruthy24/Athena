@@ -3,6 +3,7 @@ Traces here come from the offline stand-in and fake judges: they test the workfl
 import copy
 import csv
 import json
+from pathlib import Path
 
 import pytest
 
@@ -148,6 +149,20 @@ def test_audit_reads_labels_after_predictions_and_respects_budget(traces, tmp_pa
     assert all("human" in o for o in b["outcomes"])
     with pytest.raises(RuntimeError):
         J.audit(FakeJudge(replies), "judge-m", out, labels_dir=tmp_path, budget=2)
+
+
+def test_secondary_labels_write_their_own_audit_file():
+    sample = J.ROOT / "evals" / "labels-sample"
+    assert J.resolve_out(J.LABELS) == J.CANONICAL_OUT
+    assert J.resolve_out(sample) == J.CANONICAL_OUT.with_name("judge_audit_sample.json")
+    assert J.resolve_out(sample, Path("x.json")) == Path("x.json")
+
+
+def test_secondary_labels_cannot_overwrite_the_primary_audit():
+    with pytest.raises(ValueError):
+        J.resolve_out(J.ROOT / "evals" / "labels-sample", J.CANONICAL_OUT)
+    assert J.main(["audit", "evals/traces/2026-11-14-live-sample", "--labels", "evals/labels-sample",
+                   "--out", str(J.CANONICAL_OUT)]) == 2
 
 
 # ---------------------------------------------------------------- blind A/B

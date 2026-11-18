@@ -122,6 +122,34 @@ reason below. None is a missing step in the evaluations that were run. The gener
 | `user_study.json` | **not conducted.** | The task study needs participants from outside the team (`docs/user_study.md`). No sessions were held, so there is no outcome measure of whether people choose the lower-risk option. Every other row measures system behaviour, not what people do. | Run the sessions in `docs/user_study.md`, then `python evals/eval_user_study.py`. |
 | `ops.json` | **not applicable to this submission.** | `ops.json` records latency, error rate and cost per request for a *deployed* URL. This system is submitted to run locally (README, Quick start) and is not deployed. A load test against `localhost` would measure the marker's laptop, not a service, so it is not recorded as ops evidence. Whether the running app works end to end over HTTP is checked by `python scripts/verify_demo.py --base-url http://127.0.0.1:8001` (Completion row, `verify.json`). | Deploy (`docs/deploy.md`), then `make load-test BASE_URL=...`. |
 
+## Secondary judge audit (12-trace sample with FAIL cases)
+
+The primary judge audit (`judge_audit.json`, evals/labels/) has no human FAIL labels in its held-out half, so its
+TNR is undefined. A second audit was run on 18 Nov on a 12-trace sample from the same live run that does include
+FAIL labels:
+
+| Input | Path |
+| --- | --- |
+| traces | `evals/traces/2026-11-14-live-sample/` (12) |
+| human labels | `evals/labels-sample/` (`assignment.json` seeded split, `dev.json` 6, `heldout.json` 6 with 3 PASS, 3 FAIL) |
+| result | `evals/results/judge_audit_sample.json` |
+
+**Status: the result file is not committed.** The 18 Nov run wrote over `judge_audit.json`. The primary file was
+restored and the sample run's output was never saved, so its numbers appear only in the message of commit
+`925f895`. This page does not quote them until the file exists. `reproduce.py` lists the file as `NOT RUN`.
+
+To regenerate it (needs the course key in `.env`; 6 judge calls; never run as a check):
+
+```bash
+python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample
+```
+
+`--labels` sets where the human labels are read. A labels folder other than `evals/labels/` writes
+`judge_audit_<suffix>.json` (here `judge_audit_sample.json`). `judge.py` refuses an `--out` that would overwrite
+the primary `judge_audit.json` from any other labels folder. The judge model is `JUDGE_MODEL` from `.env`. Check
+it matches the primary audit's model (`config.model` in `judge_audit.json`) before running, so the two audits can
+be compared. Commit the result file together with the labels.
+
 ## What this round of evaluation found (18 Nov 2026)
 
 - **The text guard overfits the set it was tuned on.** Compare the dev and held-out rows above. The guard is

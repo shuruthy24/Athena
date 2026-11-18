@@ -1,6 +1,15 @@
 """LLM judge for explanation faithfulness, audited against human labels (AGENTS.md Step 6, Tech 6 section 4A).
 
   python evals/judge.py audit evals/traces/<run>     # budget 60 calls; writes evals/results/judge_audit.json
+  python evals/judge.py audit evals/traces/<run> --labels evals/labels-<name>
+                                                     # another labelled set; writes evals/results/judge_audit_<name>.json
+
+WARNING: this writes a canonical, committed result file unconditionally and calls the live gateway with whatever
+.env the shell has. Never run it to "check" a number: `python scripts/reproduce.py` (or `make reproduce` /
+`make check`) re-checks committed results without writing them. Only run it on purpose, to produce a new audit
+from new human labels, and commit the result with the labels. `--out` cannot point at judge_audit.json unless
+the labels are the canonical evals/labels/ set, so a secondary audit can never overwrite the primary one
+(docs/evaluation.md, "Results that are written to fixed paths").
 
 Human labels (the team writes these; never an agent):
   evals/labels/dev.json       {"<trace_id>": "PASS" | "FAIL", ...}  used to tune the rubric only
@@ -29,6 +38,7 @@ from athena.prompts import load  # noqa: E402
 from evals.metrics import BudgetExceeded, CallBudget, tpr_tnr  # noqa: E402
 
 LABELS = ROOT / "evals" / "labels"
+CANONICAL_OUT = ROOT / "evals" / "results" / "judge_audit.json"
 
 
 class JudgeOutputError(ValueError):
@@ -103,7 +113,7 @@ def judge_cases(llm, model: str, recs: list[dict]) -> list[dict]:
 def audit(llm, model: str, trace_dir: Path, labels_dir: Path = LABELS, budget: int = 60) -> dict:
     heldout_path = labels_dir / "heldout.json"
     if not heldout_path.exists():
-        raise FileNotFoundError("evals/labels/heldout.json is missing: the team labels held-out traces first")
+        raise FileNotFoundError(f"{heldout_path} is missing: the team labels held-out traces first")
     heldout_ids = sorted(json.loads(heldout_path.read_text(encoding="utf-8")))  # ids only until predictions are in
     recs = {json.loads(p.read_text(encoding="utf-8"))["trace_id"]: json.loads(p.read_text(encoding="utf-8")) for p in trace_dir.glob("*.json")}
     missing = [t for t in heldout_ids if t not in recs]
@@ -120,25 +130,57 @@ def audit(llm, model: str, trace_dir: Path, labels_dir: Path = LABELS, budget: i
     metrics = binary_metrics([o["human"] for o in outcomes], [o["judge"] for o in outcomes])
     prompt = load("judge_binary")
     return {"config": {"model": model, "prompt": f"{prompt.id}@{prompt.sha}", "budget": budget,
-                       "positive_class": "human PASS", "traces": str(trace_dir)},
+                       "positive_class": "human PASS", "traces": str(trace_dir), "labels": _rel(labels_dir)},
             "calls_used": counted.used, "binary": {**metrics, "outcomes": outcomes}}
 
 
+def _rel(p: Path) -> str:
+    p = Path(p).resolve()
+    return p.relative_to(ROOT).as_posix() if p.is_relative_to(ROOT) else str(p)
+
+
+def resolve_out(labels_dir: Path, out: Path | None = None) -> Path:
+    """Where an audit is written. Only the canonical labels (evals/labels/) may write judge_audit.json; any other
+    labels set defaults to judge_audit_<suffix>.json (evals/labels-sample -> judge_audit_sample.json)."""
+    canonical_labels = Path(labels_dir).resolve() == LABELS.resolve()
+    if out is None:
+        if canonical_labels:
+            return CANONICAL_OUT
+        name = Path(labels_dir).resolve().name
+        suffix = name[len("labels-"):] if name.startswith("labels-") else name
+        return CANONICAL_OUT.with_name(f"judge_audit_{suffix}.json")
+    out = Path(out)
+    if out.resolve() == CANONICAL_OUT.resolve() and not canonical_labels:
+        raise ValueError(f"refusing to write {_rel(CANONICAL_OUT)} from labels in {_rel(labels_dir)}: "
+                         "it holds the primary audit on evals/labels/; choose another --out")
+    return out
+
+
 def main(argv=None) -> int:
-    args = argv or sys.argv[1:]
-    if len(args) != 2 or args[0] != "audit":
-        print("usage: python evals/judge.py audit evals/traces/<run>")
+    import argparse
+    ap = argparse.ArgumentParser(prog="python evals/judge.py", description="audit the LLM judge on held-out labels")
+    ap.add_argument("command", choices=["audit"])
+    ap.add_argument("traces", type=Path, help="evals/traces/<run>")
+    ap.add_argument("--labels", type=Path, default=LABELS, help="folder with heldout.json (default evals/labels)")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="result file (default judge_audit.json for evals/labels, else judge_audit_<suffix>.json)")
+    args = ap.parse_args(argv)
+    try:
+        out = resolve_out(args.labels, args.out)
+    except ValueError as exc:
+        print(f"error: {exc}")
         return 2
     from athena.config import get_settings
     from athena.llm import GatewayLLM
     s = get_settings()
     llm = GatewayLLM(os.environ["COMP3110_MODEL_BASE_URL"], os.environ["COMP3110_API_KEY"], timeout_s=s.llm_timeout_s)
-    res = audit(llm, s.judge_model, Path(args[1]))
+    res = audit(llm, s.judge_model, args.traces, labels_dir=args.labels)
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     res = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None, **res}
-    (ROOT / "evals/results/judge_audit.json").write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    out.write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     b = res["binary"]
-    print(f"judge {s.judge_model}: TPR {b['tpr']} TNR {b['tnr']} malformed {b['malformed']} on {b['n']} held-out cases")
+    print(f"judge {s.judge_model}: TPR {b['tpr']} TNR {b['tnr']} malformed {b['malformed']} on {b['n']} held-out cases"
+          f" -> {_rel(out)}")
     return 0
 
 

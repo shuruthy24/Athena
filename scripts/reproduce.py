@@ -37,6 +37,8 @@ LIVE = {
     "classifier_test.json": "python evals/eval_classifier.py --split test --touch-test (once)",
     "label_agreement.json": "make labels (two human labellers)",
     "judge_audit.json": "python evals/judge.py audit evals/traces/<run> (human labels + key)",
+    "judge_audit_sample.json": ("python evals/judge.py audit evals/traces/2026-11-14-live-sample "
+                                "--labels evals/labels-sample (human labels + key, 6 calls)"),
     "ab.json": "python evals/ab.py reveal --judge (human choices + key)",
     "user_study.json": "python evals/eval_user_study.py (sessions with people)",
     "ops.json": "make load-test BASE_URL=... (deployed URL)",
