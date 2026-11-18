@@ -51,7 +51,7 @@ def scan_text(text: str) -> list[tuple[int, str]]:
     return hits
 
 
-# Folders a source download (zip, no .git) may contain that are never part of the submission.
+# Folders a source download (zip, no .git) may contain that are never part of the source.
 WALK_SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache", "runs", "node_modules", ".dvc"}
 WALK_SKIP_PREFIXES = ("data/raw/", "models/")
 
@@ -67,7 +67,7 @@ def walked_files(root: Path = ROOT) -> list[str]:
         if rel.startswith(WALK_SKIP_PREFIXES):
             continue
         if p.name.startswith(".env") and p.name != ".env.example":
-            continue  # local, git-ignored config; main() warns so it never ends up in a submission zip
+            continue  # local, git-ignored config; main() warns so it never ends up in a source zip
         out.append(rel)
     return out
 

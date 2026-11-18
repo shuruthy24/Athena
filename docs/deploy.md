@@ -1,7 +1,7 @@
 # Deploying Athena
 
-One container: FastAPI, the web pages, the data files and (optionally) the trained classifier. The course
-gateway is the only external call. These steps are for a team member to run; nothing here has been deployed.
+One container: FastAPI, the web pages, the data files and (optionally) the trained classifier. The model
+gateway is the only external call. These steps are for a maintainer to run; nothing here has been deployed.
 
 ## Before building
 
