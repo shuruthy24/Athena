@@ -1,10 +1,8 @@
 # Data sources
 
-Every dataset Athena uses, with its licence and how it was cleaned. Raw snapshots
-live in `data/raw/` (versioned with DVC, never edited); derived tables in `data/processed/` are rebuilt by
-`make data`, which also writes `data/processed/manifest.json` with each raw file's name, sha256, fetch
-time and row counts. Numbers below come from files in this repo; "after `make data`" means the manifest
-holds them once the snapshot exists.
+This page lists every dataset Athena uses, where it came from, its licence, and how we cleaned it. Raw snapshots
+are kept unchanged in `data/raw/` (versioned with DVC). `make data` rebuilds the tables in `data/processed/` from
+them and writes `data/processed/manifest.json` with each raw file's hash, fetch time and row counts.
 
 ## In use
 
@@ -32,7 +30,7 @@ Cleaning (`pipeline/features.py`, cleaning helpers in `pipeline/clean.py`):
   (`evals/results/lit_inference.json`): 43/43 agree, but only 11 tagged streets are unlit, so the check is
   weak. 79 streets gained a value; 2,445 of 2,926 streets and 22,173 of 25,656 unnamed ways still have
   unknown lighting.
-- Unknown lighting is scored halfway between lit and unlit (+0.15 vs +0.30; team decision, 15 Nov 2026),
+- Unknown lighting is scored halfway between lit and unlit (+0.15 vs +0.30; a team decision),
   and is still reported as unknown in every explanation.
 - Opening hours that the small parser does not understand stay unknown, and those venues are not counted
   as open.
@@ -88,8 +86,8 @@ synthetic.
 
 ### Meterless Scout Intent adversarial prompts
 
-10 of the 18 prompts in `evals/guard/injection.jsonl` come from the Meterless v1 adversarial set
-(Apache-2.0, see `NOTICE`); the other 8 were written by the team.
+10 of the 26 prompts in `evals/guard/injection.jsonl` come from the Meterless v1 adversarial set
+(Apache-2.0, see `NOTICE`); we wrote the other 16.
 
 ## Excluded
 
@@ -101,7 +99,7 @@ synthetic.
 
 ## Provenance and a repeatable rebuild
 
-Every derived number can be traced to raw files with known hashes, and anyone can rebuild them:
+Every derived table can be traced back to raw files with known hashes, and rebuilt:
 
 ```
 data/raw_manifest.json  ->  python -m pipeline.fetch_raw   download each raw snapshot from its mirror, check sha256
@@ -112,8 +110,9 @@ python -m pipeline.check --write-quality                   schema, keys, area, r
 ```
 
 - **Raw snapshots** are never edited (`pipeline/ingest.py` refuses to overwrite). `data/raw_manifest.json` lists
-  each one with its source, licence, retrieval time, size, sha256 and a mirror URL. `fetch_raw` rejects a file whose
-  hash differs.
+  each one with its source, licence, retrieval time and sha256. `fetch_raw` downloads each file from its mirror URL
+  and rejects it if the hash differs. **The mirror URLs are not set yet**, so for now the rebuild only runs where
+  `data/raw/` exists (see docs/STATUS.md).
 - **Derived tables** (`data/processed/`) are committed, so the submitted app serves the real data without any
   download. Each table's content hash (sha256 of its rows as canonical JSON, independent of Parquet metadata and row
   order) is in the manifest; `make data-verify` proves the committed tables are exactly what the code produces from
@@ -126,18 +125,8 @@ python -m pipeline.check --write-quality                   schema, keys, area, r
 
 ## Evaluation datasets
 
-Roles: *tuning* data may be used to change the system; *held-out* data is frozen by sha256 in
-`evals/checksums.txt`, is never used for tuning, and `make check` fails if it changes.
-
-| Dataset | Origin | Licence / consent | Role | Size |
-| --- | --- | --- | --- | --- |
-| `evals/guard/injection.jsonl` | 10 rows from the Meterless v1 adversarial set, 16 written by the team | Apache-2.0 (`NOTICE`) / team | tuning (guard dev) | 26 |
-| `evals/guard/heldout_probes_v1.jsonl` | synthetic, AI-generated on 18 Nov 2026 after reading the guard's patterns; labels by construction | project | held-out, frozen | 50 |
-| `evals/privacy/pii_cases_v1.jsonl` | synthetic, fictional people and numbers | project | regression set (it motivated the 18 Nov PII fix) | 29 |
-| `data/labelling/reports_to_label.csv` → `data/reports/{train,dev,test}.jsonl` | team-written (`seed`) and collected (`collected`) street reports | consent text in `data/labelling/guide.md` | train / dev / **test frozen, touched once**; group split by street and writer | 49 (train 35, dev 5, test 9) |
-| `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` | live explainer outputs on the sample routes | LiteLLM gateway | error analysis, assertions | 36 |
-| `evals/labels/{dev,heldout}.json` | human PASS/FAIL, split by `assignment.json` (seeded, written before labelling) | team | judge dev / held-out | 36 |
-| `data/reports.json` | 14 synthetic reports with expected actions | project | regression set | 14 |
+The evaluation sets, what each is used for, and how held-back data is kept separate are listed in
+[docs/evaluation.md](docs/evaluation.md#evaluation-data).
 
 ### Street reports: balance, agreement and known issues
 
@@ -150,7 +139,7 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
   only fair, because almost every report is `approve`); category agreement 73.5% (kappa 0.648). All 23
   disagreements were settled together and recorded in `data/labelling/disagreements.csv`; none is unsettled
   (`evals/results/label_agreement.json`).
-- **Bias:** most reports were written by the team that built the system, which makes them easier for it.
+- **Bias:** most reports were written by us, the people who built the system, which makes them easier for it.
 
 ## Synthetic data: how it was made and what it cannot show
 
@@ -160,7 +149,7 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
 | Critic corruptions | fact-only claims corrupted five ways in `evals/run_evals.py` | wrong numbers, "safe", streets on neither route, missing citations, reversed direction | tests the rules, not how real models fail |
 | Guard held-out probes | written to imitate realistic attempts (instructions to the moderator, JSON payloads, other languages, obfuscation) and realistic benign reports with trigger words | how the guard generalises beyond its dev set | the writer had read the patterns; real attempts (red-team) are better evidence |
 | PII cases | fictional names, numbers and addresses in report-like sentences | phone, email, address, plate, URL, card, name, student id | covers formats we thought of; real reports will contain others |
-| Synthetic report variants (`pipeline/synth.py`) | model paraphrases of train-split reports only | training volume | never in dev or test |
+| Synthetic report variants (`pipeline/synth.py`) | model paraphrases of train-split reports | extra training data | available but not used: the train split has no synthetic rows |
 
 ## Privacy
 
