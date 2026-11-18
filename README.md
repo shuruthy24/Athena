@@ -31,8 +31,8 @@ disagree. Rows that say "not run yet" are waiting for a live run, human labels o
 | Explainer model comparison | 3 models; best first-draft pass rate 1.000 (scx-gemma-4-31B-it) | `model_comparison.json` |
 | Report classifier, dev split (TNR hold / TPR admit) | majority TNR n/a/TPR 1.000; keyword TNR n/a/TPR 1.000; tfidf-logreg TNR n/a/TPR 1.000; tfidf-svm TNR n/a/TPR 1.000; prompt-zero TNR n/a/TPR 1.000; prompt-5shot TNR n/a/TPR 1.000 | `classifier_dev.json` |
 | Report classifier, test split | not run yet (`python evals/eval_classifier.py`) | `classifier_test.json` |
-| Assertions on real explanation traces | 66/72 traces pass every assertion | `assertions.json` |
-| LLM judge audit (held-out human labels) | TPR 1.000, TNR 0.000, malformed 0 of 6 | `judge_audit.json` |
+| Assertions on real explanation traces | 36/36 traces pass every assertion | `assertions.json` |
+| LLM judge audit (held-out human labels) | TPR 1.000, TNR n/a, malformed 0 of 18 | `judge_audit.json` |
 | Blind A/B: LLM vs fact-only explanation | humans preferred LLM 3, fact-only 3, tie 0 | `ab.json` |
 | Task study with people (lower-risk choice share, Athena vs plain list) | not run yet (docs/user_study.md) | `user_study.json` |
 | Demonstrated features verified end to end (offline) | 17 passed, 0 failed | `verify.json` |
