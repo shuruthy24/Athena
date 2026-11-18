@@ -43,9 +43,10 @@ it: [README.md](README.md). What is finished and what is not: [docs/STATUS.md](d
   People label data and make blind A/B choices; code builds the sheets, scripts and checks. If a number is not
   produced by a script in this repository and saved under `evals/results/`, it does not go in a doc.
 - **Fixed-path hazard.** `python evals/assertions.py <dir>` and `python evals/judge.py audit <dir>` overwrite
-  `evals/results/assertions.json` and `evals/results/judge_audit.json` every time they run. They also read the
+  `evals/results/assertions.json` and `evals/results/judge_audit.json` every time they run (so does
+  `python scripts/verify_demo.py` without `--base-url` or `--out`, for `verify.json`). They also read the
   shell's `.env` instead of the pinned settings, and have produced spurious results that way. To check committed
-  results, run `python scripts/reproduce.py` or `make check`, which never write `evals/results/`. Run the two
+  results, run `python scripts/reproduce.py` or `make check`, which never write `evals/results/`. Run these
   scripts directly only to produce a new result on purpose. For a judge audit on any labels set other than
   `evals/labels/`, pass `--labels` so it writes its own file.
 - **Results are generated, never hand-edited.** After any change under `evals/results/`, run `make readme` and

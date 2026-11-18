@@ -8,8 +8,8 @@ issues, and how the system differs from what was demonstrated. Evaluation result
 
 ```bash
 python -m pip install -r requirements-lock.txt     # Python 3.12 or 3.13, inside a virtual environment (README)
-python scripts/verify_demo.py                      # each demonstrated feature, PASS/FAIL, no key, no server
-python scripts/check.py                            # tests, reproduce every offline result, data checks, docs in sync
+python scripts/check.py                            # tests, reproduce every offline result, data checks, docs in sync,
+                                                   # and each demonstrated feature (PASS/FAIL, no key, no server)
 ```
 
 Against a running or deployed server: `python scripts/verify_demo.py --base-url http://127.0.0.1:8001`. The same
@@ -77,7 +77,9 @@ decisions; evaluation.md, "Evaluations deliberately not run", gives the reason f
   `.env`. Run directly under `SAMPLE_MODE=false`, `assertions.py` has produced spurious `streets_on_routes`
   failures. Check results with `python scripts/reproduce.py` instead ([evaluation.md](evaluation.md), "Results that
   are written to fixed paths").
-- `python scripts/verify_demo.py --base-url ...` saves an untracked `evals/results/verify_<host>.json`.
+- `python scripts/verify_demo.py --base-url ...` saves an untracked `evals/results/verify_<host>.json`. Without
+  `--base-url` or `--out` it rewrites the committed `evals/results/verify.json`, so the next `make check` fails
+  ("docs in sync") until `make report` is run. To check the app, use `make check`.
 - The report test split has 9 rows; a 60-row split would need about 300 labelled reports.
 
 Fixed, each with a regression test: `make check` failed outside a git checkout (secrets scan); the app's PII

@@ -13,7 +13,7 @@ No key, no server, any OS (Python 3.12 or 3.13):
 python scripts/check.py          # = make check: tests, regenerate and compare every offline result, frozen sets, secrets, data checks, docs in sync
 python scripts/reproduce.py      # only the "regenerate and compare" part, with one line per result file
 python scripts/eval_all.py       # = make eval: rewrite the offline results and this page
-python scripts/verify_demo.py    # every demonstrated feature end to end
+python scripts/verify_demo.py --base-url http://127.0.0.1:8001   # every demonstrated feature against a running server
 ```
 
 `scripts/reproduce.py` re-runs every offline evaluation into a temporary folder and compares each number with the
@@ -151,22 +151,23 @@ be compared. Commit the result file together with the labels.
 
 ## Results that are written to fixed paths
 
-Two evaluation scripts write a committed, canonical result file every time they run, with no prompt and no
+Three scripts write a committed, canonical result file every time they run, with no prompt and no
 temporary folder:
 
 | Script | Overwrites | Also depends on |
 | --- | --- | --- |
 | `python evals/assertions.py <dir>` | `evals/results/assertions.json` | the shell's `.env` (`SAMPLE_MODE=false`, processed data), not the pinned settings `reproduce.py` uses |
 | `python evals/judge.py audit <dir>` | `evals/results/judge_audit.json` (labels in `evals/labels/`) | live gateway calls under the shell's `.env` |
+| `python scripts/verify_demo.py` (no `--base-url`, no `--out`) | `evals/results/verify.json` | the data the app serves; its date and git sha appear in this page, so `make check` fails until `make report` |
 
-Running either one "to check a number" replaces the committed result with one made under different settings.
+Running any of them "to check a number" replaces the committed result with one made under different settings.
 This has happened twice: commit `16049e2` restored an `assertions.json` that had spurious `streets_on_routes`
 failures, and the secondary judge audit's output was lost (above). Rules:
 
 - To check committed results, run `python scripts/reproduce.py` (`make reproduce`) or `python scripts/check.py`
   (`make check`). They regenerate or re-score in a temporary folder and compare. They never write
   `evals/results/`.
-- Run the two scripts directly only to produce a new result on purpose: a new trace run, or new human labels. For a
+- Run them directly only to produce a new result on purpose: a new trace run, or new human labels. For a
   judge audit on any other labels set, use `--labels` (it writes its own file; see above).
 - After any change under `evals/results/`, run `make readme` and `python scripts/build_eval_report.py --write`,
   then `python scripts/check.py`, before committing.

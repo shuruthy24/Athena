@@ -116,14 +116,17 @@ active, so activate it first (without it, `python` is the system Python and fail
 
 ```bash
 source .venv/bin/activate                                      # macOS / Linux, every new terminal
-python scripts/verify_demo.py                                  # every demonstrated feature, in-process, offline
-python scripts/verify_demo.py --base-url http://127.0.0.1:8001 # the server you just started (or a deployed URL)
-python scripts/check.py                                        # = make check: tests, reproduce results, data, docs
+python scripts/check.py                                        # = make check: tests, reproduce results, data, docs,
+                                                               #   and every demonstrated feature in-process
+python scripts/verify_demo.py --base-url http://127.0.0.1:8001 # every feature against the server you just started
 ```
 
-Each prints PASS/FAIL per feature. On Windows, use `.venv\Scripts\python` instead of `python`. With `--base-url`,
+Both print PASS/FAIL per step. On Windows, use `.venv\Scripts\python` instead of `python`. With `--base-url`,
 `verify_demo.py` saves its result as `evals/results/verify_<host>.json` (for example `verify_127_0_0_1.json`). The
-file is untracked: delete it, or commit it on purpose as evidence for a deployed URL.
+file is untracked: delete it, or commit it on purpose as evidence for a deployed URL. Do not run
+`verify_demo.py` without `--base-url` or `--out` to "check" the app: it then rewrites the committed
+`evals/results/verify.json`, and the next `make check` fails until the docs are regenerated (`make report`).
+`make check` already runs the same in-process checks into a temporary file.
 
 **Disk quota (e.g. UNSW lab machines):** the virtual environment is about 450 MB. If your home directory has a
 quota, create it outside the home directory and activate that one instead of `.venv`:
@@ -147,7 +150,7 @@ Every `make` target has a plain-Python equivalent, so nothing needs `make` on Wi
 | Command | Without make | What it does |
 | --- | --- | --- |
 | `make check` | `python scripts/check.py` | tests; regenerate every offline result and compare with the committed files; frozen held-out sets; secrets scan; data checks; README and docs/evaluation.md in sync; demo features. Changes no file. |
-| `make verify` | `python scripts/verify_demo.py [--base-url URL]` | every demonstrated feature end to end → `evals/results/verify.json` |
+| `make verify` | `python scripts/verify_demo.py [--base-url URL]` | every demonstrated feature end to end → rewrites `evals/results/verify.json` (then `make report`), or `verify_<host>.json` with `--base-url` |
 | `make reproduce` | `python scripts/reproduce.py` | one line per result file: regenerated and identical, or what it needs (key, labels, raw data) |
 | `make eval` | `python scripts/eval_all.py` | rewrite the offline results (sample data, no model calls), the README table and docs/evaluation.md |
 | `make eval-real` | see Makefile | the same evaluations on `data/processed` (real data) |
