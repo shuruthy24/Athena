@@ -298,7 +298,7 @@ def map_page():
 
 @app.get("/prototype")
 def prototype_page():
-    """The pre-existing route map (built before the hackathon), framed with the app's navigation."""
+    """The pre-existing prototype route map, framed with the app's navigation."""
     return _page("prototype.html")
 
 

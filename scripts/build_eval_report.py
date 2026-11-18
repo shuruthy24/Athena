@@ -63,7 +63,7 @@ def rows() -> list[dict]:
         ok = (b.get("median_risk_reduction_pct") or 0) > 0 and (b.get("median_extra_min") or 0) <= 5
         add(cap="Route choice", q="Does Athena's ranking surface a lower-risk option at little extra time?",
             data=(f"{b.get('trips')} trip × time cases, {ds} data "
-                  + ("(hand-made hackathon sample: regression set, not evidence)" if ds == "sample" else "(OSM + OTP, real)")),
+                  + ("(hand-made sample: regression set, not evidence)" if ds == "sample" else "(OSM + OTP, real)")),
             metric="median route-risk reduction vs fastest; median extra minutes (Athena's own rule: see note)",
             baseline=(f"fastest 0%; most-lit heuristic {heur.get('median_risk_reduction_pct')}% for "
                       f"+{heur.get('median_extra_min')} min; least walking {allm.get('least_walking', {}).get('median_risk_reduction_pct')}%"),

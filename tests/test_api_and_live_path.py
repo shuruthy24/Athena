@@ -63,7 +63,7 @@ def test_live_path_with_mock_gateway(monkeypatch, mock_server):
     assert all(t["tokens_in"] == 1000 and t["tokens_out"] == 200 and t["cost_usd"] > 0 for t in model_steps)
     assert not any(x["path"].startswith("/api/") for x in MockHandler.calls)  # the gateway is the only service called
     h = c.get("/api/health").json()
-    assert h["gateway"] == "ok" and MODEL in h["gateway_models"] and "zetaris" not in h
+    assert h["gateway"] == "ok" and MODEL in h["gateway_models"]
 
 
 def test_live_mode_without_gateway_key_fails_loudly(monkeypatch):

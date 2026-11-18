@@ -91,7 +91,7 @@ def fetch(endpoints=ENDPOINTS, timeout=90) -> list[dict]:
         for attempt in range(2):
             try:
                 r = requests.post(url, data={"data": q}, timeout=timeout,
-                                  headers={"User-Agent": "athena-journey-planner/1.0 (hackathon project)"})
+                                  headers={"User-Agent": "athena-journey-planner/1.0"})
                 if r.status_code == 200:
                     return r.json().get("elements", [])
                 last = f"{url}: HTTP {r.status_code}"

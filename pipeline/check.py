@@ -90,7 +90,7 @@ def quality(tables: dict[str, list[dict]], data_dir: Path, now: datetime | None 
                 if age > STALE_DAYS:
                     out["warnings"].append(f"{kind} snapshot is {age} days old (> {STALE_DAYS}): refresh with make ingest")
     else:
-        stale["sample"] = {"note": "hand-made hackathon sample, no fetch date (not real measurements)"}
+        stale["sample"] = {"note": "hand-made sample, no fetch date (not real measurements)"}
     out["staleness"] = stale
     return out
 

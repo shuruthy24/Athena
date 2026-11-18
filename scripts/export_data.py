@@ -1,6 +1,6 @@
 """Export Athena's route and street data into flat tables.
 
-Input (pre-existing, built before the hackathon):
+Input (pre-existing prototype files):
   web/routes.json      OTP-shaped route results (fastest vs Athena variant per trip, band, mode)
   web/streets.geojson  street segments with lighting and a rule-based risk score per time band
 

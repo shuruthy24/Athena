@@ -8,7 +8,7 @@ Output route_legs     one row per leg of every itinerary (journey planner)
 Variant choice uses the app's route rule (athena.analysis.variant_metrics: 0.55 x time-weighted mean + 0.45 x worst
 stretch, with waits at stops and time on board included, see there): "fastest" is the shortest itinerary and
 "athena" the one with the lowest route risk, ties broken by time. When they are the same itinerary both
-labels point at it, as in the hackathon data, and the explanation says the routes are the same.
+labels point at it, as in the sample data, and the explanation says the routes are the same.
 """
 from __future__ import annotations
 

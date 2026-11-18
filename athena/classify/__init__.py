@@ -11,7 +11,8 @@ prompt with a conventional classifier):
 
 Every classifier returns {"action": approve|review|reject, "category": ..., "reason": ...}. Failures raise
 ClassifierError; the app then forces human review. REPORT_CLASSIFIER picks the one the app uses; the default
-"moderator-v1" keeps the hackathon moderator until the team chooses from evals/results/classifier_dev.json.
+"moderator-v1" is the prompted moderator (prompts/moderator.v1.md); the dev comparison in
+evals/results/classifier_dev.json could not separate the candidates, so it stays the default.
 """
 from __future__ import annotations
 

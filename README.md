@@ -84,7 +84,7 @@ not `python3`) and git. No key and no server setup are needed to see and verify 
 labelled offline stand-in instead of the live models.
 
 Clone the **`comp3110`** branch, which holds the current system. The repository's default branch, `main`, is an
-earlier prototype (tag `hackathon-final`) with a different architecture and no `requirements-lock.txt`.
+earlier prototype with a different architecture and no `requirements-lock.txt`.
 
 **macOS / Linux**
 
@@ -210,8 +210,7 @@ Secrets come only from the environment (`.env` is git-ignored; a pre-commit secr
 Personal details are redacted before any model call. Report and street text reach models only as JSON data
 fields; prompts are assumed public and outputs that echo them are rejected. The text guard blocks direct and
 indirect injection in report text before any model call. Inputs are typed (places, bands and modes are enums).
-Rate limits are per client, keyed by a hashed id, so no IP address is stored. An earlier version also had a
-chat router with signed execution contracts (Scout); it was removed because there is no longer a free-text chat.
+Rate limits are per client, keyed by a hashed id, so no IP address is stored.
 
 ## How a route is scored
 
@@ -246,10 +245,3 @@ A rule, not a model (there are no risk labels):
 - The evaluation sets are small and were mostly written by the team that built the system, which flatters the
   numbers. Readiness and its reasons: [docs/design.md](docs/design.md) §7. Everything not implemented, and known
   issues: [docs/STATUS.md](docs/STATUS.md).
-
-## History
-
-Athena began at the Open Agent Hackathon 2026 (Team Athena: Kaira Dumasia, Shuruthy Dhushiyandan, Andrii Rohovyi;
-Wildcard track winner), built on Zetaris, Meterless Nightshift and NVIDIA Nemotron. That version, with its chat
-router and write-up, is tagged `hackathon-final`. The current system replaces the chat with typed endpoints, reads
-data from files only, and calls models through a LiteLLM gateway.

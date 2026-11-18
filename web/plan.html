@@ -274,7 +274,7 @@ async function plan(){
 
 function notices(d){
   const f = d.freshness || {};
-  const base = f.live ? f.note : f.source === "sample" ? "Hand-made sample routes (hackathon), not live." : "Routes precomputed with OpenTripPlanner, not live.";
+  const base = f.live ? f.note : f.source === "sample" ? "Hand-made sample routes, not live." : "Routes precomputed with OpenTripPlanner, not live.";
   const timing = d.timing_note ? " Moved to your departure time: walking and cycling times are exact, public transport times (marked ≈) are estimates." : " Times are scheduled.";
   let html = `<p class="notice">${ICON.info}<span>${esc(base + timing)}</span></p>`;
   if(d.degraded) html += `<p class="notice warn">${ICON.info}<span>${esc(d.degraded)}</span></p>`;

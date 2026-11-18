@@ -12,8 +12,8 @@ Per named street (all OSM ways sharing a name are combined, weighted by length):
   venues_<band>   venues within VENUE_RADIUS_M whose opening_hours say they are open at that band
                   (Friday 6 pm, 10 pm, and 1 am Saturday); venues with unknown hours are not counted
 
-Street risk rule (a rule, not a model: there are no risk labels). The hackathon's hand-made
-streets had risk values but no written formula, so this rule is new and the team should review its weights.
+Street risk rule (a rule, not a model: there are no risk labels). The hand-made sample
+streets had risk values but no written formula; this rule is the written formula, and its weights are a team judgement.
   risk_<band> = highway base + lighting term + tunnel term + quiet term(band) + late term(band) + lamp bonus
   lighting term: lit 0, unknown UNKNOWN_LIT_TERM (0.15), unlit UNLIT_TERM (0.30). Unknown is scored halfway
   (Option 2, team decision 15 Nov 2026): never as unlit, but not free either, so routes are not steered onto

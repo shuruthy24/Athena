@@ -39,7 +39,7 @@ class Settings:
     judge_model: str
     fallback_model: str
     llm_timeout_s: float
-    # Report classifier the app uses (athena/classify); moderator-v1 = the hackathon moderator prompt
+    # Report classifier the app uses (athena/classify); moderator-v1 = the moderator prompt (prompts/moderator.v1.md)
     report_classifier: str
     # Keys the hashed client id used by the rate limit
     rate_limit_secret: str

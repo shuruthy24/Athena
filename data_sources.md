@@ -77,11 +77,11 @@ Coverage per data version: `evals/results/data_coverage.json`.
 | Retrieved | 27 Oct 2026 (`fetched` field in `data/safety_points.json`) |
 | Rows kept | 265 points (police, hospitals, stations, emergency phones); `/api/safety-points` serves police, hospitals and stations |
 
-### Hand-made sample (hackathon)
+### Hand-made sample
 
 `data/streets.json` (12), `data/route_steps.json` (186), `data/route_legs.json` (108),
 `data/leg_streets.json` (204), `data/places.json` (7) and `data/reports.json` (14) were made by the team
-during the hackathon from a pre-existing route map (`web/routes.json`, `web/streets.geojson`). The street
+from a pre-existing prototype route map (`web/routes.json`, `web/streets.geojson`). The street
 risk values were assigned by hand. They are test fixtures and the fallback the app serves until `make
 data` has built both streets and trips; they are not evidence about real streets. The 14 reports are
 synthetic.
@@ -139,13 +139,13 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
 | `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` | live explainer outputs on the sample routes | LiteLLM gateway | error analysis, assertions | 36 |
 | `evals/labels/{dev,heldout}.json` | human PASS/FAIL, split by `assignment.json` (seeded, written before labelling) | team | judge dev / held-out | 36 |
 | `evals/user_study/sessions.csv` | task-study answers | consent text in `docs/user_study.md` | outcome | – |
-| `data/reports.json` | 14 synthetic hackathon reports with expected actions | project | regression set | 14 |
+| `data/reports.json` | 14 synthetic reports with expected actions | project | regression set | 14 |
 
 ## Synthetic data: how it was made and what it cannot show
 
 | Set | How it was generated | Represents | Limits |
 | --- | --- | --- | --- |
-| Hand-made routes and street risks (`data/*.json`) | drawn by the team from a pre-existing route map during the hackathon; risks assigned by hand | the app's data shapes and a few plausible trade-offs | not measurements; regression use only |
+| Hand-made routes and street risks (`data/*.json`) | drawn by the team from a pre-existing prototype route map; risks assigned by hand | the app's data shapes and a few plausible trade-offs | not measurements; regression use only |
 | Critic corruptions | fact-only claims corrupted five ways in `evals/run_evals.py` | wrong numbers, "safe", streets on neither route, missing citations, reversed direction | tests the rules, not how real models fail |
 | Guard held-out probes | written to imitate realistic attempts (instructions to the moderator, JSON payloads, other languages, obfuscation) and realistic benign reports with trigger words | how the guard generalises beyond its dev set | the writer had read the patterns; real attempts (red-team) are better evidence |
 | PII cases | fictional names, numbers and addresses in report-like sentences | phone, email, address, plate, URL, card, name, student id | covers formats we thought of; real reports will contain others |

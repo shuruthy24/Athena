@@ -95,9 +95,9 @@ class LocalSource:
         self.processed = (self.data_dir / "manifest.json").exists()
         if self.processed:
             self.name = "processed.parquet"
-        else:   # the hackathon sample was drawn by hand from a pre-existing route map, not planned by OTP
+        else:   # the sample was drawn by hand from a pre-existing route map, not planned by OTP
             self.freshness = {"source": "sample", "live": False,
-                              "note": "Hand-made sample routes from the hackathon, precomputed by hand: not live and not planned by OTP."}
+                              "note": "Hand-made sample routes, precomputed by hand: not live and not planned by OTP."}
 
     def route_legs(self, origin, destination, band, mode):
         t0 = time.perf_counter()
@@ -121,7 +121,7 @@ class LocalSource:
 
     def provenance(self) -> dict:
         """What data this source serves, for the UI badge, /api/health and every trace: the processed OSM +
-        OTP rebuild (with the raw snapshots and hashes from manifest.json) or the hand-made hackathon sample.
+        OTP rebuild (with the raw snapshots and hashes from manifest.json) or the hand-made sample.
         The interface shows this so nobody mistakes the sample for real streets."""
         if getattr(self, "_provenance", None) is not None:
             return self._provenance
@@ -147,7 +147,7 @@ class LocalSource:
             except FileNotFoundError:
                 names = {}
             trips = ", ".join(" → ".join(names.get(x, x) for x in p.split("|")) for p in pairs)
-            out.update(label=("Hand-made sample routes from the hackathon, not real measurements "
+            out.update(label=("Hand-made sample routes, not real measurements "
                               f"({len(pairs)} routable trips: {trips})"))
         self._provenance = out
         return out

@@ -94,8 +94,6 @@ data.
 | --- | --- | --- | --- |
 | Data | real OSM + OTP data (`data/processed`) | the same tables, committed; the hand-made sample remains the offline regression set | — |
 | Models | live gateway (explainer `scx-gemma-4-31B-it`, critic and moderator `scx-gpt-oss-120b`) | identical with a key in `.env`; without one, `SAMPLE_MODE` uses an offline stand-in, labelled in the UI and in every response (`drafted_by`) | a reader may not have a gateway key |
-| Chat / Ask page, Scout router, signed contracts | earlier hackathon version (tag `hackathon-final`) | removed; replaced by two typed endpoints | no free-text chat is needed; smaller attack surface |
-| Zetaris, Meterless Nightshift, NVIDIA Nemotron | earlier hackathon stack | removed (the `hackathon-final` tag keeps them) | a LiteLLM gateway and plain files |
 | Prototype map with a "Live OTP" toggle | shown | unchanged, under `/prototype`, labelled pre-existing | live OTP needs a local OTP server |
 | Deployment | — | not deployed; runs locally | see "Not implemented" |
 
