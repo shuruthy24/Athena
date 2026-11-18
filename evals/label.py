@@ -32,7 +32,7 @@ ACTIONS = {"a": "approve", "r": "review", "j": "reject"}
 CATEGORIES = ("lighting", "isolation", "harassment", "infrastructure", "positive", "other")
 
 
-# ---------------------------------------------------------------- traces
+# traces
 def assign(trace_ids: list[str], heldout: int, seed: int = SEED) -> dict:
     ids = sorted(trace_ids)
     random.Random(seed).shuffle(ids)
@@ -89,7 +89,7 @@ def label_traces(run: Path, heldout: int = 20, ask=input, out=print, labels: Pat
     return {k: len(v) for k, v in done.items()}
 
 
-# ---------------------------------------------------------------- reports
+# reports
 def read_sheet(path: Path = SHEET) -> tuple[list[str], list[dict]]:
     with path.open(newline="", encoding="utf-8") as fh:
         r = csv.DictReader(fh)
@@ -141,7 +141,7 @@ def add_reports(author_group: str, source: str, ask=input, out=print, path: Path
         band = ""
         while band not in ("18", "22", "01"):
             band = ask("Time band 18 / 22 / 01: ").strip()
-        row = {f: "" for f in fields}
+        row = dict.fromkeys(fields, "")
         row.update(id=f"r-{uuid.uuid4().hex[:8]}", street=street, band=band, text=text, source=source,
                    author_group=author_group, created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
         rows.append(row)

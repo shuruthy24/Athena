@@ -25,7 +25,7 @@ def streets():
     return {r["name"]: r for r in rows}, stats
 
 
-# ---------------------------------------------------------------- opening hours
+# opening hours
 @pytest.mark.parametrize("value,band,expected", [
     ("24/7", "01", True),
     ("Mo-Su 16:00-02:00", "01", True),          # Friday's span runs past midnight
@@ -40,7 +40,7 @@ def test_opening_hours(value, band, expected):
     assert opening_hours.open_at(value, band) is expected
 
 
-# ---------------------------------------------------------------- cleaning helpers
+# cleaning helpers
 def test_remove_pii_marks_each_kind():
     text, kinds = remove_pii("Call 0412 345 678 or mail a.b@example.com, I live at 12 Smith Street, see www.x.com")
     assert "0412" not in text and "@" not in text and "12 Smith" not in text and "www." not in text
@@ -58,7 +58,7 @@ def test_duplicates_and_conflicts():
     assert fixed[0]["t"] == "ab\nc" and n == 1
 
 
-# ---------------------------------------------------------------- features and risk rule
+# features and risk rule
 def test_street_features(streets):
     s, stats = streets
     assert set(s) == {"George Street", "Moore Park path", "Quiet Lane", "Station Tunnel Walk", "Market Lane"}
@@ -88,7 +88,7 @@ def test_risk_rule_orders_streets_sensibly(streets):
     assert lit < unknown < unlit and round(unknown - lit, 2) == round(unlit - unknown, 2) == 0.15
 
 
-# ---------------------------------------------------------------- trips
+# trips
 def _otp_snapshot(slow_street: str, fast_street: str) -> dict:
     def itin(i, minutes, street):
         legs = [{"itinerary": i, "leg": 0, "leg_mode": "WALK", "line": None, "total_min": minutes,
@@ -118,7 +118,7 @@ def test_same_itinerary_gets_both_labels(streets):
     assert {r["variant"] for r in steps} == {"fastest", "athena"} and stats["fastest_is_athena"] == 1
 
 
-# ---------------------------------------------------------------- export, LocalSource, check
+# export, LocalSource, check
 @pytest.fixture()
 def raw_dir(tmp_path):
     raw = tmp_path / "raw"
@@ -183,7 +183,7 @@ def test_sample_data_passes_check():
     assert all(ok for _, ok, _ in results), [r for r in results if not r[1]]
 
 
-# ---------------------------------------------------------------- ingest
+# ingest
 def test_overpass_query_and_raw_files_are_never_overwritten(tmp_path):
     q = overpass_query()
     assert "-33.93,151.17,-33.85,151.26" in q and "street_lamp" in q and "out geom" in q

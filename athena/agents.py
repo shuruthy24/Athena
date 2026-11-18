@@ -101,7 +101,7 @@ class Athena:
         # data has ways named "1" or "2" (platforms, numbered paths), which as substrings matched every number.
         self._street_patterns = street_patterns(self.known_streets)
 
-    # ------------------------------------------------------------------ helpers
+    # helpers
     def _prompt_tag(self, role: str) -> str:
         p = self.prompts[role]
         return f"{p.id}@{p.sha}"
@@ -123,7 +123,7 @@ class Athena:
         trace.persist(request, resp)
         return resp
 
-    # ------------------------------------------------------------------ entry points
+    # entry points
     def explain(self, trip: dict, question: str = DEFAULT_QUESTION) -> dict:
         """Explain the trade-off between the fastest route and Athena's lower-risk route for one trip."""
         trace = Trace()
@@ -133,7 +133,7 @@ class Athena:
         resp = {**base, **self._route(p, question, trace)}
         return self._finish(trace, resp, {"trip": p})
 
-    # ------------------------------------------------------------------ routes
+    # routes
     def _route(self, p: dict, message: str, trace: Trace) -> dict:
         if p["origin"] not in PLACES or p["destination"] not in PLACES:
             return {"answer": "I don't recognise that trip yet.", "confidence": None}
@@ -285,7 +285,7 @@ class Athena:
         trace.step("reporter", "critic rejected every draft; using fact-only explanation", verdict="fallback")
         return headline, [{**c, "supported": True, "problems": []} for c in claims], "fallback"
 
-    # ------------------------------------------------------------------ reports
+    # reports
     def submit_report(self, street: str | None, band: str, text: str) -> dict:
         """Moderate one anonymous street report: redact PII, block instructions, classify, verify against
         street data, queue. The report text reaches the model only as a quoted JSON field."""

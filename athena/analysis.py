@@ -42,7 +42,7 @@ def report_penalties(band: str, now: datetime | None = None, path: Path | None =
 
 
 STREET_MODES = ("WALK", "BICYCLE")
-# Exposure while riding a tram, bus, train or ferry: a fixed assumption (team decision, 15 Nov 2026), below every
+# Exposure while riding a tram, bus, train or ferry: a fixed assumption (team decision), below every
 # street score the rule can give (the lowest is about 0.15, a lit main road at 6 pm). Not measured.
 IN_VEHICLE_RISK = 0.10
 MIN_WAIT_S = 30             # shorter gaps between legs are transfers on foot, not waits at a stop

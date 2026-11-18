@@ -272,7 +272,7 @@ def main() -> int:
 
 def write_report(res: dict, out: Path) -> None:
     gd, cr, rp, ro = res["guard"], res["critic"], res["reports"], res["routes"]
-    L = [f"# Athena evaluation report", "", f"Generated {res['generated']} by `python3 evals/run_evals.py`"
+    L = ["# Athena evaluation report", "", f"Generated {res['generated']} by `python3 evals/run_evals.py`"
          + (" --live" if rp["model"] != SampleLLM.MODEL else "") + ".", "",
          "All numbers below come from the run that wrote this file. Sets are small; read them as smoke tests, "
          "not benchmarks (Meterless says the same of its own 32-example v1 corpus).", "",

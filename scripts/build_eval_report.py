@@ -5,7 +5,7 @@
   python scripts/build_eval_report.py --check   # exit 1 if docs/evaluation.md is out of date (make check)
 
 Targets are the ones written in docs/metrics.md before each evaluation first ran (the injection admit rate was
-added on 18 Nov 2026, before its first live run). A verdict is computed, never typed:
+added before its first live run). A verdict is computed, never typed:
 "meets", "misses", "not run yet", or "descriptive" where no target was set in advance.
 """
 from __future__ import annotations

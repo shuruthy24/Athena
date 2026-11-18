@@ -1,4 +1,4 @@
-"""Does "lamps mapped along a street" agree with OSM's own lit tag? (Option 1, 15 Nov 2026)
+"""Does "lamps mapped along a street" agree with OSM's own lit tag?
 
   python evals/eval_lit_inference.py          # reads data/processed/streets.parquet (run `make data` first)
                                               # writes evals/results/lit_inference.json

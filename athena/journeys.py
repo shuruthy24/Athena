@@ -39,7 +39,7 @@ LABELS = {
     "high": "Higher risk indicators",
     "unknown": "Insufficient lighting data",
 }
-# Journeys are labelled against the fastest option (team decision, 15 Nov 2026): the rule's absolute scores have
+# Journeys are labelled against the fastest option (team decision): the rule's absolute scores have
 # no ground truth, and on the real data most streets land in "high", so only the comparison is meaningful.
 RELATIVE_LABELS = {
     "reference": "Fastest option",
@@ -88,9 +88,9 @@ def shift_iso(iso: str | None, minutes: int) -> str | None:
     return (datetime.fromisoformat(iso) + timedelta(minutes=minutes)).isoformat()
 
 
-def band_label(risk: float | None, unknown_pct: float) -> tuple[str, str]:
-    """Band from the risk score. Missing lighting no longer hides the band (unknown lighting is scored halfway,
-    team decision 15 Nov 2026); it lowers the journey's `confidence` instead, which the planner shows."""
+def band_label(risk: float | None) -> tuple[str, str]:
+    """Band from the risk score. Missing lighting doesn't hide the band (unknown lighting is scored halfway);
+    it lowers the journey's `confidence` instead, which the planner shows."""
     if risk is None:
         return "unknown", LABELS["unknown"]
     key = "low" if risk < BAND_LOW else "medium" if risk < BAND_MEDIUM else "high"
@@ -401,7 +401,7 @@ class JourneyPlanner:
                     "polyline": r.get("polyline"), "safety": leg_safety,
                 })
             safety = score_streets(all_steps, by_name, band, penalties, extra=extra if timed else None)
-            key, label = band_label(safety["risk"], safety.get("unknown_share_pct") or 0)
+            key, label = band_label(safety["risk"])
             safety["band"] = key           # replaced by a label relative to the fastest option in plan()
             safety["label"] = label
             safety["confidence"] = ("high" if (safety.get("unknown_share_pct") or 0) < 10

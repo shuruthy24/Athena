@@ -57,7 +57,7 @@ No personal data: OSM describes places, not people, and free-text OSM tags are n
 """
 
 
-# ---------------------------------------------------------------- frozen evaluation sets
+# frozen evaluation sets
 # evals/checksums.txt holds one "sha256  path" line per held-back set (the report test split, the guard's held-out
 # probes, ...). A frozen set is never edited or used for tuning; `make check` fails if one changes.
 

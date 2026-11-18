@@ -115,7 +115,7 @@ def run(split: str, names: list[str], llm=None, model: str | None = None, budget
 
 
 def table(res: dict) -> str:
-    L = [f"| Candidate | n | TNR hold | TPR admit | Category macro-F1 | Malformed | p50 ms | Cost per report USD |",
+    L = ["| Candidate | n | TNR hold | TPR admit | Category macro-F1 | Malformed | p50 ms | Cost per report USD |",
          "|---|---|---|---|---|---|---|---|"]
     for r in res["results"]:
         L.append(f"| {r['candidate']} | {r['n']} | {r['tnr_hold']} | {r['tpr_admit']} | {r['category_macro_f1']} | "

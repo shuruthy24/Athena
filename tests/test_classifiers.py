@@ -33,7 +33,7 @@ def toy(n=40, offset=0):
     return rows
 
 
-# ---------------------------------------------------------------- baselines
+# baselines
 @pytest.mark.parametrize("text,action,category", [
     ("Two street lights out by the stairs", "approve", "lighting"),
     ("Got followed for a block after the bus", "approve", "harassment"),
@@ -62,7 +62,7 @@ def test_tfidf_learns_and_round_trips(tmp_path):
         TfidfClassifier.load(path, expect="tfidf-svm")
 
 
-# ---------------------------------------------------------------- prompted classifier
+# prompted classifier
 def test_strict_parse_accepts_only_the_contract():
     assert strict_parse('{"action": "approve", "category": "lighting", "reason": "lights out"}')["action"] == "approve"
     for bad in ['```json\n{"action": "approve", "category": "lighting", "reason": "x"}\n```',
@@ -101,7 +101,7 @@ def test_prompted_classifier_keeps_report_text_out_of_the_system_prompt():
     assert "{{SHOTS}}" not in clf.system and clf.name == "prompt-5shot"
 
 
-# ---------------------------------------------------------------- verifier and app wiring
+# verifier and app wiring
 @pytest.mark.parametrize("mod,expected", [
     ({"action": "approve", "category": "lighting", "reason": "x"}, "approve"),
     ({"action": "reject", "category": "other", "reason": "x"}, "reject"),
@@ -139,7 +139,7 @@ def test_unknown_classifier_name_fails_loudly():
         build_classifier("magic")
 
 
-# ---------------------------------------------------------------- eval script
+# eval script
 @pytest.fixture()
 def reports(tmp_path):
     for name, rows in (("train", toy(40)), ("dev", toy(15, 100)), ("test", toy(15, 200))):

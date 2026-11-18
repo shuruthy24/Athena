@@ -42,12 +42,12 @@ def decode(poly):
 
 
 def test_band_labels_use_validated_thresholds_and_never_say_safe():
-    assert band_label(0.10, 0)[0] == "low"
-    assert band_label(0.33, 0)[0] == "medium"
-    assert band_label(0.549, 0)[0] == "medium"
-    assert band_label(0.55, 0)[0] == "high"
-    assert band_label(0.20, 31)[0] == "low"         # missing lighting lowers confidence, not the band
-    assert band_label(None, 0)[0] == "unknown"
+    assert band_label(0.10)[0] == "low"
+    assert band_label(0.33)[0] == "medium"
+    assert band_label(0.549)[0] == "medium"
+    assert band_label(0.55)[0] == "high"
+    assert band_label(0.20)[0] == "low"         # missing lighting lowers confidence, not the band
+    assert band_label(None)[0] == "unknown"
     assert not any("safe" in v.lower().split() for v in LABELS.values())
 
 
@@ -78,7 +78,7 @@ def test_every_mode_returns_comparable_options_with_real_geometry(mode):
 def test_transit_options_match_verified_output():
     r = plan("transit", "fastest")
     fast, alt = r["journeys"]
-    # Time-weighted with time on board at 0.10 (15 Nov 2026); before: 0.451 and 0.272, distance-weighted walking only.
+    # Time-weighted, with time on board scored at 0.10.
     assert (fast["total_min"], fast["transfers"], fast["safety"]["risk"]) == (36.5, 1, 0.376)
     assert (alt["total_min"], alt["transfers"], alt["safety"]["risk"]) == (39.4, 0, 0.206)
     assert (fast["safety"]["band"], alt["safety"]["band"]) == ("reference", "lower")

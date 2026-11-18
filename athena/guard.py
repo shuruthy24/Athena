@@ -26,7 +26,7 @@ PII_PATTERNS = [
     ("email", re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")),
     ("plate", re.compile(r"\b(rego|plate)\s*[:#]?\s*[A-Z0-9]{2,7}\b", re.I)),
 ]
-# Patterns the ingest cleaner always had; since 18 Nov 2026 the app applies them too, so every report gets the same
+# Patterns the ingest cleaner always had; the app now applies them too, so every report gets the same
 # redaction before any model call (evals/results/pii_before_fixes.json showed the app path missing these kinds).
 # Addresses with a house number are removed even when they are a business used as a location: the report's street
 # is a separate field, and a home address is worse to leak than a shop's number is to lose.

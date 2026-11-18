@@ -16,7 +16,7 @@ Street risk rule (a rule, not a model: there are no risk labels). The hand-made 
 streets had risk values but no written formula; this rule is the written formula, and its weights are a team judgement.
   risk_<band> = highway base + lighting term + tunnel term + quiet term(band) + late term(band) + lamp bonus
   lighting term: lit 0, unknown UNKNOWN_LIT_TERM (0.15), unlit UNLIT_TERM (0.30). Unknown is scored halfway
-  (Option 2, team decision 15 Nov 2026): never as unlit, but not free either, so routes are not steered onto
+  (team decision): never as unlit, but not free either, so routes are not steered onto
   streets we know nothing about. The street's lit value stays None, so explanations still report it as unknown
   lighting and confidence stays low.
 """
@@ -41,12 +41,12 @@ HIGHWAY_BASE = {  # busier main roads score lower than paths away from traffic
     "footway": 0.40, "path": 0.40, "cycleway": 0.40, "steps": 0.40, "track": 0.40,
 }
 UNLIT_TERM = 0.30
-UNKNOWN_LIT_TERM = 0.15     # halfway between lit (0) and unlit (UNLIT_TERM); team decision 15 Nov 2026
+UNKNOWN_LIT_TERM = 0.15     # halfway between lit (0) and unlit (UNLIT_TERM); team decision
 TUNNEL_TERM = 0.15
 LATE_TERM = {"18": 0.0, "22": 0.05, "01": 0.10}
 LAMP_BONUS = -0.05          # applied when lit and at least LAMP_DENSE lamps per 100 m
 LAMP_DENSE = 2.0
-# Lamp inference (Option 1, 15 Nov 2026). Acceptance criteria were fixed before the agreement was measured
+# Lamp inference. Acceptance criteria were fixed before the agreement was measured
 # (evals/eval_lit_inference.py): on streets that have an OSM lit tag, at least 90% of lamp-inferred "yes" must be
 # OSM "yes", on at least 30 such streets. The thresholds below are set from street-light spacing, not tuned.
 INFER_LIT_FROM_LAMPS = True   # passed: evals/results/lit_inference.json

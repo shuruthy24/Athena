@@ -1,4 +1,4 @@
-"""Match OTP walk/bike legs to OSM ways by location, not by name (Option 3, 15 Nov 2026).
+"""Match OTP walk/bike legs to OSM ways by location, not by name.
 
 OTP's step names are unreliable for scoring: unnamed ways come back as "path" or "sidewalk", and some steps carry
 a cycle-route name. Instead we follow each leg's route line (OTP's encoded polyline), take a point every SAMPLE_M

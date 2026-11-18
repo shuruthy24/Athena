@@ -49,7 +49,7 @@ def test_analysis_sheet_rows_keep_human_columns_empty(tmp_path):
     assert all(not r["vibe_verdict"] and not r["failure_category"] for r in rows)
 
 
-# ---------------------------------------------------------------- assertions: one pass, one fail each
+# assertions: one pass, one fail each
 def good(traces):
     return copy.deepcopy(next(r for r in traces[1] if len(r["explanation"]["claims"]) >= 2
                               and (r["facts"].get("risk_reduction_pct") or 0) > 0))
@@ -102,7 +102,7 @@ def test_run_all_counts(traces):
     assert res["traces"] == 36 and set(res["assertions"]) == {a.__name__ for a in A.ASSERTIONS}
 
 
-# ---------------------------------------------------------------- judge contract and audit
+# judge contract and audit
 @pytest.mark.parametrize("raw", [
     '```json\n{"verdict": "PASS", "reason": "ok"}\n```', 'PASS', '{"verdict": "PASS"}',
     '{"verdict": "PASS", "reason": "ok", "score": 1}', '{"verdict": "pass", "reason": "ok"}',
@@ -165,7 +165,7 @@ def test_secondary_labels_cannot_overwrite_the_primary_audit():
                    "--out", str(J.CANONICAL_OUT)]) == 2
 
 
-# ---------------------------------------------------------------- blind A/B
+# blind A/B
 @pytest.fixture()
 def ab_dir(traces, tmp_path):
     src = tmp_path / "traces"
