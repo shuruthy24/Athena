@@ -160,13 +160,6 @@ Every `make` target has a plain-Python equivalent, so nothing needs `make` on Wi
 | `python evals/compare_models.py`, `evals/eval_classifier.py`, `evals/eval_injection_e2e.py --live`, `evals/judge.py audit`, `evals/ab.py` | | live evaluations (gateway key; each has a call budget) |
 | `make docker` / `make load-test BASE_URL=...` | | container image / load test of a deployed URL |
 
-## Status
-
-What is built, what was demonstrated and how to verify each feature, what is not finished, the known limitations,
-and how this repository differs from what was demonstrated: **[docs/STATUS.md](docs/STATUS.md)**. Evaluation method, data,
-baselines and every result: **[docs/evaluation.md](docs/evaluation.md)**. Data sources, licences, privacy and the
-reproducible data workflow: **[data_sources.md](data_sources.md)**.
-
 ## Repository map
 
 ```
@@ -214,18 +207,9 @@ Rate limits are per client, keyed by a hashed id, so no IP address is stored.
 
 ## How a route is scored
 
-A rule, not a model (there are no risk labels):
-
-- **Street score** per hour (6 pm, 10 pm, 1 am): path type, tunnel, venues open nearby, time of night, and
-  lighting: lit +0, **unknown +0.15**, unlit +0.30. Unknown lighting is scored halfway (a team decision) and still shown as
-  unknown; it is never treated as dark. Lighting comes from OSM `lit` tags, or "lit"
-  inferred from mapped street lamps (`evals/results/lit_inference.json`).
-- **Route score** = 0.55 × mean + 0.45 × worst stretch. On the real data the mean is weighted by **time** over
-  the whole trip: walking and cycling at their street's score, **waiting at a stop** at the score of the nearest
-  street, and **time on board** a tram, bus or train at a fixed **0.10** (an assumption below every street score,
-  not a measurement).
-- **Labels** are relative to the fastest option: lower, similar (within 5%) or higher. The rule's absolute values
-  have no ground truth, so the planner does not call a route "high" or "low" risk on its own.
+A rule, not a model (there are no risk labels): route score = 0.55 × time-weighted mean street score + 0.45 × worst
+stretch, with unknown lighting scored halfway and always shown as unknown. Options are labelled lower, similar or
+higher risk relative to the fastest option. Full rule and its assumptions: [docs/model_card.md](docs/model_card.md).
 
 ## Limitations
 
