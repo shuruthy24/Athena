@@ -1,115 +1,104 @@
-# Athena evaluation: method, data, baselines and results
+# Evaluation
 
-This page says what Athena has to get right, how each part is measured, against what baseline, on which data, and
-what the numbers are. The results table is **generated** from `evals/results/` by `scripts/build_eval_report.py`,
-and `make check` fails if it is out of date, so no number here is typed by hand. Metric definitions and targets
-were written in [metrics.md](metrics.md) before each evaluation first ran.
+This page explains what Athena needs to get right, how we measured each part, what we compared it against, and
+what we found. The results table is generated from `evals/results/` by `scripts/build_eval_report.py`, so no
+number in it is typed by hand, and `make check` fails if it is out of date. We wrote each metric and target in
+[metrics.md](metrics.md) before running that evaluation.
 
 ## Summary
 
-What the evaluations support, with the file behind each claim (all in `evals/results/`):
+- **Explanations stay faithful to the facts.** All 36 live explanation traces pass every code check, and the
+  critic rules catch all 276 planted errors. The LLM judge can't be trusted yet, because our held-out labels have
+  no failing examples to test it on.
+- **The model's explanation isn't clearly better than the plain fact-only one.** In 6 blind comparisons people
+  picked each 3 times.
+- **The report guard alone isn't enough.** It catches every attempt in the set we tuned it on, but only 0.21 of
+  held-out ones, and 4 of 24 injected reports still got through the full pipeline with the live classifier.
+- **The risk score doesn't favour lit streets on real data.** The lower-risk pick barely changes the score and
+  has a slightly lower lit share than the fastest route.
+- **We couldn't choose a report classifier on evidence,** because the dev split has no reports that should be held.
+- **The data and the app pass their checks:** no data-quality failures, and 17 of 17 feature checks pass.
 
-- **Explanations are faithful to the route facts.** All 36 live explainer traces pass every code assertion
-  (`assertions.json`), and the critic rules catch all 276 synthetic corruptions (`offline.json`). The LLM judge
-  cannot yet be trusted as a second check: its held-out labels contain no FAIL case, so TNR is undefined
-  (`judge_audit.json`).
-- **The LLM text is not shown to beat the fact-only text.** People preferred each 3 times in 6 blind pairs (`ab.json`).
-- **The report guard is not enough on its own.** It scores 1.0 on the set it was tuned on but catches 0.208 of
-  held-out probes; with the live moderator behind it, 4 of 24 injected reports are still admitted
-  (`offline.json`, `injection_e2e.json`).
-- **PII redaction** removes all 17 spans in the regression set (`pii.json`); that set shaped the patterns, so this is
-  an upper bound.
-- **The risk indicator is not lighting-aware on real data.** Athena's lower-risk pick lowers its own risk score by
-  a median 1.7% but puts less of the trip on lit streets than the fastest route (`route_baselines.json`).
-- **The report classifier choice is not decided by evidence:** dev and test contain no reports that should be held,
-  so every candidate scores the same on the admit/hold decision (`classifier_dev.json`).
-- **The data and the app check out:** 0 data-quality failures (`data_quality.json`) and 17 of 17 feature checks
-  (`verify.json`).
+All sets are small (tens of cases), so every rate comes with a 95% confidence interval, and most sets were written
+by us.
 
-Samples are small throughout (tens of cases; intervals are shown), and most sets were written by the team.
+## How to reproduce
 
-## Reproduce
-
-No key, no server, any OS (Python 3.12 or 3.13):
+No key or server is needed:
 
 ```bash
-python scripts/check.py          # = make check: tests, regenerate and compare every offline result, frozen sets, secrets, data checks, docs in sync
-python scripts/reproduce.py      # only the "regenerate and compare" part, with one line per result file
-python scripts/eval_all.py       # = make eval: rewrite the offline results and this page
-python scripts/verify_demo.py --base-url http://127.0.0.1:8001   # every demonstrated feature against a running server
+python scripts/check.py        # everything below, plus tests, data checks and docs in sync (= make check)
+python scripts/reproduce.py    # regenerate each offline result and compare it with the committed file
+python scripts/eval_all.py     # rewrite the offline results and this page (= make eval)
 ```
 
-`scripts/reproduce.py` re-runs every offline evaluation into a temporary folder and compares each number with the
-committed file. It ignores timestamps and latencies, re-scores the saved live traces offline, and lists what needs
-the gateway key, human labels, a deployed URL or the raw data, with the command for each. With the raw snapshots
-present (`python -m pipeline.fetch_raw`), it also rebuilds `data/processed/` and compares content hashes
-(`python -m pipeline.verify`).
+`reproduce.py` reruns every offline evaluation into a temporary folder and compares the numbers with the
+committed files (ignoring timestamps and latencies). It rescores the saved live traces offline, and lists the
+results that need the gateway key, human labels or the raw data, with the command for each.
 
-## What Athena must get right, and how each part is judged
+## What we measured
 
-| Capability | What goes wrong for a user if it fails | Success criterion (metrics.md) |
+| Part | What goes wrong for a user if it fails | Target |
 | --- | --- | --- |
-| Route choice | a "lower-risk" option that costs a lot, or that is not actually different | a lower risk indicator at a median of 5 extra minutes or less |
-| Explanation faithfulness | a claim that is not true of the route, or that calls it safe | ≥ 95% of real traces pass every assertion; a judge trusted only at TNR ≥ 0.9 |
-| Explanation usefulness | text that is accurate but no better than the facts alone | the LLM text is preferred in blind A/B, or the fact-only text ships (no model where a rule does as well) |
-| Report guardrail | a prejudiced or injected report changes a route | TNR on hold ≥ 0.95; injected reports admitted = 0 |
-| Privacy | a phone number, address or link reaches a model or the queue | measured span recall, with known gaps stated |
-| Data | the app serves stale, duplicated or out-of-area data | `pipeline.check` passes, quality recorded, rebuild identical |
-| Outcome | people do not choose the lower-risk option, or think it is "safe" | a higher choice share than a plain list; misreading rate 0 |
-| Operations and completion | the demo cannot be run or verified | every demonstrated feature verified; p95 ≤ 10 s on the deployed URL |
+| Route choice | the "lower-risk" option costs a lot of time, or isn't really different | lower risk score at a median of 5 extra minutes or less |
+| Explanation faithfulness | a claim isn't true of the route, or calls it safe | 95% of real traces pass every check; trust the judge only at TNR ≥ 0.9 |
+| Explanation usefulness | the text is accurate but no more useful than the facts alone | people prefer the model text in a blind A/B, otherwise ship the fact-only text |
+| Report guardrail | a prejudiced or injected report changes a route | hold harmful reports (TNR ≥ 0.95); admit no injected reports |
+| Privacy | personal details reach a model or the stored queue | measured recall, with known gaps stated |
+| Data | the app serves stale, duplicated or out-of-area data | `pipeline.check` passes and the rebuild is identical |
+| Completion | the demo can't be run or checked | every demonstrated feature passes its check |
 
-## Evaluation data: real or synthetic, and what it may be used for
+We had also planned a user study (do people actually pick the lower-risk option?), but we didn't run it, so that
+outcome is not measured.
 
-| Set | Real or synthetic | Role | Size | Where |
-| --- | --- | --- | --- | --- |
-| Precomputed trips (OSM 15 Nov + OTP over TfNSW GTFS) | **real** | evaluation of route choice; the rule's weights were set by team judgement while looking at this data (no risk labels exist), so it is not held out | 377 trips | `data/processed/` (`make data`) |
-| Hand-made sample routes | synthetic (hand-assigned risks) | **regression set only**: keeps `make eval` deterministic; not evidence about streets | 18 cases | `data/*.json` |
-| Explainer traces | **real** model outputs on sample routes | error analysis, assertions, judge audit, A/B | 36 | `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` |
-| Model comparison drafts | **real** model outputs | model choice | 3 × 18 | `model_comparison.json` |
-| Street reports | **real**, written by the team (`seed`) and collected from others with consent (`collected`) | classifier train / dev / **test (frozen, touched once)**, group split by street and writer, synthetic variants only in train | 49 labelled (train 35, dev 5, test 9); target 150+ | `data/labelling/` → `data/reports/` |
-| Trace labels | **human** PASS/FAIL | judge dev / **held-out** (seeded assignment written before labelling) | 36 | `evals/labels/` |
-| Guard dev set | 10 public (Meterless, Apache-2.0) + 16 team-written | **tuning**: the patterns were fixed against it | 26 | `evals/guard/injection.jsonl` |
-| Guard held-out probes | synthetic, written after the patterns, labels by construction | **held out, frozen**; never used to tune | 50 | `evals/guard/heldout_probes_v1.jsonl` |
-| PII cases | synthetic, fictional people | regression set (it motivated the 18 Nov fix, so it is not held out) | 29 texts | `evals/privacy/pii_cases_v1.jsonl` |
-| Critic corruptions | synthetic by construction | tests the rules, not real drafts | 276 | generated in `evals/run_evals.py` |
+## Evaluation data
 
-### Tuning vs held-back data
+| Set | Real or synthetic | Used for | Size |
+| --- | --- | --- | --- |
+| Precomputed trips (OSM + OTP over TfNSW GTFS) | real | route choice (not held out: we set the rule's weights while looking at it) | 377 trips |
+| Hand-made sample routes | synthetic | fixed regression set for `make eval` only | 18 cases |
+| Explainer traces (`evals/traces/2026-11-14-live-scx-gemma-4-31B-it/`) | real model output | checks, judge audit, A/B | 36 |
+| Model comparison drafts | real model output | choosing the explainer model | 3 models × 18 |
+| Street reports (`data/reports/`) | real: written by us and collected from others with consent | classifier train / dev / test | 49 |
+| Trace labels (`evals/labels/`) | human PASS/FAIL | judge dev / held-out | 36 |
+| Guard dev set (`evals/guard/injection.jsonl`) | 10 public (Meterless, Apache-2.0) + 16 ours | tuning the guard | 26 |
+| Guard held-out probes (`evals/guard/heldout_probes_v1.jsonl`) | synthetic, AI-generated after the guard was written | held out | 50 |
+| PII cases (`evals/privacy/pii_cases_v1.jsonl`) | synthetic, fictional people | regression set | 29 |
+| Critic errors | synthetic, generated in `evals/run_evals.py` | testing the critic rules | 276 |
 
-| Held-back set | Never used for | How that is enforced |
+We only used synthetic data where real data can't exist yet or would be unethical to collect (injection attempts,
+personal details), and each set says who wrote it.
+
+### Keeping tuning and held-back data separate
+
+| Held-back set | Never used for | How we enforce it |
 | --- | --- | --- |
-| Guard held-out probes (`heldout_probes_v1.jsonl`) | writing or changing the guard's patterns | written after the patterns were fixed; sha256 in `evals/checksums.txt`, `make check` fails on any change; `evals/guard/README.md` says to write a v2 rather than tune on v1 |
-| Report test split (`data/reports/test.jsonl`) | training or choosing a classifier | group split by street and writer (no street or writer in two splits); sha256 frozen; `eval_classifier.py --split test` refuses to run without `--touch-test`, and it has not been run |
-| Held-out trace labels (`evals/labels/heldout.json`) | tuning the judge rubric | ids assigned by a seeded shuffle before any label existed (`assignment.json`); `judge.py` reads the labels only after every prediction is collected |
+| Guard held-out probes | writing or changing the guard | written after the guard; frozen by sha256 in `evals/checksums.txt`, so `make check` fails if it changes |
+| Report test split (`data/reports/test.jsonl`) | training or choosing a classifier | split by street and by writer, so neither appears in two splits; frozen by sha256; `eval_classifier.py --split test` refuses to run without `--touch-test` (it has not been run) |
+| Held-out trace labels (`evals/labels/heldout.json`) | tuning the judge prompt | trace ids assigned by a seeded shuffle before any labels existed; `judge.py` reads the labels only after all predictions are in |
 
-Tuning sets: the guard dev set, the report train and dev splits, the dev trace labels. Not held out, by design: the
-real trips (the risk rule's weights were set while looking at them), the hand-made sample and the PII cases
-(regression sets).
-
-Synthetic sets are used only where real data cannot exist yet, or to test a rule on purpose: no one has
-labelled injection attempts against a street-report app, and PII cannot be collected ethically. Each synthetic set
-says who wrote it and how its labels were set, and none of them is used where a real set exists. Held-out sets are
-frozen by sha256 in `evals/checksums.txt`; `make check` fails if one changes.
+The guard dev set, the report train and dev splits, and the dev trace labels are the tuning sets. The real trips,
+the hand-made sample and the PII cases are not held out, and we say so wherever they are used.
 
 ## Baselines
 
-Every model-backed or rule-based component is compared with something simpler on the same data
-(rule before ML): routes with fastest, least walking, fewest transfers and most-lit; the critic with no
-critic and a citation-only check; the guard with no guard and a one-phrase filter; the report pipeline with a
-keyword rule and the majority class; the LLM explanation with the fact-only explanation; the classifier models with
-the cheapest model; the planner as a whole with a plain fastest-first list shown to people.
+Each part is compared with something simpler on the same data:
 
-## Statistics and honesty rules
+- **Routes:** fastest, least walking, fewest transfers and "most lit".
+- **Critic:** no critic, and a check that only looks for citations.
+- **Guard:** no guard, and a filter for the phrase "ignore previous instructions".
+- **Report pipeline:** a keyword rule and the majority class.
+- **Explanations:** the fact-only text.
+- **Models:** the cheapest model.
 
-- Sets are small (tens of cases), so every rate has a 95% Wilson interval: 16/16 is [0.81, 1.00], not "100%".
-- **Route risk is Athena's own rule.** The lower-risk ranking minimises the number it is scored on, so a risk
-  reduction is not evidence of safety. The informative comparisons are the extra minutes, whether a one-line
-  heuristic (most lit) already does as well, and the lit share, which the rule does not score.
-- The dev guard numbers are optimistic by construction; the held-out rows are the ones to quote.
-- Failure modes and edge cases are tests, not prose: gateway outage and retries, malformed judge output, unknown
-  lighting never treated as dark, no route for a pair, unknown streets, injection in report text and OSM tags,
-  system-prompt echo and leakage, streets named like numbers, rate limits per client, PII
-  (`tests/`; `python scripts/verify_demo.py` for the running app).
-- Nothing in `evals/results/` is typed by hand. Labels, A/B choices and study answers come from people.
+## Reading the results
+
+- **The risk score is our own rule.** The lower-risk ranking minimises the same number it's scored on, so a lower
+  score isn't evidence of safety. The more useful comparisons are the extra minutes, whether "most lit" does as
+  well, and the lit share, which the rule doesn't score.
+- **The guard's dev numbers are optimistic** because we tuned on that set; the held-out row is the one to quote.
+- **Edge cases are covered by tests** (`tests/`): gateway outages, bad judge output, unknown lighting, missing
+  routes, injection in reports and street names, prompt leakage, rate limits and PII.
 
 ## Results
 
@@ -143,108 +132,44 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 
 <!-- eval:end -->
 
-## Evaluations deliberately not run
+## Not run, and why
 
-`python scripts/reproduce.py` lists two result files as `NOT RUN` (plus the secondary judge audit, below). Each is a
-scoping decision, made for the reason below. The generated table shows them as "not run yet" because that verdict
-is computed from whether the file exists. No user study was conducted either, so the outcome metric in
-[metrics.md](metrics.md) (do people choose the lower-risk option?) is unmeasured.
-
-| Result file | Status | Why it was not run | What would change that |
-| --- | --- | --- | --- |
-| `classifier_test.json` | **held back on purpose.** The frozen test split (`data/reports/test.jsonl`, sha256 in `evals/checksums.txt`) has never been scored. | A test split is spent once, to confirm a decision. No decision depends on it here. The dev comparison (`classifier_dev.json`) could not separate the candidates: dev has only `approve` rows, so TNR on hold (the primary metric) is undefined and every candidate scores TPR 1.0. The test split also has only `approve` rows, so scoring it would give TNR undefined again and could not confirm or overturn anything. The app keeps the default `moderator-v1` (`docs/model_card.md`), and its behaviour on harmful input is measured on other sets: `injection_e2e.json` and the reject tests in `tests/`. | More labelled reports, including `review` and `reject` rows in dev and test (`docs/STATUS.md`). Then choose on dev and score the test split once: `python evals/eval_classifier.py --split test --touch-test`. |
-| `ops.json` | **not applicable: the system is not deployed.** | `ops.json` records latency, error rate and cost per request for a *deployed* URL. This system runs locally (README, Quick start). A load test against `localhost` would measure the marker's laptop, not a service, so it is not recorded as ops evidence. Whether the running app works end to end over HTTP is checked by `python scripts/verify_demo.py --base-url http://127.0.0.1:8001` (Completion row, `verify.json`). | Deploy the container (`Dockerfile`), then `make load-test BASE_URL=...`. |
-
-## Secondary judge audit (12-trace sample with FAIL cases)
-
-The primary judge audit (`judge_audit.json`, evals/labels/) has no human FAIL labels in its held-out half, so its
-TNR is undefined. A second audit was run on 18 Nov on a 12-trace sample from the same live run that does include
-FAIL labels:
-
-| Input | Path |
-| --- | --- |
-| traces | `evals/traces/2026-11-14-live-sample/` (12) |
-| human labels | `evals/labels-sample/` (`assignment.json` seeded split, `dev.json` 6, `heldout.json` 6 with 3 PASS, 3 FAIL) |
-| result | `evals/results/judge_audit_sample.json` |
-
-**Status: the result file is not committed.** The 18 Nov run wrote over `judge_audit.json`. The primary file was
-restored and the sample run's output was never saved, so its numbers appear only in the message of commit
-`925f895`. This page does not quote them until the file exists. `reproduce.py` lists the file as `NOT RUN`.
-
-To regenerate it (needs the gateway key in `.env`; 6 judge calls; never run as a check):
-
-```bash
-python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample
-```
-
-`--labels` sets where the human labels are read. A labels folder other than `evals/labels/` writes
-`judge_audit_<suffix>.json` (here `judge_audit_sample.json`). `judge.py` refuses an `--out` that would overwrite
-the primary `judge_audit.json` from any other labels folder. The judge model is `JUDGE_MODEL` from `.env`. Check
-it matches the primary audit's model (`config.model` in `judge_audit.json`) before running, so the two audits can
-be compared. Commit the result file together with the labels.
-
-## Results that are written to fixed paths
-
-Three scripts write a committed, canonical result file every time they run, with no prompt and no
-temporary folder:
-
-| Script | Overwrites | Also depends on |
+| Result | Why not | What would change that |
 | --- | --- | --- |
-| `python evals/assertions.py <dir>` | `evals/results/assertions.json` | the shell's `.env` (`SAMPLE_MODE=false`, processed data), not the pinned settings `reproduce.py` uses |
-| `python evals/judge.py audit <dir>` | `evals/results/judge_audit.json` (labels in `evals/labels/`) | live gateway calls under the shell's `.env` |
-| `python scripts/verify_demo.py` (no `--base-url`, no `--out`) | `evals/results/verify.json` | the data the app serves; its date and git sha appear in this page, so `make check` fails until `make report` |
+| `classifier_test.json` (report test split) | A test split is used once, to confirm a decision. Dev and test only contain reports that should be approved, so the main metric (TNR on hold) can't be computed on either, and scoring test couldn't confirm or overturn anything. The app keeps the default `moderator-v1`; its handling of harmful reports is measured in `injection_e2e.json` and the reject tests. | more labelled reports that should be held, then choose on dev and score test once |
+| `ops.json` (load test) | The system runs locally and isn't deployed. A load test on `localhost` would only measure the laptop. `verify_demo.py --base-url` checks the running app over HTTP instead. | deploy the container, then `make load-test BASE_URL=...` |
+| `judge_audit_sample.json` | A second judge audit, on 12 traces that include FAIL labels (`evals/labels-sample/`), was run but its result file was overwritten and never saved, so we don't quote its numbers. | `python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample` (needs the gateway key, 6 calls) |
 
-Running any of them "to check a number" replaces the committed result with one made under different settings.
-This has happened twice: commit `16049e2` restored an `assertions.json` that had spurious `streets_on_routes`
-failures, and the secondary judge audit's output was lost (above). Rules:
+## A warning about three scripts
 
-- To check committed results, run `python scripts/reproduce.py` (`make reproduce`) or `python scripts/check.py`
-  (`make check`). They regenerate or re-score in a temporary folder and compare. They never write
-  `evals/results/`.
-- Run them directly only to produce a new result on purpose: a new trace run, or new human labels. For a
-  judge audit on any other labels set, use `--labels` (it writes its own file; see above).
-- After any change under `evals/results/`, run `make readme` and `python scripts/build_eval_report.py --write`,
-  then `python scripts/check.py`, before committing.
+These scripts overwrite committed results every time they run, and use whatever `.env` the shell has:
+
+- `python evals/assertions.py <dir>` → `assertions.json`
+- `python evals/judge.py audit <dir>` → `judge_audit.json` (`--labels` with another folder writes its own file)
+- `python scripts/verify_demo.py` without `--base-url` → `verify.json`
+
+To check results, use `reproduce.py` or `check.py`, which never write to `evals/results/`. Only run these scripts
+to produce a new result on purpose, then run `make readme` and `python scripts/build_eval_report.py --write`.
 
 ## Findings
 
-- **The text guard overfits the set it was tuned on.** Compare the dev and held-out rows above. The guard is
-  the first of three layers, so the number that matters is the end-to-end admit rate with the real classifier
-  model (the live end-to-end finding below). Without a model (the keyword baseline), most held-out injections would be
-  admitted. Do not tune the guard on the held-out probes (evals/guard/README.md).
-- **PII redaction in the app path was weaker than at ingest.** It is now one policy for both, and the landline
-  pattern's bug is fixed (`pii_before_fixes.json` has the earlier run). Student ids and names that follow an
-  introduction ("my name is", "my friend", "I'm") are now removed too, so app-path recall on the 17 spans is 1.0
-  (`pii.json`). Those two patterns were written against this regression set, so the number is optimistic: a bare
-  name with no introduction still passes, and labellers read every report.
-- **On real data the risk rule does not steer people onto lit streets.** Across 126 trip × time cases
-  (`route_baselines.json`, processed), Athena's lower-risk pick lowers the risk indicator by a median 1.7% for
-  0.4 extra minutes, but its median lit share (27.0%) is *below* the fastest route's (29.9%), and unknown lighting
-  rises. A one-line "most lit" heuristic raises lit share to 51.4% for 1.4 extra minutes while scoring 0% on
-  Athena's rule. The rule's other terms (path type, activity, time on board) outweigh lighting when most lighting
-  is unknown. On the hand-made sample the two agree, which is why the sample alone looked better. The weights
-  need revisiting before the risk indicator can be presented as lighting-aware.
-- **The live model stack passed 8/8 after swapping the judge model.** `python scripts/check_stack.py` found
-  `scx-Meta-Llama-3.3-70B-Instruct` returning consistent `502` gateway errors (run of 18 Nov 2026); switched
-  `JUDGE_MODEL` to `scx-GLM-5.3` (a different family from the explainer), which then passed. See
-  `evals/results/stack_check.json`.
-- **The live, end-to-end injection eval admits some injected reports.** Against the real gateway
-  (`moderator-v1` on `scx-gpt-oss-120b`), `python evals/eval_injection_e2e.py --live` found an injection admit
-  rate of 16.7% (4/24, 95% CI [6.7%, 35.9%]) and a benign hold rate of 7.7% — the guard is not perfect under
-  live conditions, unlike the 1.0 / 1.0 it gets on its own tuning set.
-- **The judge audit ran, but TNR is undefined on this sample.** All 36 traces in
-  `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` were hand-labelled PASS/FAIL by the team (18 dev, 18
-  held-out); every one came back PASS, so `python evals/judge.py audit` reports TPR=1.0 but TNR=None — there
-  were no FAIL cases in the held-out set to test whether the judge can catch a bad explanation. The sample also
-  has heavy duplication (the same handful of route/time/mode combinations recur across the 36 traces), so this
-  should be read as "no faithfulness violations found in this particular pattern," not as proof the explainer
-  never fails: `evals/assertions.py` already found 2 real faithfulness failures (an omitted risk-parity fact)
-  in the separate 72-trace run. Re-run the audit against a set known to include FAIL traces before trusting
-  its TNR.
-- **The blind A/B found no net preference for the LLM explanation over the fact-only fallback.** Human picks
-  split 3-3 (LLM vs fact-only) across 6 blind pairs with zero ties; see `evals/results/ab.json`. The pairwise
-  judge (`scx-GLM-5.3`) failed to return a parseable verdict on 3 of 6 calls — it reasoned at length in prose
-  and ran out of output before emitting the required JSON — and agreed with the human pick on only 1 of the 3
-  calls that did parse. With n=6 these numbers are indicative only; the sample should be grown and the judge
-  prompt likely needs a stricter output-length constraint before the judge's agreement rate can be trusted.
-- No user study was conducted, so whether people act on the lower-risk option is not measured.
+- **The guard overfits the set it was tuned on.** It catches everything in the dev set but 0.21 of held-out
+  probes. It is only the first of three layers, so the number that matters is the end-to-end one: with the live
+  classifier, 4 of 24 injected reports (17%, 95% CI 7–36%) were still admitted, compared with 19 of 24 for the
+  keyword baseline. We haven't tuned on the held-out probes, so they stay a fair test.
+- **The risk score doesn't steer people onto lit streets on real data.** Across 126 trip × time cases, the
+  lower-risk pick lowers the score by a median 1.7% for 0.4 extra minutes, but its lit share (27.0%) is below the
+  fastest route's (29.9%). A simple "most lit" rule reaches 51.4% for 1.4 extra minutes. Most lighting is unknown,
+  so the other terms (path type, activity, time on board) win. On the hand-made sample the two agree, which made
+  the rule look better than it is. The weights need revisiting before we can call the score lighting-aware.
+- **PII redaction:** the app now uses the same rules as the data pipeline, and also removes student ids and names
+  that follow an introduction ("my name is", "my friend", "I'm"). It removes all 17 spans in the regression set,
+  but those rules were written against that set, so this is an upper bound; a name on its own still gets through.
+- **The judge can't be trusted yet.** On 18 held-out labels it agrees on every PASS, but all 18 are PASS, so we
+  can't tell whether it would catch a bad explanation (TNR undefined). Many of the 36 traces repeat the same few
+  trips, so "no failures found" is a weak result.
+- **The blind A/B was a tie,** 3 to 3 over 6 pairs. The pairwise judge returned unusable output on 3 of the 6 and
+  agreed with people on only 1 of the other 3. With 6 pairs this is only indicative.
+- **Model stack:** `scx-Meta-Llama-3.3-70B-Instruct` kept returning gateway errors, so we switched the judge to
+  `scx-GLM-5.3` (a different model family from the explainer); all 8 stack checks then passed
+  (`stack_check.json`).

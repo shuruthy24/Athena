@@ -9,7 +9,7 @@ WARNING: this writes a canonical, committed result file unconditionally and call
 `make check`) re-checks committed results without writing them. Only run it on purpose, to produce a new audit
 from new human labels, and commit the result with the labels. `--out` cannot point at judge_audit.json unless
 the labels are the canonical evals/labels/ set, so a secondary audit can never overwrite the primary one
-(docs/evaluation.md, "Results that are written to fixed paths").
+(docs/evaluation.md, "A warning about three scripts").
 
 Human labels (the team writes these; never an agent):
   evals/labels/dev.json       {"<trace_id>": "PASS" | "FAIL", ...}  used to tune the rubric only
