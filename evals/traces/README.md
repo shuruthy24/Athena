@@ -1,14 +1,10 @@
 # Explanation traces
 
-`python scripts/run_traces.py` writes one JSON per case to `evals/traces/<date>-live-<explainer model>/` and adds a row per trace
-to `evals/analysis.csv` for the team's error analysis. Commit the live run you analyse: the assertions, judge
-audit and blind A/B all point at it. `--offline` runs use the labelled sample stand-in and are not evidence.
+`python scripts/run_traces.py` (needs the gateway key) saves one JSON file per trip to
+`evals/traces/<date>-live-<explainer model>/` and adds a row per trace to `evals/analysis.csv` for error analysis.
+`--offline` runs use the sample stand-in and are not evidence.
 
-Each trace records `trip_used`; `trip_overridden` is always false now that the chat router, which used to read time
-words in the question, is gone.
-
-Order of work: vibe verdicts in analysis.csv before reading traces -> error analysis columns ->
-assertions on the new run (`python evals/assertions.py evals/traces/<run>`, once, on purpose: it overwrites
-`evals/results/assertions.json`; to re-check the committed run use `python scripts/reproduce.py`) -> labels in evals/labels/ -> judge audit ->
-`python evals/ab.py prepare evals/traces/<run>` -> blind choices committed -> `python evals/ab.py reveal --judge`
--> readiness in docs/design.md §7.
+How we used a run: error analysis in `analysis.csv`, then the code checks (`evals/assertions.py`), then human
+labels in `evals/labels/` and the judge audit, then the blind A/B (`evals/ab.py`). To re-check the committed
+results, use `python scripts/reproduce.py`; running `evals/assertions.py` directly overwrites
+`evals/results/assertions.json`.
