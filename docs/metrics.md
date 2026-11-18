@@ -1,8 +1,8 @@
-# Metric tree
+# Metrics
 
-Written before the model work it measures (design and implement metrics first). Each
-metric names its data, the script that computes it and the file it lands in. **Targets are proposals for the team
-to confirm before running the evaluation**, then left alone: criteria are fixed before results are seen.
+We wrote these metrics and targets before running the evaluations they belong to, and haven't changed them since.
+Each one names its data, the script that computes it and the result file. Results are in
+[evaluation.md](evaluation.md).
 
 ## Outcome
 
@@ -12,8 +12,8 @@ both options picks Athena's lower-risk route, and the extra minutes they accept 
 - Would be measured with a task study (people choosing between Athena and a plain fastest-first list).
 - **Not measured:** no user study was conducted, so this outcome metric has no result (evaluation.md).
 
-**Guardrail: no report that targets people ever changes a route.** Week 5 baseline-review objective. Measured as
-TNR on hold for the report pipeline, with every reject-labelled report held.
+**Guardrail: no report that targets people ever changes a route.** Measured as TNR on hold for the report
+pipeline, with every reject-labelled report held.
 
 ## Components
 
@@ -43,6 +43,5 @@ TNR on hold for the report pipeline, with every reject-labelled report held.
 - A metric's definition, data and target are set before its first run; changing them afterwards needs a dated note
   next to the metric in this file saying what changed and why.
 - The report test split is touched once per release and is checksummed.
-- Every number quoted in the design doc or the README traces to a file in `evals/results/`.
-- Every rate is reported with its 95% Wilson interval (`evals/metrics.py`); the sets are small.
-- Results: [evaluation.md](evaluation.md) (generated; `make check` fails if it is out of date).
+- Every number quoted in the docs comes from a file in `evals/results/`.
+- Every rate is reported with its 95% Wilson interval (`evals/metrics.py`), because the sets are small.
