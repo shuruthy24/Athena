@@ -2,6 +2,13 @@
 
   python evals/assertions.py evals/traces/<run>        # writes evals/results/assertions.json
 
+WARNING: this writes evals/results/assertions.json, a canonical committed result, unconditionally. It also runs
+under the shell's .env (e.g. SAMPLE_MODE=false, processed data) instead of the pinned environment
+scripts/reproduce.py uses. Run that way it has produced spurious streets_on_routes failures, which were then
+committed (fixed in 16049e2). To check the committed result use `python scripts/reproduce.py` (or `make reproduce`
+/ `make check`): it re-scores the saved traces in memory and writes nothing. Run this script directly only to score
+a new trace run on purpose (docs/evaluation.md, "Results that are written to fixed paths").
+
 Each assertion is a named, objective check that code can make from the saved trace. The first five are the
 existing check_claims rules, now run on real model output; the rest add what the critic does not check
 (no_risk_benefit_disclosed came from the first error analysis). Add
