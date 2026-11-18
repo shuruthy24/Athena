@@ -110,6 +110,18 @@ the cheapest model; the planner as a whole with a plain fastest-first list shown
 
 <!-- eval:end -->
 
+## Evaluations deliberately not run
+
+`python scripts/reproduce.py` lists three result files as `NOT RUN`. Each is a scoping decision, made for the
+reason below. None is a missing step in the evaluations that were run. The generated table above shows them as
+"not run yet" because that verdict is computed from whether the file exists.
+
+| Result file | Status | Why it was not run | What would change that |
+| --- | --- | --- | --- |
+| `classifier_test.json` | **held back on purpose.** The frozen test split (`data/reports/test.jsonl`, sha256 in `evals/checksums.txt`) has never been scored. | A test split is spent once, to confirm a decision. No decision depends on it here. The dev comparison (`classifier_dev.json`) could not separate the candidates: dev has only `approve` rows, so TNR on hold (the primary metric) is undefined and every candidate scores TPR 1.0. The test split also has only `approve` rows, so scoring it would give TNR undefined again and could not confirm or overturn anything. The app keeps the default `moderator-v1` (`docs/model_card.md`), and its behaviour on harmful input is measured on other sets: `injection_e2e.json` and the reject tests in `tests/`. | More labelled reports, including `review` and `reject` rows in dev and test (`docs/STATUS.md`). Then choose on dev and score the test split once: `python evals/eval_classifier.py --split test --touch-test`. |
+| `user_study.json` | **not conducted.** | The task study needs participants from outside the team (`docs/user_study.md`). No sessions were held, so there is no outcome measure of whether people choose the lower-risk option. Every other row measures system behaviour, not what people do. | Run the sessions in `docs/user_study.md`, then `python evals/eval_user_study.py`. |
+| `ops.json` | **not applicable to this submission.** | `ops.json` records latency, error rate and cost per request for a *deployed* URL. This system is submitted to run locally (README, Quick start) and is not deployed. A load test against `localhost` would measure the marker's laptop, not a service, so it is not recorded as ops evidence. Whether the running app works end to end over HTTP is checked by `python scripts/verify_demo.py --base-url http://127.0.0.1:8001` (Completion row, `verify.json`). | Deploy (`docs/deploy.md`), then `make load-test BASE_URL=...`. |
+
 ## What this round of evaluation found (18 Nov 2026)
 
 - **The text guard overfits the set it was tuned on.** Compare the dev and held-out rows above. The guard is

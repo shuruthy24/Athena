@@ -13,8 +13,9 @@ prototype (tag `hackathon-final`). Athena shows **risk indicators, never safety*
 ## Results
 
 Generated from `evals/results/` by `make eval` (or `make readme`); `make check` fails if this table and the files
-disagree. Rows that say "not run yet" are waiting for a live run, human labels or participants
-([docs/STATUS.md](docs/STATUS.md)). Method, baselines, intervals and verdicts: [docs/evaluation.md](docs/evaluation.md).
+disagree. Three rows say "not run yet" by design: the report-classifier test split is held back, no user study was
+held, and the system is not deployed. [docs/evaluation.md](docs/evaluation.md#evaluations-deliberately-not-run)
+gives the reason for each. Method, baselines, intervals and verdicts: [docs/evaluation.md](docs/evaluation.md).
 
 <!-- results:start -->
 | Evaluation | Result | Source (evals/results/) |
