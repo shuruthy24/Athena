@@ -14,7 +14,6 @@ data/raw/
 tests/
 evals/traces/
 evals/ab/
-samples/
-docs/submission/img/
+docs/img/
 .dvc/
 *.dvc

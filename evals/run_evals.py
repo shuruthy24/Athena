@@ -4,8 +4,7 @@
   python3 evals/run_evals.py --live     # also moderates the 14 reports through the COMP3110 gateway
 
 Outputs: evals/results/offline.json and evals/results/offline_report.md (or live.json / live_report.md
-with --live). The hackathon evidence in evals/results.json and docs/evidence/ is frozen and never
-overwritten (AGENTS.md section 2).
+with --live).
 
 Evaluations:
  1. Prompt-injection guard (athena/guard.py) on the Meterless v1 adversarial set (Apache-2.0) extended with

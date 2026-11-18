@@ -6,7 +6,7 @@ the trade-off using only facts it can check.** It also takes anonymous street re
 COMP3110 (UNSW Machine Learning Engineering) team project, built on our Open Agent Hackathon 2026 Wildcard-winning
 prototype (tag `hackathon-final`). Athena shows **risk indicators, never safety**: it never calls a route safe.
 
-![Athena journey planner](docs/submission/img/plan_desktop.png)
+![Athena journey planner](docs/img/plan_desktop.png)
 
 ![check](https://github.com/shuruthy24/Athena/actions/workflows/check.yml/badge.svg)
 
@@ -178,7 +178,7 @@ data/              sample data (regression set); processed/ (real OSM + OTP, com
 scripts/           check.py, eval_all.py, reproduce.py, verify_demo.py, build_eval_report.py, results table,
                    stack check, traces, load test, secrets scan
 docs/              STATUS (features, gaps, demo differences), evaluation (method + generated results), metrics,
-                   design, model card, deploy, user study; submission/ and evidence/ are the frozen hackathon record
+                   design, model card, deploy, user study; img/ screenshots
 tests/             pytest suite with a mock gateway server
 .github/workflows/ check.yml: make check and an HTTP verification on Linux and Windows for every push
 ```
@@ -233,5 +233,5 @@ A rule, not a model (there are no risk labels):
 
 Open Agent Hackathon 2026, Team Athena (Kaira Dumasia, Shuruthy Dhushiyandan, Andrii Rohovyi), Wildcard track
 winner, built on Zetaris, Meterless Nightshift and NVIDIA Nemotron. That submission is tagged `hackathon-final`;
-its write-up is in [docs/submission/](docs/submission/) and its evidence in [docs/evidence/](docs/evidence/).
+its write-up and evidence are kept in that tag.
 The course rework reads data from files only; the Zetaris adapter was removed on 15 Nov 2026 (it is still in the `hackathon-final` tag).

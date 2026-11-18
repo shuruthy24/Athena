@@ -86,7 +86,7 @@ gives about 30 rows.
 | --- | --- | --- | --- |
 | Data | real OSM + OTP data from the team laptop (`data/processed`) | the same tables once committed (see "Not finished"); until then the hand-made sample, labelled amber in the UI | `data/processed/` was git-ignored |
 | Models | live COMP3110 gateway (explainer `scx-gemma-4-31B-it`, critic and moderator `scx-gpt-oss-120b`) | identical with a key in `.env`; without one, `SAMPLE_MODE` uses an offline stand-in, labelled in the UI and in every response (`drafted_by`) | markers may not have a key |
-| Chat / Ask page, Scout router, signed contracts | hackathon submission (`docs/submission/`, `ask_*.png`) | removed on 14 Nov 2026; replaced by two typed endpoints | no free-text chat is needed; smaller attack surface |
+| Chat / Ask page, Scout router, signed contracts | hackathon submission (tag `hackathon-final`) | removed on 14 Nov 2026; replaced by two typed endpoints | no free-text chat is needed; smaller attack surface |
 | Zetaris, Meterless Nightshift, NVIDIA Nemotron | hackathon stack | removed on 14–15 Nov 2026 (tag `hackathon-final` keeps them) | course gateway and plain files |
 | Prototype map with a "Live OTP" toggle | shown | unchanged, under `/prototype`, labelled pre-existing | declared prior work; live OTP needs a local OTP server |
 | Data and model provenance line; PII policy; report form hint | added 18 Nov 2026 | present | transparency and privacy fixes from this audit |
