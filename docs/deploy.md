@@ -22,7 +22,7 @@ Set these in the host's **secret store**, never in the image, the repo or a scre
 | Variable | Value |
 | --- | --- |
 | `COMP3110_MODEL_BASE_URL` | `https://lllm.cs3110.cse.academy/v1` |
-| `COMP3110_API_KEY` | your course key (secret) |
+| `COMP3110_API_KEY` | your gateway key (secret) |
 | `RATE_LIMIT_SECRET` | a long random string (secret); hashes client ids for the rate limit |
 | `EXPLAINER_MODEL`, `CRITIC_MODEL`, `MODERATOR_MODEL`, `JUDGE_MODEL` | the models chosen from `evals/results/model_comparison.json` |
 | `FALLBACK_MODEL` | optional single-retry route, e.g. the Bedrock one if SCX is rate-limiting |
@@ -30,7 +30,7 @@ Set these in the host's **secret store**, never in the image, the repo or a scre
 
 ## Hosts that run one container
 
-Check the free-tier limits (memory, sleep after inactivity, region) before choosing; a cold start on Demo Day
+Check the free-tier limits (memory, sleep after inactivity, region) before choosing; a cold start during a live demonstration
 is worth avoiding.
 
 - **Render** (Web Service from the repo's Dockerfile): add the variables above under Environment, set the
@@ -50,9 +50,10 @@ curl https://<your-host>/api/health        # gateway "ok", models listed, sample
 python scripts/load_test.py --base-url https://<your-host>     # writes evals/results/ops.json
 ```
 
-`ops.json` holds p50/p95 latency, error rate, cache hit share and cost per request; those are the numbers for
-the design doc and the talk. Then record the golden-path video against the deployed URL: UNSW to Central at
-1 am, the explanation, a street report, an injection attempt blocked.
+`ops.json` holds p50/p95 latency, error rate, cache hit share and cost per request; they are the evidence for the
+readiness section of the design doc. Then check the golden path on the deployed URL
+(`python scripts/verify_demo.py --base-url https://<your-host>`): UNSW to Central at 1 am, the explanation, a
+street report, an injection attempt blocked.
 
 ## Graceful degradation (already built in)
 

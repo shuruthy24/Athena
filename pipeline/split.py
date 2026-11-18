@@ -7,7 +7,8 @@ Reports that share a street or an author_group are joined into one group (union-
 to one split, so no street and no writer appears in two splits. Synthetic rows only ever go to train.
 Groups with the most reports collected from people outside the team go to test first (reports written by the
 labellers themselves make test scores optimistic), then dev, then train, aiming at 60/20/20 by rows.
-Deterministic: the same input gives the same split. The test split is frozen by its sha256 in evals/checksums.txt and is not rewritten without
+Deterministic: the same input gives the same split. The test split is frozen by its sha256 in
+evals/checksums.txt and is not rewritten without
 --refreeze (changing the split is an ask-first action).
 """
 from __future__ import annotations

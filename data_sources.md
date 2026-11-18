@@ -1,6 +1,6 @@
 # Data sources
 
-Every dataset Athena uses, with its licence and how it was cleaned (AGENTS.md section 2). Raw snapshots
+Every dataset Athena uses, with its licence and how it was cleaned. Raw snapshots
 live in `data/raw/` (versioned with DVC, never edited); derived tables in `data/processed/` are rebuilt by
 `make data`, which also writes `data/processed/manifest.json` with each raw file's name, sha256, fetch
 time and row counts. Numbers below come from files in this repo; "after `make data`" means the manifest
@@ -19,7 +19,7 @@ holds them once the snapshot exists.
 | Retrieved | `data/raw/osm_2026-11-15T0130.json`, fetched 2026-11-15 01:30 UTC (the snapshot in use). An earlier snapshot the same day, `osm_2026-11-15.json`, has named streets only and is kept for history. |
 | Rows kept | 11,196 named ways → 2,926 streets; 25,656 unnamed ways (footways, paths, cycleways, service lanes, steps); 1,840 street lamps; 3,666 venues, 2,868 with opening hours the parser cannot read (`manifest.json` → `stats`) |
 
-Cleaning (`pipeline/features.py`, Tech 4 helpers in `pipeline/clean.py`):
+Cleaning (`pipeline/features.py`, cleaning helpers in `pipeline/clean.py`):
 - Names NFC-normalised and stripped of control characters (`fix_encoding`); duplicate OSM way IDs dropped;
   named ways that share a name after case and whitespace normalisation are combined into one street,
   weighted by length, keeping the most common spelling ("Gadigal Avenue" / "Gadigal avenue").
@@ -136,7 +136,7 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
 | `evals/guard/redteam.csv` | attempts by people outside the team | consent, pseudonymous `author_group` | held-out (to collect) | – |
 | `evals/privacy/pii_cases_v1.jsonl` | synthetic, fictional people and numbers | project | regression set (it motivated the 18 Nov PII fix) | 29 |
 | `data/labelling/reports_to_label.csv` → `data/reports/{train,dev,test}.jsonl` | team-written (`seed`) and collected (`collected`) street reports | consent text in `data/labelling/guide.md` | train / dev / **test frozen, touched once**; group split by street and writer | target 150+ |
-| `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` | live explainer outputs on the sample routes | course gateway | error analysis, assertions | 36 |
+| `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` | live explainer outputs on the sample routes | LiteLLM gateway | error analysis, assertions | 36 |
 | `evals/labels/{dev,heldout}.json` | human PASS/FAIL, split by `assignment.json` (seeded, written before labelling) | team | judge dev / held-out | 36 |
 | `evals/user_study/sessions.csv` | task-study answers | consent text in `docs/user_study.md` | outcome | – |
 | `data/reports.json` | 14 synthetic hackathon reports with expected actions | project | regression set | 14 |
@@ -161,7 +161,7 @@ Roles: *tuning* data may be used to change the system; *held-out* data is frozen
   `docs/user_study.md`), stored under pseudonymous group ids, never names, and deleted after marking.
 - **App storage:** report text and traces go to the container's `runs/` folder (git-ignored, lost on redeploy).
   Rate limiting uses a keyed hash of the client address, so no IP address is stored.
-- **Model hosting:** report text is sent only to models behind the course gateway; check where each model is
+- **Model hosting:** report text is sent only to models behind the LiteLLM gateway; check where each model is
   hosted before using it for user text (docs/model_card.md).
 - **Secrets** come only from the environment; `scripts/scan_secrets.py` runs in `make check` and as a pre-commit
   hook.

@@ -1,6 +1,6 @@
 # Human labels for the judge audit
 
-Written by the team, never by an agent (AGENTS.md section 2). Label saved traces from `evals/traces/<run>/`:
+Written by the team, never by an agent. Label saved traces from `evals/traces/<run>/`:
 
 - `dev.json`: `{"<trace_id>": "PASS" | "FAIL", ...}` for about 20 traces, used only to read and tune the judge rubric.
 - `heldout.json`: the same shape for 20 different traces. Do not show these to anyone tuning the rubric.

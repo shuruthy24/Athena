@@ -7,7 +7,8 @@ audit and blind A/B all point at it. `--offline` runs use the labelled sample st
 Each trace records `trip_used`; `trip_overridden` is always false now that the chat router, which used to read time
 words in the question, is gone.
 
-Order of work (Tech 6): vibe verdicts in analysis.csv before reading traces -> error analysis columns ->
-`python evals/assertions.py evals/traces/<run>` -> labels in evals/labels/ -> judge audit ->
+Order of work: vibe verdicts in analysis.csv before reading traces -> error analysis columns ->
+assertions on the new run (`python evals/assertions.py evals/traces/<run>`, once, on purpose: it overwrites
+`evals/results/assertions.json`; to re-check the committed run use `python scripts/reproduce.py`) -> labels in evals/labels/ -> judge audit ->
 `python evals/ab.py prepare evals/traces/<run>` -> blind choices committed -> `python evals/ab.py reveal --judge`
 -> readiness in docs/design.md §7.

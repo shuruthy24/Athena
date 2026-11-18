@@ -13,8 +13,8 @@ waiting for the team's live runs.
 | Judge (offline only) | PASS/FAIL on explanation faithfulness; A/B/TIE preference | `scx-Meta-Llama-3.3-70B-Instruct` (`JUDGE_MODEL`) | assertions |
 | TF-IDF classifier (optional) | the same report task, trained | scikit-learn logistic regression or LinearSVC on word and character n-grams, seed 3110 | majority, keyword |
 
-All calls go through the COMP3110 LiteLLM gateway at temperature 0, non-streaming, with one retry. Prompts:
-`prompts/`. Prices: Tech 6 README table; Nova and Bedrock routes are unpriced.
+All calls go through an OpenAI-compatible LiteLLM gateway at temperature 0, non-streaming, with one retry. Prompts:
+`prompts/`. Prices: the gateway operator's published price table (`athena/pricing.py`); Nova and Bedrock routes are unpriced.
 
 ## Intended use
 

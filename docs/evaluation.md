@@ -18,7 +18,7 @@ python scripts/verify_demo.py    # every demonstrated feature end to end
 
 `scripts/reproduce.py` re-runs every offline evaluation into a temporary folder and compares each number with the
 committed file. It ignores timestamps and latencies, re-scores the saved live traces offline, and lists what needs
-the course key, human labels, a deployed URL or the raw data, with the command for each. With the raw snapshots
+the gateway key, human labels, a deployed URL or the raw data, with the command for each. With the raw snapshots
 present (`python -m pipeline.fetch_raw`), it also rebuilds `data/processed/` and compares content hashes
 (`python -m pipeline.verify`).
 
@@ -28,7 +28,7 @@ present (`python -m pipeline.fetch_raw`), it also rebuilds `data/processed/` and
 | --- | --- | --- |
 | Route choice | a "lower-risk" option that costs a lot, or that is not actually different | a lower risk indicator at a median of 5 extra minutes or less |
 | Explanation faithfulness | a claim that is not true of the route, or that calls it safe | ≥ 95% of real traces pass every assertion; a judge trusted only at TNR ≥ 0.9 |
-| Explanation usefulness | text that is accurate but no better than the facts alone | the LLM text is preferred in blind A/B, or the fact-only text ships (Rules of ML #1) |
+| Explanation usefulness | text that is accurate but no better than the facts alone | the LLM text is preferred in blind A/B, or the fact-only text ships (no model where a rule does as well) |
 | Report guardrail | a prejudiced or injected report changes a route | TNR on hold ≥ 0.95; injected reports admitted = 0 |
 | Privacy | a phone number, address or link reaches a model or the queue | measured span recall, with known gaps stated |
 | Data | the app serves stale, duplicated or out-of-area data | `pipeline.check` passes, quality recorded, rebuild identical |
@@ -43,7 +43,7 @@ present (`python -m pipeline.fetch_raw`), it also rebuilds `data/processed/` and
 | Hand-made hackathon routes | synthetic (hand-assigned risks) | **regression set only**: keeps `make eval` deterministic; not evidence about streets | 18 cases | `data/*.json` |
 | Explainer traces | **real** model outputs on sample routes | error analysis, assertions, judge audit, A/B | 36 | `evals/traces/2026-11-14-live-scx-gemma-4-31B-it/` |
 | Model comparison drafts | **real** model outputs | model choice | 3 × 18 | `model_comparison.json` |
-| Street reports | **real**, written by the team (`seed`) and collected from others with consent (`collected`) | classifier train / dev / **test (frozen, touched once)**, group split by street and writer, synthetic variants only in train | target 150+ | `data/labelling/` → `data/reports/` |
+| Street reports | **real**, written by the team (`seed`) and collected from others with consent (`collected`) | classifier train / dev / **test (frozen, touched once)**, group split by street and writer, synthetic variants only in train | 49 labelled (train 35, dev 5, test 9); target 150+ | `data/labelling/` → `data/reports/` |
 | Trace labels | **human** PASS/FAIL | judge dev / **held-out** (seeded assignment written before labelling) | 36 | `evals/labels/` |
 | Guard dev set | 10 public (Meterless, Apache-2.0) + 16 team-written | **tuning**: the patterns were fixed against it | 26 | `evals/guard/injection.jsonl` |
 | Guard held-out probes | synthetic, written after the patterns, labels by construction | **held out, frozen**; never used to tune | 50 | `evals/guard/heldout_probes_v1.jsonl` |
@@ -60,7 +60,7 @@ frozen by sha256 in `evals/checksums.txt`; `make check` fails if one changes.
 ## Baselines
 
 Every model-backed or rule-based component is compared with something simpler on the same data
-(AGENTS.md: rule before ML): routes with fastest, least walking, fewest transfers and most-lit; the critic with no
+(rule before ML): routes with fastest, least walking, fewest transfers and most-lit; the critic with no
 critic and a citation-only check; the guard with no guard and a one-phrase filter; the report pipeline with a
 keyword rule and the majority class; the LLM explanation with the fact-only explanation; the classifier models with
 the cheapest model; the planner as a whole with a plain fastest-first list shown to people.
@@ -119,7 +119,7 @@ reason below. None is a missing step in the evaluations that were run. The gener
 | --- | --- | --- | --- |
 | `classifier_test.json` | **held back on purpose.** The frozen test split (`data/reports/test.jsonl`, sha256 in `evals/checksums.txt`) has never been scored. | A test split is spent once, to confirm a decision. No decision depends on it here. The dev comparison (`classifier_dev.json`) could not separate the candidates: dev has only `approve` rows, so TNR on hold (the primary metric) is undefined and every candidate scores TPR 1.0. The test split also has only `approve` rows, so scoring it would give TNR undefined again and could not confirm or overturn anything. The app keeps the default `moderator-v1` (`docs/model_card.md`), and its behaviour on harmful input is measured on other sets: `injection_e2e.json` and the reject tests in `tests/`. | More labelled reports, including `review` and `reject` rows in dev and test (`docs/STATUS.md`). Then choose on dev and score the test split once: `python evals/eval_classifier.py --split test --touch-test`. |
 | `user_study.json` | **not conducted.** | The task study needs participants from outside the team (`docs/user_study.md`). No sessions were held, so there is no outcome measure of whether people choose the lower-risk option. Every other row measures system behaviour, not what people do. | Run the sessions in `docs/user_study.md`, then `python evals/eval_user_study.py`. |
-| `ops.json` | **not applicable to this submission.** | `ops.json` records latency, error rate and cost per request for a *deployed* URL. This system is submitted to run locally (README, Quick start) and is not deployed. A load test against `localhost` would measure the marker's laptop, not a service, so it is not recorded as ops evidence. Whether the running app works end to end over HTTP is checked by `python scripts/verify_demo.py --base-url http://127.0.0.1:8001` (Completion row, `verify.json`). | Deploy (`docs/deploy.md`), then `make load-test BASE_URL=...`. |
+| `ops.json` | **not applicable: the system is not deployed.** | `ops.json` records latency, error rate and cost per request for a *deployed* URL. This system runs locally (README, Quick start). A load test against `localhost` would measure the marker's laptop, not a service, so it is not recorded as ops evidence. Whether the running app works end to end over HTTP is checked by `python scripts/verify_demo.py --base-url http://127.0.0.1:8001` (Completion row, `verify.json`). | Deploy (`docs/deploy.md`), then `make load-test BASE_URL=...`. |
 
 ## Secondary judge audit (12-trace sample with FAIL cases)
 
@@ -137,7 +137,7 @@ FAIL labels:
 restored and the sample run's output was never saved, so its numbers appear only in the message of commit
 `925f895`. This page does not quote them until the file exists. `reproduce.py` lists the file as `NOT RUN`.
 
-To regenerate it (needs the course key in `.env`; 6 judge calls; never run as a check):
+To regenerate it (needs the gateway key in `.env`; 6 judge calls; never run as a check):
 
 ```bash
 python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample
@@ -171,20 +171,20 @@ failures, and the secondary judge audit's output was lost (above). Rules:
 - After any change under `evals/results/`, run `make readme` and `python scripts/build_eval_report.py --write`,
   then `python scripts/check.py`, before committing.
 
-## What this round of evaluation found (18 Nov 2026)
+## Findings
 
 - **The text guard overfits the set it was tuned on.** Compare the dev and held-out rows above. The guard is
   the first of three layers, so the number that matters is the end-to-end admit rate with the real classifier
-  model: it has not been run live yet. Without a model (the keyword baseline), most held-out injections would be
+  model (the live end-to-end finding below). Without a model (the keyword baseline), most held-out injections would be
   admitted. Do not tune the guard on the held-out probes (evals/guard/README.md).
 - **PII redaction in the app path was weaker than at ingest.** It is now one policy for both, and the landline
   pattern's bug is fixed (`pii_before_fixes.json` has the earlier run). Names and student ids still pass regex
   redaction: the report form asks people to leave them out, and labellers read every report.
 - **On the hand-made sample a one-line "most lit" heuristic gets most of the benefit**, and the balanced ranking
-  adds a little more at the same cost. Whether that holds on real data is `python evals/eval_route_baselines.py`
-  on `data/processed`.
+  adds a little more at the same cost. Whether that holds on real data has not been measured
+  (`python evals/eval_route_baselines.py` on `data/processed`).
 - **The live model stack passed 8/8 after swapping the judge model.** `python scripts/check_stack.py` found
-  `scx-Meta-Llama-3.3-70B-Instruct` returning consistent `502` gateway errors on 18 Nov 2026; switched
+  `scx-Meta-Llama-3.3-70B-Instruct` returning consistent `502` gateway errors (run of 18 Nov 2026); switched
   `JUDGE_MODEL` to `scx-GLM-5.3` (a different family from the explainer), which then passed. See
   `evals/results/stack_check.json`.
 - **The live, end-to-end injection eval admits some injected reports.** Against the real gateway
@@ -206,4 +206,4 @@ failures, and the secondary judge audit's output was lost (above). Rules:
   and ran out of output before emitting the required JSON — and agreed with the human pick on only 1 of the 3
   calls that did parse. With n=6 these numbers are indicative only; the sample should be grown and the judge
   prompt likely needs a stricter output-length constraint before the judge's agreement rate can be trusted.
-- The task study has not run: it needs participants (docs/STATUS.md lists the steps and time).
+- The task study was not conducted (see "Evaluations deliberately not run").

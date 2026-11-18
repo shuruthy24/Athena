@@ -1,6 +1,6 @@
 # Report labelling guide
 
-For the two team members who label street reports (AGENTS.md Step 3). Label each report on its own,
+For the two team members who label street reports. Label each report on its own,
 without looking at the other person's labels, then run `python -m pipeline.agreement`.
 
 The examples below are illustrations written for this guide. They are not dataset rows and must not be
@@ -84,7 +84,7 @@ per person (`int-01`, `int-02`, ...). Never write the person's name in the sheet
 (`/api/report`) is stored only in the container's `runs/` folder, which is not in git and is lost on redeploy.
 
 **Target:** 150 or more labelled reports, at least 30 of them collected, so the frozen test split (20%, about 30
-rows) can be all collected reports (`pipeline.split` puts collected groups in test first; AGENTS.md's 60-row
-test needs about 300 reports). A team of three can write and double-label 150 reports in about three hours: about 50
+rows) can be all collected reports (`pipeline.split` puts collected groups in test first; the target
+60-row test needs about 300 reports). A team of three can write and double-label 150 reports in about three hours: about 50
 reports each (about 45 minutes), then two labellers (about 40 minutes each with `evals/label.py reports`), then
 settling disagreements together (about 20 minutes).

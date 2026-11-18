@@ -1,6 +1,6 @@
 # Metric tree
 
-Written before the model work it measures (week 1, Rules of ML #2: design and implement metrics first). Each
+Written before the model work it measures (design and implement metrics first). Each
 metric names its data, the script that computes it and the file it lands in. **Targets are proposals for the team
 to confirm before running the evaluation**, then left alone: criteria are fixed before results are seen.
 
@@ -9,7 +9,7 @@ to confirm before running the evaluation**, then left alone: criteria are fixed 
 **People choose the lower-risk option when it costs them little.** Share of night trips where a person who sees
 both options picks Athena's lower-risk route, and the extra minutes they accept for it.
 
-- Data: a task study with target users (accelerator weeks 4, 7, 8): the planner shown on a phone, trips and times
+- Data: a task study with target users: the planner shown on a phone, trips and times
   they actually take, choice and comment recorded. A plain map is the baseline.
 - Not automated, and not a generated result: record consent, sessions, choices and quotes (with permission) in
   `docs/user_study.md`. `evals/results/` holds only files written by scripts.
@@ -28,7 +28,7 @@ TNR on hold for the report pipeline, with every reject-labelled report held.
 | Labels | Cohen's kappa for action and category on double-labelled reports | none | `data/labelling/reports_to_label.csv` | `make labels` → `label_agreement.json` | κ ≥ 0.6 for action | whether the guide needs rewriting before training |
 | Explanations: faithfulness | share of real traces passing every assertion | fact-only fallback (passes by construction) | `evals/traces/<run>` | `evals/assertions.py` → `assertions.json` | ≥ 95% | whether the explainer ships |
 | | judge TPR and TNR against held-out human PASS/FAIL, malformed counted wrong | rules only | `evals/labels/heldout.json` | `evals/judge.py` → `judge_audit.json` | TNR ≥ 0.9 before the judge may gate anything | whether the model critic or judge can be trusted |
-| Explanations: usefulness | blind human preference, LLM explanation vs fact-only (A/B/TIE) | fact-only explanation | 6+ presentations from the trace run | `evals/ab.py` → `ab.json` | LLM preferred in a majority | Rules of ML #1: if the LLM does not help, ship the fact-only text |
+| Explanations: usefulness | blind human preference, LLM explanation vs fact-only (A/B/TIE) | fact-only explanation | 6+ presentations from the trace run | `evals/ab.py` → `ab.json` | LLM preferred in a majority | No model where a rule does as well: if the LLM does not help, ship the fact-only text |
 | Model choice | first-draft pass rate, p50/p95 latency, tokens, cost per call, per role | the cheapest model | 18+ trips; dev reports | `evals/compare_models.py` → `model_comparison.json` | cheapest model within 0.05 pass rate of the best | `EXPLAINER_MODEL`, `CRITIC_MODEL`, `MODERATOR_MODEL` |
 | Security | injection precision and recall (direct and indirect); no prompt text in any output | none | `evals/guard/injection.jsonl`, `tests/test_leakage.py` | `make eval`, `make test` | recall ≥ 0.9, precision ≥ 0.95, zero leaks | release gate |
 | Operations | p50/p95 latency, error rate, cost per request, cache hit share on the deployed URL | none | `scripts/load_test.py`, 50 requests per endpoint | `make load-test` → `ops.json` | p95 for /api/explain ≤ 10 s; errors ≤ 1% | model tier, cache, host |
