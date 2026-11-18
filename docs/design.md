@@ -1,8 +1,7 @@
-# Athena design
+# Design
 
-Architecture and trust boundary, the workflow, the patterns and why Athena is not an agent, the tool, prompt and
-safety rationale, model choice, observed failures and their regression tests, and operational readiness. Numbers
-come only from `evals/results/`.
+How Athena is put together, why we made the main design choices, which model we picked, the bugs we found and the
+tests that now guard against them, and whether it's ready to use.
 
 ## 1. Architecture and trust boundary
 
@@ -129,18 +128,17 @@ Error analysis on real model traces: 6 traces labelled so far in `evals/analysis
 
 ## 7. Readiness
 
-**Status: not production-ready.** The engineering is in place and `make check` is green, but the evidence does
-not yet support relying on Athena for real trips. Each reason comes from a committed result file:
+**Not ready for real use yet.** Everything runs and `make check` passes, but the evaluation doesn't yet support
+relying on Athena for real trips:
 
 | Reason | Evidence |
 | --- | --- |
-| Evaluation samples are small, so intervals are wide | 36 live explanation traces (`assertions.json`), 18 held-out judge labels (`judge_audit.json`), 6 blind A/B pairs (`ab.json`), 5 dev and 9 test reports (`data/reports/`) |
-| The LLM judge has not shown it can catch a bad explanation | `judge_audit.json`: TNR undefined, because the 18 held-out labels contain no FAIL. A secondary 6-case audit that did include FAIL labels (commit `925f895`) reported TNR 0.0, but its result file was not saved; it is regenerated with `python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample` ([evaluation.md](evaluation.md)) |
-| The LLM explanation is not shown to beat the fact-only text | `ab.json`: people preferred the LLM text 3 times and the fact-only text 3 times |
-| Injected reports still get through end to end | `injection_e2e.json`: 4 of 24 held-out injection probes admitted with the live moderator; the text guard alone catches 0.208 of held-out probes (`offline.json`) |
-| On real data, the lower-risk option rarely differs from the fastest | `data_coverage.json`: differs on 61 of 377 trips; median unknown lighting on Athena's route 72.3% |
-| No load testing; the service is not deployed | no `ops.json`; a container exists (`Dockerfile`) |
+| The evaluation sets are small | 36 explanation traces, 18 held-out judge labels, 6 A/B pairs, 5 dev and 9 test reports |
+| The judge hasn't been shown to catch a bad explanation | `judge_audit.json`: no FAIL in the held-out labels, so TNR is undefined |
+| The model's explanation isn't shown to beat the fact-only text | `ab.json`: 3–3 |
+| Some injected reports still get through | `injection_e2e.json`: 4 of 24 with the live classifier |
+| The risk score doesn't favour lit streets on real data | `route_baselines.json`: the lower-risk pick has a lower lit share than the fastest |
+| Not deployed or load tested | no `ops.json` |
 
-**Next engineering actions:** more labelled reports and trace labels that include hold and FAIL cases; regenerate
-the secondary judge audit; grow the A/B sample; red-team the guard with people outside the team; deploy and load
-test.
+**Next steps:** label more reports and traces that include ones that should be held or should FAIL, rerun the
+second judge audit, grow the A/B, revisit the risk weights, and deploy and load test.
