@@ -118,6 +118,14 @@ def rows() -> list[dict]:
         target="LLM preferred in a majority",
         verdict=(_verdict(ab['human']['llm'] > (ab['human']['fact_only'] + ab['human']['tie'])) if ab else "not run yet"),
         cmd="python evals/ab.py prepare <run>; python evals/ab.py reveal --judge", file="ab.json", when=_when(ab))
+    ab2 = _load("ab_v2.json")
+    if ab2:
+        h2 = ab2["human"]
+        add(cap="Explanation usefulness", q="Same, second round with new pairs", data="new blind pairs (evals/ab-v2/)",
+            metric="human preference A/B/TIE", baseline="fact-only explanation",
+            result=f"LLM {h2['llm']}, fact-only {h2['fact_only']}, tie {h2['tie']}", target="LLM preferred in a majority",
+            verdict=_verdict(h2["llm"] > h2["fact_only"] + h2["tie"]),
+            cmd="python evals/ab.py reveal --dir evals/ab-v2 --judge", file="ab_v2.json", when=_when(ab2))
     if off:
         cr = off["critic"]
         d = cr.get("detectors", {})

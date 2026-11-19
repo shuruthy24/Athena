@@ -57,6 +57,10 @@ def rows() -> list[tuple[str, str, str]]:
         h = ab["human"]
         out.append(("Blind A/B: LLM vs fact-only text", f"LLM {h['llm']}, fact-only {h['fact_only']}, tie {h['tie']}",
                     "ab.json"))
+    ab2 = _load("ab_v2.json")
+    if ab2:
+        h = ab2["human"]
+        out.append(("Blind A/B, second round", f"LLM {h['llm']}, fact-only {h['fact_only']}, tie {h['tie']}", "ab_v2.json"))
     if off:
         ho = off["guard"]["sets"].get("heldout_probes", {}).get("detectors")
         if ho:

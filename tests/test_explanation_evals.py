@@ -229,3 +229,17 @@ def test_reveal_requires_committed_choices(ab_dir):
     fill(ab_dir, ["A", "A", "B", "TIE"])
     with pytest.raises(PermissionError):
         ab.reveal(ab_dir)
+
+
+def test_a_second_ab_round_writes_its_own_result_file():
+    assert ab.result_path(ab.AB).name == "ab.json"
+    assert ab.result_path(ab.ROOT / "evals" / "ab-v2").name == "ab_v2.json"
+
+
+def test_prepare_can_leave_out_traces_already_used(ab_dir, tmp_path):
+    src = ab_dir.parent / "traces"
+    used = {p.stem for p in list(src.glob("*.json"))[:3]}
+    out = tmp_path / "ab-v2"
+    ab.prepare(src, n=20, out=out, exclude=used)
+    mapping = json.loads((out / "mapping.json").read_text(encoding="utf-8"))
+    assert not used & {v["trace_id"] for v in mapping.values()}

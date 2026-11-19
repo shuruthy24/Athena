@@ -1,0 +1,1842 @@
+{
+ "mapping_sha256": "fe28f237e59d18f7a8aefd55d992edf4ff2401d242b30ed6f5decf0d81bae36c",
+ "presentations": [
+  {
+   "presentation_id": "AB-01",
+   "trip": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "01",
+    "mode": "bike"
+   },
+   "question": "Why is the Athena route better tonight?",
+   "A": {
+    "headline": "Athena's route offers lower risk for a slightly longer trip",
+    "claims": [
+     {
+      "text": "Athena's route is lower risk, reducing risk by 36.3%.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 22.4 minutes, while Athena's route takes 23.2 minutes.",
+      "facts": [
+       "fastest.duration_min",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route is 100.0% lit, avoiding the unlit Moore Park path.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.worst.name",
+       "fastest.worst.lit"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.8 min and has 36.3% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.82).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 22.4,
+    "fastest.walk_m": 0,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.658,
+    "fastest.mean_risk": 0.525,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.82,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "George Street",
+     "Bourke Street cycleway",
+     "Moore Park path",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 23.2,
+    "athena.walk_m": 0,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.419,
+    "athena.mean_risk": 0.386,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.46,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "George Street",
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.8,
+    "risk_reduction_pct": 36.3,
+    "avoided_streets": [
+     "Bourke Street cycleway",
+     "Moore Park path"
+    ],
+    "added_streets": [
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-02",
+   "trip": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "18",
+    "mode": "transit"
+   },
+   "question": "Is the Athena option worth the extra time?",
+   "A": {
+    "headline": "Athena's route offers lower risk for a slightly longer trip",
+    "claims": [
+     {
+      "text": "Athena's route reduces risk by 20.2% compared to the fastest route.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "You will walk 728m with 0 transfers, while the fastest route requires 1 transfer and 1057m of walking.",
+      "facts": [
+       "athena.walk_m",
+       "athena.transfers",
+       "fastest.walk_m",
+       "fastest.transfers"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The trip takes 36.4 minutes, which is 1.9 minutes longer than the fastest option.",
+      "facts": [
+       "athena.duration_min",
+       "extra_min"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +1.9 min and has 20.2% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.25).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 34.5,
+    "fastest.walk_m": 1057,
+    "fastest.transfers": 1,
+    "fastest.lit_share_pct": 100.0,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.218,
+    "fastest.mean_risk": 0.191,
+    "fastest.worst.name": "Devonshire St tunnel",
+    "fastest.worst.risk": 0.25,
+    "fastest.worst.lit": "yes",
+    "fastest.worst.distance_m": 237,
+    "fastest.worst.tunnel": true,
+    "fastest.streets": [
+     "Central concourse",
+     "Devonshire St tunnel",
+     "Chalmers Street",
+     "UNSW campus"
+    ],
+    "fastest.transit_lines": [
+     "T2",
+     "Bus"
+    ],
+    "athena.duration_min": 36.4,
+    "athena.walk_m": 728,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.174,
+    "athena.mean_risk": 0.169,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.18,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "George Street",
+     "UNSW campus"
+    ],
+    "athena.transit_lines": [
+     "L3"
+    ],
+    "extra_min": 1.9,
+    "risk_reduction_pct": 20.2,
+    "avoided_streets": [
+     "Central concourse",
+     "Devonshire St tunnel",
+     "Chalmers Street"
+    ],
+    "added_streets": [
+     "George Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-03",
+   "trip": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "01",
+    "mode": "transit"
+   },
+   "question": "Why is the Athena route better tonight?",
+   "A": {
+    "headline": "Athena's route offers lower risk for a slightly longer trip.",
+    "claims": [
+     {
+      "text": "Athena's route reduces risk by 25.9% compared to the fastest route.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 43.5 minutes, while Athena's route takes 46.4 minutes.",
+      "facts": [
+       "fastest.duration_min",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route involves 0 transfers and 728 meters of walking.",
+      "facts": [
+       "athena.transfers",
+       "athena.walk_m"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +2.9 min and has 25.9% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.72).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 43.5,
+    "fastest.walk_m": 1057,
+    "fastest.transfers": 1,
+    "fastest.lit_share_pct": 100.0,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.606,
+    "fastest.mean_risk": 0.513,
+    "fastest.worst.name": "Devonshire St tunnel",
+    "fastest.worst.risk": 0.72,
+    "fastest.worst.lit": "yes",
+    "fastest.worst.distance_m": 237,
+    "fastest.worst.tunnel": true,
+    "fastest.streets": [
+     "Central concourse",
+     "Devonshire St tunnel",
+     "Chalmers Street",
+     "UNSW campus"
+    ],
+    "fastest.transit_lines": [
+     "T2",
+     "Bus"
+    ],
+    "athena.duration_min": 46.4,
+    "athena.walk_m": 728,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.449,
+    "athena.mean_risk": 0.44,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.46,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "George Street",
+     "UNSW campus"
+    ],
+    "athena.transit_lines": [
+     "L3"
+    ],
+    "extra_min": 2.9,
+    "risk_reduction_pct": 25.9,
+    "avoided_streets": [
+     "Central concourse",
+     "Devonshire St tunnel",
+     "Chalmers Street"
+    ],
+    "added_streets": [
+     "George Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-04",
+   "trip": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "22",
+    "mode": "bike"
+   },
+   "question": "Why is the Athena route better tonight?",
+   "A": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.8 min and has 46.2% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.68).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route offers lower risk for a small time trade-off",
+    "claims": [
+     {
+      "text": "Athena's route is lower risk, reducing risk by 46.2%.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 22.4 minutes, while Athena's route takes 23.2 minutes.",
+      "facts": [
+       "fastest.duration_min",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route has 100.0% lit share, avoiding the unlit Moore Park path.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.worst.name",
+       "fastest.worst.lit"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 22.4,
+    "fastest.walk_m": 0,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.515,
+    "fastest.mean_risk": 0.381,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.68,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Moore Park path",
+     "Bourke Street cycleway",
+     "George Street"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 23.2,
+    "athena.walk_m": 0,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.277,
+    "athena.mean_risk": 0.258,
+    "athena.worst.name": "Anzac Parade",
+    "athena.worst.risk": 0.3,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 2999,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street",
+     "George Street"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.8,
+    "risk_reduction_pct": 46.2,
+    "avoided_streets": [
+     "Moore Park path",
+     "Bourke Street cycleway"
+    ],
+    "added_streets": [
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-05",
+   "trip": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "22",
+    "mode": "bike"
+   },
+   "question": "Is the Athena option worth the extra time?",
+   "A": {
+    "headline": "Athena's route offers lower risk for a small time trade-off",
+    "claims": [
+     {
+      "text": "Athena's route is lower risk, reducing risk by 46.2%.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 22.4 minutes, while Athena's route takes 23.2 minutes.",
+      "facts": [
+       "fastest.duration_min",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route is 100.0% lit, avoiding the unlit Moore Park path.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.worst.name",
+       "fastest.worst.lit"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.8 min and has 46.2% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.68).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 22.4,
+    "fastest.walk_m": 0,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.515,
+    "fastest.mean_risk": 0.381,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.68,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "George Street",
+     "Bourke Street cycleway",
+     "Moore Park path",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 23.2,
+    "athena.walk_m": 0,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.277,
+    "athena.mean_risk": 0.258,
+    "athena.worst.name": "Anzac Parade",
+    "athena.worst.risk": 0.3,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 2999,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "George Street",
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.8,
+    "risk_reduction_pct": 46.2,
+    "avoided_streets": [
+     "Bourke Street cycleway",
+     "Moore Park path"
+    ],
+    "added_streets": [
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-06",
+   "trip": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "18",
+    "mode": "transit"
+   },
+   "question": "Is the Athena option worth the extra time?",
+   "A": {
+    "headline": "Athena's route offers lower risk for a slightly longer trip",
+    "claims": [
+     {
+      "text": "Athena's route reduces risk by 20.2% compared to the fastest route.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "You will walk 728m with 0 transfers, while the fastest route requires 1 transfer and 1057m of walking.",
+      "facts": [
+       "athena.walk_m",
+       "athena.transfers",
+       "fastest.walk_m",
+       "fastest.transfers"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The trip takes 36.4 minutes, which is 1.9 minutes longer than the fastest option.",
+      "facts": [
+       "athena.duration_min",
+       "extra_min"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +1.9 min and has 20.2% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.25).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 34.5,
+    "fastest.walk_m": 1057,
+    "fastest.transfers": 1,
+    "fastest.lit_share_pct": 100.0,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.218,
+    "fastest.mean_risk": 0.191,
+    "fastest.worst.name": "Devonshire St tunnel",
+    "fastest.worst.risk": 0.25,
+    "fastest.worst.lit": "yes",
+    "fastest.worst.distance_m": 237,
+    "fastest.worst.tunnel": true,
+    "fastest.streets": [
+     "UNSW campus",
+     "Chalmers Street",
+     "Devonshire St tunnel",
+     "Central concourse"
+    ],
+    "fastest.transit_lines": [
+     "Bus",
+     "T2"
+    ],
+    "athena.duration_min": 36.4,
+    "athena.walk_m": 728,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.174,
+    "athena.mean_risk": 0.169,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.18,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "UNSW campus",
+     "George Street"
+    ],
+    "athena.transit_lines": [
+     "L3"
+    ],
+    "extra_min": 1.9,
+    "risk_reduction_pct": 20.2,
+    "avoided_streets": [
+     "Chalmers Street",
+     "Devonshire St tunnel",
+     "Central concourse"
+    ],
+    "added_streets": [
+     "George Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-07",
+   "trip": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "18",
+    "mode": "walk"
+   },
+   "question": "Why is the Athena route better tonight?",
+   "A": {
+    "headline": "Athena's route offers a lower risk for a very small time difference",
+    "claims": [
+     {
+      "text": "Athena's route is lower risk, reducing risk by 31.4%.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route is 79.2 minutes, while Athena's route takes 79.7 minutes.",
+      "facts": [
+       "fastest.duration_min",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route has 100.0% lighting, whereas the fastest route has 77.4% lighting.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route avoids the Moore Park path and Bourke Street cycleway.",
+      "facts": [
+       "avoided_streets"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.5 min and has 31.4% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.32).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 79.2,
+    "fastest.walk_m": 6180,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.264,
+    "fastest.mean_risk": 0.218,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.32,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Moore Park path",
+     "Bourke Street cycleway",
+     "George Street"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 79.7,
+    "athena.walk_m": 6214,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.181,
+    "athena.mean_risk": 0.165,
+    "athena.worst.name": "Anzac Parade",
+    "athena.worst.risk": 0.2,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 2999,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street",
+     "George Street"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.5,
+    "risk_reduction_pct": 31.4,
+    "avoided_streets": [
+     "Moore Park path",
+     "Bourke Street cycleway"
+    ],
+    "added_streets": [
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-08",
+   "trip": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "22",
+    "mode": "walk"
+   },
+   "question": "Is the Athena option worth the extra time?",
+   "A": {
+    "headline": "Athena's route offers a lower risk for a very small time difference.",
+    "claims": [
+     {
+      "text": "Athena's route reduces risk by 46.2% compared to the fastest route.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route includes the Moore Park path, which has no lighting and a risk of 0.68.",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route is 100% lit and takes only 0.5 minutes longer.",
+      "facts": [
+       "athena.lit_share_pct",
+       "extra_min"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.5 min and has 46.2% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.68).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 79.2,
+    "fastest.walk_m": 6180,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.515,
+    "fastest.mean_risk": 0.381,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.68,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Moore Park path",
+     "Bourke Street cycleway",
+     "George Street"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 79.7,
+    "athena.walk_m": 6214,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.277,
+    "athena.mean_risk": 0.258,
+    "athena.worst.name": "Anzac Parade",
+    "athena.worst.risk": 0.3,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 2999,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street",
+     "George Street"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.5,
+    "risk_reduction_pct": 46.2,
+    "avoided_streets": [
+     "Moore Park path",
+     "Bourke Street cycleway"
+    ],
+    "added_streets": [
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-09",
+   "trip": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "22",
+    "mode": "transit"
+   },
+   "question": "Is the Athena option worth the extra time?",
+   "A": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +2.9 min and has 39.7% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.58).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route offers lower risk for a slightly longer trip",
+    "claims": [
+     {
+      "text": "Athena's route reduces risk by 39.7% compared to the fastest route.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "You will walk 728m with 0 transfers, though the trip takes 39.4 minutes.",
+      "facts": [
+       "athena.walk_m",
+       "athena.transfers",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 36.5 minutes but includes the Devonshire St tunnel.",
+      "facts": [
+       "fastest.duration_min",
+       "fastest.worst.name"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 36.5,
+    "fastest.walk_m": 1057,
+    "fastest.transfers": 1,
+    "fastest.lit_share_pct": 100.0,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.451,
+    "fastest.mean_risk": 0.346,
+    "fastest.worst.name": "Devonshire St tunnel",
+    "fastest.worst.risk": 0.58,
+    "fastest.worst.lit": "yes",
+    "fastest.worst.distance_m": 237,
+    "fastest.worst.tunnel": true,
+    "fastest.streets": [
+     "Central concourse",
+     "Devonshire St tunnel",
+     "Chalmers Street",
+     "UNSW campus"
+    ],
+    "fastest.transit_lines": [
+     "T2",
+     "Bus"
+    ],
+    "athena.duration_min": 39.4,
+    "athena.walk_m": 728,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.272,
+    "athena.mean_risk": 0.265,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.28,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "George Street",
+     "UNSW campus"
+    ],
+    "athena.transit_lines": [
+     "L3"
+    ],
+    "extra_min": 2.9,
+    "risk_reduction_pct": 39.7,
+    "avoided_streets": [
+     "Central concourse",
+     "Devonshire St tunnel",
+     "Chalmers Street"
+    ],
+    "added_streets": [
+     "George Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-10",
+   "trip": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "22",
+    "mode": "walk"
+   },
+   "question": "Why is the Athena route better tonight?",
+   "A": {
+    "headline": "Athena's route offers a lower risk for a very small time difference.",
+    "claims": [
+     {
+      "text": "Athena's route reduces risk by 46.2% compared to the fastest route.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route includes the Moore Park path, which has no lighting and a risk score of 0.68.",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route is 100% lit and takes only 0.5 minutes longer.",
+      "facts": [
+       "athena.lit_share_pct",
+       "extra_min"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.5 min and has 46.2% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.68).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 79.2,
+    "fastest.walk_m": 6180,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.515,
+    "fastest.mean_risk": 0.381,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.68,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "George Street",
+     "Bourke Street cycleway",
+     "Moore Park path",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 79.7,
+    "athena.walk_m": 6214,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.277,
+    "athena.mean_risk": 0.258,
+    "athena.worst.name": "Anzac Parade",
+    "athena.worst.risk": 0.3,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 2999,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "George Street",
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.5,
+    "risk_reduction_pct": 46.2,
+    "avoided_streets": [
+     "Bourke Street cycleway",
+     "Moore Park path"
+    ],
+    "added_streets": [
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-11",
+   "trip": {
+    "origin": "townhall",
+    "destination": "unsw",
+    "band": "01",
+    "mode": "bike"
+   },
+   "question": "Is the Athena option worth the extra time?",
+   "A": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.8 min and has 36.3% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.82).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route offers lower risk for a slightly longer trip",
+    "claims": [
+     {
+      "text": "Athena's route is lower risk, reducing risk by 36.3%.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 22.4 minutes, while Athena's route takes 23.2 minutes.",
+      "facts": [
+       "fastest.duration_min",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route is 100.0% lit, avoiding the unlit Moore Park path.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.worst.name",
+       "fastest.worst.lit"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 22.4,
+    "fastest.walk_m": 0,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.658,
+    "fastest.mean_risk": 0.525,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.82,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "George Street",
+     "Bourke Street cycleway",
+     "Moore Park path",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 23.2,
+    "athena.walk_m": 0,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.419,
+    "athena.mean_risk": 0.386,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.46,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "George Street",
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street",
+     "Anzac Parade",
+     "UNSW campus"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.8,
+    "risk_reduction_pct": 36.3,
+    "avoided_streets": [
+     "Bourke Street cycleway",
+     "Moore Park path"
+    ],
+    "added_streets": [
+     "Liverpool Street",
+     "Oxford Street",
+     "Flinders Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-12",
+   "trip": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "01",
+    "mode": "bike"
+   },
+   "question": "Why is the Athena route better tonight?",
+   "A": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.8 min and has 36.3% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.82).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route offers lower risk for a small time trade-off",
+    "claims": [
+     {
+      "text": "Athena's route is lower risk, reducing risk by 36.3%.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 22.4 minutes, while Athena's route takes 23.2 minutes.",
+      "facts": [
+       "fastest.duration_min",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route has 100.0% lit share, avoiding the unlit Moore Park path.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.worst.name",
+       "fastest.worst.lit"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 22.4,
+    "fastest.walk_m": 0,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.658,
+    "fastest.mean_risk": 0.525,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.82,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Moore Park path",
+     "Bourke Street cycleway",
+     "George Street"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 23.2,
+    "athena.walk_m": 0,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.419,
+    "athena.mean_risk": 0.386,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.46,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street",
+     "George Street"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.8,
+    "risk_reduction_pct": 36.3,
+    "avoided_streets": [
+     "Moore Park path",
+     "Bourke Street cycleway"
+    ],
+    "added_streets": [
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-13",
+   "trip": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "01",
+    "mode": "walk"
+   },
+   "question": "Is the Athena option worth the extra time?",
+   "A": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.5 min and has 36.3% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.82).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route offers lower risk for a small time trade-off",
+    "claims": [
+     {
+      "text": "Athena's route is lower risk, reducing risk by 36.3%.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route includes the Moore Park path, which has no lighting and a risk of 0.82.",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route takes 79.7 minutes, which is only 0.5 minutes longer than the fastest route.",
+      "facts": [
+       "athena.duration_min",
+       "extra_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route is 100.0% lit.",
+      "facts": [
+       "athena.lit_share_pct"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 79.2,
+    "fastest.walk_m": 6180,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.658,
+    "fastest.mean_risk": 0.525,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.82,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Moore Park path",
+     "Bourke Street cycleway",
+     "George Street"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 79.7,
+    "athena.walk_m": 6214,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.419,
+    "athena.mean_risk": 0.386,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.46,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street",
+     "George Street"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.5,
+    "risk_reduction_pct": 36.3,
+    "avoided_streets": [
+     "Moore Park path",
+     "Bourke Street cycleway"
+    ],
+    "added_streets": [
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-14",
+   "trip": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "22",
+    "mode": "transit"
+   },
+   "question": "Why is the Athena route better tonight?",
+   "A": {
+    "headline": "Athena's route offers lower risk for a slightly longer trip",
+    "claims": [
+     {
+      "text": "Athena's route reduces risk by 39.7% compared to the fastest route.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "You will walk 728m with 0 transfers, though the trip takes 39.4 minutes.",
+      "facts": [
+       "athena.walk_m",
+       "athena.transfers",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 36.5 minutes but involves a 1057m walk and 1 transfer.",
+      "facts": [
+       "fastest.duration_min",
+       "fastest.walk_m",
+       "fastest.transfers"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +2.9 min and has 39.7% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Devonshire St tunnel, the highest-risk stretch of the fastest route (lit, risk 0.58).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 36.5,
+    "fastest.walk_m": 1057,
+    "fastest.transfers": 1,
+    "fastest.lit_share_pct": 100.0,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.451,
+    "fastest.mean_risk": 0.346,
+    "fastest.worst.name": "Devonshire St tunnel",
+    "fastest.worst.risk": 0.58,
+    "fastest.worst.lit": "yes",
+    "fastest.worst.distance_m": 237,
+    "fastest.worst.tunnel": true,
+    "fastest.streets": [
+     "UNSW campus",
+     "Chalmers Street",
+     "Devonshire St tunnel",
+     "Central concourse"
+    ],
+    "fastest.transit_lines": [
+     "Bus",
+     "T2"
+    ],
+    "athena.duration_min": 39.4,
+    "athena.walk_m": 728,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.272,
+    "athena.mean_risk": 0.265,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.28,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "UNSW campus",
+     "George Street"
+    ],
+    "athena.transit_lines": [
+     "L3"
+    ],
+    "extra_min": 2.9,
+    "risk_reduction_pct": 39.7,
+    "avoided_streets": [
+     "Chalmers Street",
+     "Devonshire St tunnel",
+     "Central concourse"
+    ],
+    "added_streets": [
+     "George Street"
+    ],
+    "confidence": "high"
+   }
+  },
+  {
+   "presentation_id": "AB-15",
+   "trip": {
+    "origin": "unsw",
+    "destination": "townhall",
+    "band": "01",
+    "mode": "bike"
+   },
+   "question": "Is the Athena option worth the extra time?",
+   "A": {
+    "headline": "Athena's route offers lower risk for a small time trade-off",
+    "claims": [
+     {
+      "text": "Athena's route is lower risk, reducing risk by 36.3%.",
+      "facts": [
+       "risk_reduction_pct"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "The fastest route takes 22.4 minutes, while Athena's route takes 23.2 minutes.",
+      "facts": [
+       "fastest.duration_min",
+       "athena.duration_min"
+      ],
+      "supported": true,
+      "problems": []
+     },
+     {
+      "text": "Athena's route has 100.0% lit share, avoiding the unlit Moore Park path.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.worst.name",
+       "fastest.worst.lit"
+      ],
+      "supported": true,
+      "problems": []
+     }
+    ]
+   },
+   "B": {
+    "headline": "Athena's route is lower risk for this trip.",
+    "claims": [
+     {
+      "text": "Athena's route takes +0.8 min and has 36.3% lower route risk than the fastest route.",
+      "facts": [
+       "extra_min",
+       "risk_reduction_pct"
+      ]
+     },
+     {
+      "text": "It avoids Moore Park path, the highest-risk stretch of the fastest route (unlit, risk 0.82).",
+      "facts": [
+       "fastest.worst.name",
+       "fastest.worst.lit",
+       "fastest.worst.risk"
+      ]
+     },
+     {
+      "text": "100.0% of Athena's street distance is lit, versus 77.4% on the fastest route.",
+      "facts": [
+       "athena.lit_share_pct",
+       "fastest.lit_share_pct"
+      ]
+     }
+    ]
+   },
+   "facts": {
+    "fastest.duration_min": 22.4,
+    "fastest.walk_m": 0,
+    "fastest.transfers": 0,
+    "fastest.lit_share_pct": 77.4,
+    "fastest.unknown_share_pct": 0.0,
+    "fastest.risk": 0.658,
+    "fastest.mean_risk": 0.525,
+    "fastest.worst.name": "Moore Park path",
+    "fastest.worst.risk": 0.82,
+    "fastest.worst.lit": "no",
+    "fastest.worst.distance_m": 1397,
+    "fastest.worst.tunnel": false,
+    "fastest.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Moore Park path",
+     "Bourke Street cycleway",
+     "George Street"
+    ],
+    "fastest.transit_lines": [],
+    "athena.duration_min": 23.2,
+    "athena.walk_m": 0,
+    "athena.transfers": 0,
+    "athena.lit_share_pct": 100.0,
+    "athena.unknown_share_pct": 0.0,
+    "athena.risk": 0.419,
+    "athena.mean_risk": 0.386,
+    "athena.worst.name": "UNSW campus",
+    "athena.worst.risk": 0.46,
+    "athena.worst.lit": "yes",
+    "athena.worst.distance_m": 648,
+    "athena.worst.tunnel": false,
+    "athena.streets": [
+     "UNSW campus",
+     "Anzac Parade",
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street",
+     "George Street"
+    ],
+    "athena.transit_lines": [],
+    "extra_min": 0.8,
+    "risk_reduction_pct": 36.3,
+    "avoided_streets": [
+     "Moore Park path",
+     "Bourke Street cycleway"
+    ],
+    "added_streets": [
+     "Flinders Street",
+     "Oxford Street",
+     "Liverpool Street"
+    ],
+    "confidence": "high"
+   }
+  }
+ ]
+}

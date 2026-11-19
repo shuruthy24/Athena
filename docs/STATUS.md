@@ -36,7 +36,7 @@ The same checks run on Linux and Windows for every push (`.github/workflows/chec
 | Reports that should be held | 49 labelled, but dev and test have only `approve`. 30 synthetic hold probes cover the gap for now; the no-model candidates hold at most 0.35 of them | score the prompted classifiers on the probes (`python evals/eval_classifier.py --split probes`, gateway key); collect more real reports that should be held |
 | Report test split | held back on purpose; no decision depends on it yet | as above, then score it once |
 | Judge audit with failing examples | the held-out labels contain no FAIL; the second audit's result file wasn't saved | `python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample` (gateway key) |
-| Larger blind A/B | 6 pairs, tied 3–3 | more pairs (`python evals/ab.py prepare ...`) |
+| Larger blind A/B | 6 pairs, tied 3–3. A second sheet with 15 new pairs is ready in `evals/ab-v2/` | two or more people read `evals/ab-v2/review.md` without opening `mapping.json`, fill `choices.csv`, commit it, then `python evals/ab.py reveal --dir evals/ab-v2` (add `--judge` with the key) |
 | Red-team set | not collected | injection attempts from people outside the team in `evals/guard/redteam.csv`; `make eval` scores it |
 | User study | not run, so we don't know whether people pick the lower-risk option | a task study with people outside the team |
 | Deployment and load test | not deployed | run the container (see the `Dockerfile` header), then `make load-test BASE_URL=...` |

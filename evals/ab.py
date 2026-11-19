@@ -4,6 +4,8 @@
   (reviewers read ONLY review.md, fill choices.csv: A, B or TIE plus one evidence-based sentence, then commit it)
   python evals/ab.py reveal [--judge]                   # reads the committed choices, reveals the mapping,
                                                         # optionally asks the pairwise judge; writes evals/results/ab.json
+  --dir evals/ab-v2 on both commands runs a second, separate A/B (results in evals/results/ab_v2.json);
+  prepare --exclude-previous leaves out traces already used in evals/ab/.
 
 Which candidate is A or B is decided per presentation by a seeded shuffle, so A does not consistently mean the
 LLM. The mapping is written to evals/ab/mapping.json; do not open it before reveal. review.md records the
@@ -36,8 +38,9 @@ def _render(expl: dict) -> str:
     return "\n".join(lines)
 
 
-def prepare(trace_dir: Path, n: int = 6, out: Path = AB, seed: int = SEED) -> dict:
-    recs = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(trace_dir.glob("*.json"))]
+def prepare(trace_dir: Path, n: int = 6, out: Path = AB, seed: int = SEED, exclude: set[str] = frozenset()) -> dict:
+    recs = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(trace_dir.glob("*.json"))
+            if p.stem not in exclude]
     # Only cases where the user actually saw a model-written explanation that differs from the fact-only one.
     eligible = [r for r in recs if r.get("critic_verdict") == "approve"
                 and r["explanation"]["claims"] != r["fact_only"]["claims"]]
@@ -95,7 +98,7 @@ def choices_committed(path: Path) -> bool:
 
 def reveal(out: Path = AB, judge_llm=None, judge_model: str | None = None, require_commit: bool = True) -> dict:
     if require_commit and not choices_committed(out / "choices.csv"):
-        raise PermissionError("commit evals/ab/choices.csv before reveal, so the blind choices are locked")
+        raise PermissionError(f"commit {out / 'choices.csv'} before reveal, so the blind choices are locked")
     choices = read_choices(out / "choices.csv")
     pres = json.loads((out / "presentations.json").read_text(encoding="utf-8"))
     mapping_text = (out / "mapping.json").read_text(encoding="utf-8")
@@ -134,17 +137,33 @@ def reveal(out: Path = AB, judge_llm=None, judge_model: str | None = None, requi
     return result
 
 
+def result_path(out: Path) -> Path:
+    """evals/ab -> ab.json; any other folder (evals/ab-v2) -> ab_v2.json, so a second A/B never overwrites the first."""
+    if out.resolve() == AB.resolve():
+        return ROOT / "evals/results/ab.json"
+    return ROOT / "evals/results" / ("ab_" + out.name.removeprefix("ab-").replace("-", "_") + ".json")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     p1 = sub.add_parser("prepare")
     p1.add_argument("trace_dir")
     p1.add_argument("--n", type=int, default=6)
+    p1.add_argument("--dir", type=Path, default=AB)
+    p1.add_argument("--exclude-previous", action="store_true", help="skip traces used in evals/ab/")
     p2 = sub.add_parser("reveal")
     p2.add_argument("--judge", action="store_true")
+    p2.add_argument("--dir", type=Path, default=AB)
     args = ap.parse_args(argv)
     if args.cmd == "prepare":
-        print(json.dumps(prepare(Path(args.trace_dir), args.n), indent=1))
+        if (args.dir / "choices.csv").exists() and args.dir.resolve() != AB.resolve():
+            print(f"refusing: {args.dir} already has a review sheet")
+            return 2
+        exclude = set()
+        if args.exclude_previous and (AB / "mapping.json").exists():
+            exclude = {v["trace_id"] for v in json.loads((AB / "mapping.json").read_text(encoding="utf-8")).values()}
+        print(json.dumps(prepare(Path(args.trace_dir), args.n, args.dir, exclude=exclude), indent=1))
         return 0
     llm, model = None, None
     if args.judge:
@@ -153,11 +172,11 @@ def main(argv=None) -> int:
         s = get_settings()
         llm = GatewayLLM(os.environ["COMP3110_MODEL_BASE_URL"], os.environ["COMP3110_API_KEY"], timeout_s=s.llm_timeout_s)
         model = s.judge_model
-    res = reveal(judge_llm=llm, judge_model=model)
+    res = reveal(args.dir, judge_llm=llm, judge_model=model)
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     res = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_sha": sha or None,
            "config": {"judge": bool(args.judge), "judge_model": model}, **res}
-    (ROOT / "evals/results/ab.json").write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    result_path(args.dir).write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     h = res["human"]
     print(f"human preferences: LLM {h['llm']}, fact-only {h['fact_only']}, tie {h['tie']}")
     return 0
