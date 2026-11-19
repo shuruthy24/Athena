@@ -1,7 +1,7 @@
 """Report classifier evaluation.
 
   python evals/eval_classifier.py --offline                     # dev split, no-model candidates only
-  python evals/eval_classifier.py                               # dev split, adds prompt-zero and prompt-5shot (live)
+  python evals/eval_classifier.py                               # dev split, adds moderator-v1 (the app default), prompt-zero and prompt-5shot (live)
   python evals/eval_classifier.py --split test --touch-test     # ONCE, after the team has chosen on dev
   python evals/eval_classifier.py --split probes --offline      # synthetic hold probes (evals/classifier/)
 
@@ -84,6 +84,31 @@ def evaluate(clf, rows: list[dict], streets: dict[str, dict]) -> dict:
             "rows": out_rows}
 
 
+class ModeratorV1:
+    """The app's default classifier (REPORT_CLASSIFIER=moderator-v1), called exactly as Athena calls it."""
+    name = "moderator-v1"
+
+    def __init__(self, llm):
+        from athena.agents import Athena
+        from athena.config import get_settings
+        owner = self
+
+        class _Recorder:            # keeps the last reply so evaluate() can count tokens and cost
+            def chat(self, *a, **k):
+                owner.last_reply = llm.chat(*a, **k)
+                return owner.last_reply
+
+        self.last_reply = None
+        self.athena = Athena(get_settings(), _Recorder(), LocalSource())
+
+    def predict(self, text: str, street: str | None) -> dict:
+        from athena.telemetry import Trace
+        mod = self.athena._moderate_v1(text, street, Trace())
+        if mod.get("force_review"):
+            raise ClassifierError("moderator unavailable")
+        return mod
+
+
 def candidates(train: list[dict], names: list[str], llm=None, model: str | None = None) -> list:
     out = []
     for name in names:
@@ -93,6 +118,8 @@ def candidates(train: list[dict], names: list[str], llm=None, model: str | None 
             out.append(KeywordClassifier())
         elif name in ("tfidf-logreg", "tfidf-svm"):
             out.append(TfidfClassifier(name.split("-")[1]).fit(train))
+        elif name == "moderator-v1":
+            out.append(ModeratorV1(llm))
         elif name in ("prompt-zero", "prompt-5shot"):
             from athena.classify.prompted import PromptClassifier
             out.append(PromptClassifier(llm, model, shots=0 if name == "prompt-zero" else 5, train_rows=train))
@@ -141,9 +168,10 @@ def main(argv=None) -> int:
         if out.exists():
             print(f"refusing: {out.name} exists; the test split was already used for this release.")
             return 2
-    names = args.candidates.split(",") if args.candidates else list(OFFLINE) + ([] if args.offline else ["prompt-zero", "prompt-5shot"])
+    names = args.candidates.split(",") if args.candidates else list(OFFLINE) + (
+        [] if args.offline else ["moderator-v1", "prompt-zero", "prompt-5shot"])
     llm, model = None, None
-    if any(n.startswith("prompt") for n in names):
+    if any(n.startswith("prompt") or n == "moderator-v1" for n in names):
         from athena.config import get_settings
         from athena.llm import GatewayLLM
         s = get_settings()

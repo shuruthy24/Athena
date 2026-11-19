@@ -183,3 +183,21 @@ def test_probes_give_a_defined_tnr_where_dev_cannot():
     assert all(r["tnr_hold"] is not None for r in res["results"])
     dev = ec.run("dev", ["majority"])
     assert dev["results"][0]["tnr_hold"] is None          # dev has no reports that should be held
+
+
+def test_the_apps_default_moderator_can_be_scored_on_the_probes():
+    from athena.llm import SampleLLM
+    res = ec.run("probes", ["moderator-v1"], llm=SampleLLM())
+    r = res["results"][0]
+    assert r["candidate"] == "moderator-v1" and r["n"] == 30 and r["tnr_hold"] is not None
+
+
+def test_a_moderator_failure_counts_as_wrong_not_as_held():
+    from athena.llm import LLMError
+
+    class Down:
+        def chat(self, *a, **k):
+            raise LLMError("gateway down")
+    clf = ec.ModeratorV1(Down())
+    with pytest.raises(ClassifierError):
+        clf.predict("Broken paving on George Street", "George Street")
