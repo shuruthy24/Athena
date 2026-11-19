@@ -69,12 +69,17 @@ The same checks run on Linux and Windows for every push (`.github/workflows/chec
 
 ## Differences from the demo
 
+The demo was a short presentation of the problem and the project background, followed by a walkthrough of the
+app's interface. It didn't run the evaluations, the data pipeline or the tests, and it didn't show any feature that
+isn't in this repository.
+
 | | Demo | This repository |
 | --- | --- | --- |
-| Data | real OSM + OTP data | the same data, committed in `data/processed/` |
-| Models | live gateway (explainer `scx-gemma-4-31B-it`, critic and classifier `scx-gpt-oss-120b`) | the same with a key in `.env`; without one, `SAMPLE_MODE` uses an offline stand-in, which the app labels on screen |
-| Prototype map | shown | unchanged at `/prototype`; its "Live OTP" toggle needs a local OpenTripPlanner |
-| Hosting | — | runs locally; not deployed |
+| Interface | walkthrough of the planner and street map | the same pages (`/`, `/map`); checked by `scripts/verify_demo.py` |
+| Explanations and reports | shown in the interface | the same code; with no key, `SAMPLE_MODE` uses an offline stand-in for the models, and the app labels this on screen |
+| Data | the real OSM + OTP data | the same data, committed in `data/processed/` |
+| Evaluation, data pipeline, tests | not shown | all included; run with `python scripts/check.py` (see the README) |
+| Hosting | not deployed | runs locally; not deployed |
 
 ## What happens without the external services
 
