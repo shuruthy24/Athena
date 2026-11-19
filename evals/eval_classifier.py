@@ -3,6 +3,7 @@
   python evals/eval_classifier.py --offline                     # dev split, no-model candidates only
   python evals/eval_classifier.py                               # dev split, adds prompt-zero and prompt-5shot (live)
   python evals/eval_classifier.py --split test --touch-test     # ONCE, after the team has chosen on dev
+  python evals/eval_classifier.py --split probes --offline      # synthetic hold probes (evals/classifier/)
 
 Metrics, fixed before any run:
   admit = approve (redact counts as admit: the rest of the report is used); hold = review or reject.
@@ -36,12 +37,13 @@ from athena.data.source import LocalSource  # noqa: E402
 from evals.metrics import ADMIT, BudgetExceeded, CallBudget, latency_summary, macro_f1, tpr_tnr  # noqa: E402
 
 REPORTS = ROOT / "data" / "reports"
+PROBES = ROOT / "evals" / "classifier" / "hold_probes_v1.jsonl"
 RESULTS = ROOT / "evals" / "results"
 OFFLINE = ("majority", "keyword", "tfidf-logreg", "tfidf-svm")
 
 
 def load_split(name: str, reports: Path = REPORTS) -> list[dict]:
-    p = reports / f"{name}.jsonl"
+    p = PROBES if name == "probes" else reports / f"{name}.jsonl"
     if not p.exists():
         raise FileNotFoundError(f"{p.relative_to(ROOT)} is missing: label reports and run `make labels` first")
     return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
@@ -125,7 +127,7 @@ def table(res: dict) -> str:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--split", choices=["dev", "test"], default="dev")
+    ap.add_argument("--split", choices=["dev", "test", "probes"], default="dev")
     ap.add_argument("--offline", action="store_true", help="no-model candidates only")
     ap.add_argument("--candidates", default=None, help="comma list; default all")
     ap.add_argument("--budget", type=int, default=150)

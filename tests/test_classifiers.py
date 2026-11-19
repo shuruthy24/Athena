@@ -170,3 +170,16 @@ def test_test_split_needs_an_explicit_flag(monkeypatch, tmp_path):
     assert ec.main(["--split", "test", "--offline"]) == 2
     (tmp_path / "classifier_test.json").write_text("{}", encoding="utf-8")
     assert ec.main(["--split", "test", "--offline", "--touch-test"]) == 2
+
+
+def test_hold_probes_include_reports_that_should_be_held():
+    rows = ec.load_split("probes")
+    actions = {r["action"] for r in rows}
+    assert {"reject", "review", "approve"} <= actions and len(rows) == 30
+
+
+def test_probes_give_a_defined_tnr_where_dev_cannot():
+    res = ec.run("probes", ["majority", "keyword"])
+    assert all(r["tnr_hold"] is not None for r in res["results"])
+    dev = ec.run("dev", ["majority"])
+    assert dev["results"][0]["tnr_hold"] is None          # dev has no reports that should be held

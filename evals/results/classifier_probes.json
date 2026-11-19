@@ -1,0 +1,968 @@
+{
+ "generated_at": "2026-11-19T00:58:55.765460+00:00",
+ "git_sha": "65be2d4",
+ "split": "probes",
+ "config": {
+  "candidates": [
+   "majority",
+   "keyword",
+   "tfidf-logreg",
+   "tfidf-svm"
+  ],
+  "model": null,
+  "train_rows": 35,
+  "budget": 150,
+  "admit": [
+   "approve",
+   "redact"
+  ]
+ },
+ "calls_used": 0,
+ "stopped": null,
+ "results": [
+  {
+   "candidate": "majority",
+   "n": 30,
+   "tnr_hold": 0.05,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 10,
+    "fn": 0,
+    "tn": 1,
+    "fp": 19
+   },
+   "category_macro_f1": 0.0392,
+   "latency": {
+    "n": 30,
+    "mean_ms": 0,
+    "p50_ms": 0,
+    "p95_ms": 0
+   },
+   "model_calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd_per_report": 0.0,
+   "rows": [
+    {
+     "id": "cp-001",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-002",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-003",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-004",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-005",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-006",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-007",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-008",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-009",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-010",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-011",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-012",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-013",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-014",
+     "expected": "review",
+     "got": "review",
+     "category": "lighting",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-015",
+     "expected": "review",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-016",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-017",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-018",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-019",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-020",
+     "expected": "review",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-021",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-022",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-023",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-024",
+     "expected": "approve",
+     "got": "approve",
+     "category": "harassment",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-025",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-026",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-027",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-028",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-029",
+     "expected": "approve",
+     "got": "approve",
+     "category": "harassment",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-030",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "infrastructure"
+    }
+   ]
+  },
+  {
+   "candidate": "keyword",
+   "n": 30,
+   "tnr_hold": 0.35,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 10,
+    "fn": 0,
+    "tn": 7,
+    "fp": 13
+   },
+   "category_macro_f1": 0.7699,
+   "latency": {
+    "n": 30,
+    "mean_ms": 0,
+    "p50_ms": 0,
+    "p95_ms": 0
+   },
+   "model_calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd_per_report": 0.0,
+   "rows": [
+    {
+     "id": "cp-001",
+     "expected": "reject",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-002",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "lighting"
+    },
+    {
+     "id": "cp-003",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-004",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-005",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-006",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-007",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-008",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-009",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-010",
+     "expected": "reject",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-011",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-012",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-013",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-014",
+     "expected": "review",
+     "got": "review",
+     "category": "lighting",
+     "got_category": "lighting"
+    },
+    {
+     "id": "cp-015",
+     "expected": "review",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-016",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-017",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-018",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-019",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-020",
+     "expected": "review",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "lighting"
+    },
+    {
+     "id": "cp-021",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-022",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-023",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-024",
+     "expected": "approve",
+     "got": "approve",
+     "category": "harassment",
+     "got_category": "harassment"
+    },
+    {
+     "id": "cp-025",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "positive"
+    },
+    {
+     "id": "cp-026",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "positive"
+    },
+    {
+     "id": "cp-027",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "lighting"
+    },
+    {
+     "id": "cp-028",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "isolation"
+    },
+    {
+     "id": "cp-029",
+     "expected": "approve",
+     "got": "approve",
+     "category": "harassment",
+     "got_category": "harassment"
+    },
+    {
+     "id": "cp-030",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "positive"
+    }
+   ]
+  },
+  {
+   "candidate": "tfidf-logreg",
+   "n": 30,
+   "tnr_hold": 0.2,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 10,
+    "fn": 0,
+    "tn": 4,
+    "fp": 16
+   },
+   "category_macro_f1": 0.5287,
+   "latency": {
+    "n": 30,
+    "mean_ms": 5,
+    "p50_ms": 3,
+    "p95_ms": 7
+   },
+   "model_calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd_per_report": 0.0,
+   "rows": [
+    {
+     "id": "cp-001",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-002",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-003",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-004",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-005",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-006",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-007",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-008",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-009",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-010",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-011",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-012",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-013",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-014",
+     "expected": "review",
+     "got": "review",
+     "category": "lighting",
+     "got_category": "lighting"
+    },
+    {
+     "id": "cp-015",
+     "expected": "review",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-016",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-017",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-018",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-019",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-020",
+     "expected": "review",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-021",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-022",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-023",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "isolation"
+    },
+    {
+     "id": "cp-024",
+     "expected": "approve",
+     "got": "approve",
+     "category": "harassment",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-025",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-026",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-027",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-028",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-029",
+     "expected": "approve",
+     "got": "approve",
+     "category": "harassment",
+     "got_category": "isolation"
+    },
+    {
+     "id": "cp-030",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "positive"
+    }
+   ]
+  },
+  {
+   "candidate": "tfidf-svm",
+   "n": 30,
+   "tnr_hold": 0.25,
+   "tpr_admit": 1.0,
+   "malformed": 0,
+   "confusion": {
+    "tp": 10,
+    "fn": 0,
+    "tn": 5,
+    "fp": 15
+   },
+   "category_macro_f1": 0.4398,
+   "latency": {
+    "n": 30,
+    "mean_ms": 3,
+    "p50_ms": 3,
+    "p95_ms": 4
+   },
+   "model_calls": 0,
+   "tokens_in": 0,
+   "tokens_out": 0,
+   "cost_usd_per_report": 0.0,
+   "rows": [
+    {
+     "id": "cp-001",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-002",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-003",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-004",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-005",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-006",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-007",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-008",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-009",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-010",
+     "expected": "reject",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-011",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-012",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-013",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-014",
+     "expected": "review",
+     "got": "review",
+     "category": "lighting",
+     "got_category": "lighting"
+    },
+    {
+     "id": "cp-015",
+     "expected": "review",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-016",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-017",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-018",
+     "expected": "review",
+     "got": "approve",
+     "category": "other",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-019",
+     "expected": "review",
+     "got": "review",
+     "category": "other",
+     "got_category": "other"
+    },
+    {
+     "id": "cp-020",
+     "expected": "review",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-021",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-022",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-023",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "isolation"
+    },
+    {
+     "id": "cp-024",
+     "expected": "approve",
+     "got": "approve",
+     "category": "harassment",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-025",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-026",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "lighting"
+    },
+    {
+     "id": "cp-027",
+     "expected": "approve",
+     "got": "approve",
+     "category": "infrastructure",
+     "got_category": "isolation"
+    },
+    {
+     "id": "cp-028",
+     "expected": "approve",
+     "got": "approve",
+     "category": "isolation",
+     "got_category": "infrastructure"
+    },
+    {
+     "id": "cp-029",
+     "expected": "approve",
+     "got": "approve",
+     "category": "harassment",
+     "got_category": "isolation"
+    },
+    {
+     "id": "cp-030",
+     "expected": "approve",
+     "got": "approve",
+     "category": "positive",
+     "got_category": "positive"
+    }
+   ]
+  }
+ ]
+}

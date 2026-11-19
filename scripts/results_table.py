@@ -80,6 +80,12 @@ def rows() -> list[tuple[str, str, str]]:
         else:
             res = "; ".join(f"{r['candidate']} TNR {_f(r['tnr_hold'], 2)}" for r in cl["results"])
         out.append(("Report classifier, dev split", res, "classifier_dev.json"))
+    cp = _load("classifier_probes.json")
+    if cp and cp.get("results"):
+        best = max(cp["results"], key=lambda r: (r["tnr_hold"] or 0, r["tpr_admit"] or 0))
+        out.append((f"Report classifier on hold probes ({best['n']} synthetic)",
+                    f"best: {best['candidate']} holds {_f(best['tnr_hold'], 2)} of reports that should be held, "
+                    f"admits {_f(best['tpr_admit'], 2)} of good ones", "classifier_probes.json"))
     lab = _load("label_agreement.json")
     if lab:
         out.append(("Labeller agreement", f"kappa {_f(lab['kappa_action'], 2)} (action), {_f(lab['kappa_category'], 2)} "

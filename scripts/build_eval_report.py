@@ -142,6 +142,17 @@ def rows() -> list[dict]:
         result=res, target="TNR ≥ 0.95, TPR ≥ 0.80", verdict=verdict,
         cmd="python evals/label.py reports --as a (then b); make labels; python evals/eval_classifier.py",
         file="classifier_dev.json", when=_when(cl))
+    cp = _load("classifier_probes.json")
+    if cp and cp.get("results"):
+        best = max(cp["results"], key=lambda r: (r["tnr_hold"] or 0, r["tpr_admit"] or 0))
+        add(cap="Report classifier", q="Same, on reports that should be held (dev has none)",
+            data=f"{best['n']} synthetic probes: 10 reject, 10 review, 10 approve (evals/classifier/, held out)",
+            metric="TNR on hold, TPR on admit", baseline="majority class, keyword rule",
+            result="; ".join(f"{r['candidate']} {_f(r['tnr_hold'])}/{_f(r['tpr_admit'])}" for r in cp["results"]),
+            target="TNR ≥ 0.95, TPR ≥ 0.80",
+            verdict=_verdict((best["tnr_hold"] or 0) >= 0.95 and (best["tpr_admit"] or 0) >= 0.8),
+            cmd="python evals/eval_classifier.py --split probes [--offline]", file="classifier_probes.json",
+            when=_when(cp))
     e2e = _load("injection_e2e.json")
     if e2e:
         for k, v in e2e["runs"].items():

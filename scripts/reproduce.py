@@ -176,6 +176,17 @@ def check_model_comparison() -> tuple[str, list[str]]:
     return "rescore", problems
 
 
+def check_classifier_probes() -> tuple[str, list[str]]:
+    from evals import eval_classifier as ec
+    committed = _load("classifier_probes.json")
+    if committed is None:
+        return "missing", ["classifier_probes.json not committed: python evals/eval_classifier.py --split probes --offline"]
+    offline = [r for r in committed["results"] if r["candidate"] in ec.OFFLINE]
+    fresh = ec.run("probes", [r["candidate"] for r in offline])["results"]
+    keys = ("candidate", "n", "tnr_hold", "tpr_admit", "category_macro_f1", "rows")
+    return "rerun", diff([{k: r[k] for k in keys} for r in offline], [{k: r[k] for k in keys} for r in fresh])
+
+
 def check_frozen() -> tuple[str, list[str]]:
     from pipeline.lineage import verify_frozen
     res = verify_frozen(ROOT / "evals" / "checksums.txt", ROOT)
@@ -193,6 +204,7 @@ def check_rebuild() -> tuple[str, list[str]]:
 CHECKS = [("offline.json", check_offline), ("pii.json", check_pii), ("route_baselines.json", check_route_baselines),
           ("injection_e2e.json", check_injection_e2e), ("data_quality.json", check_quality),
           ("assertions.json", check_assertions), ("model_comparison.json", check_model_comparison),
+          ("classifier_probes.json", check_classifier_probes),
           ("evals/checksums.txt", check_frozen), ("data/processed (rebuild)", check_rebuild)]
 
 

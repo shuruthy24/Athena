@@ -115,6 +115,7 @@ with baselines, confidence intervals and what each result means, is in [docs/eva
 | Injected reports admitted end to end (live) | 4/24 (keyword baseline 19/24) | `injection_e2e.json` |
 | PII removed before any model | recall 1.00 on 17 spans (regression set) | `pii.json` |
 | Report classifier, dev split | candidates can't be separated: dev has no reports that should be held | `classifier_dev.json` |
+| Report classifier on hold probes (30 synthetic) | best: keyword holds 0.35 of reports that should be held, admits 1.00 of good ones | `classifier_probes.json` |
 | Labeller agreement | kappa 0.40 (action), 0.65 (category), 49 reports | `label_agreement.json` |
 | Data quality checks | 0 failures | `data_quality.json` |
 | Feature checks | 17/17 pass | `verify.json` |

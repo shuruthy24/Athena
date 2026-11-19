@@ -33,7 +33,7 @@ The same checks run on Linux and Windows for every push (`.github/workflows/chec
 
 | Item | State | What finishing takes |
 | --- | --- | --- |
-| Reports that should be held | 49 labelled, but dev and test have only `approve`, so the classifier's main metric can't be computed | collect and label more reports, including vague, off-topic and prejudiced ones (`data/labelling/guide.md`), then rerun the split and `evals/eval_classifier.py` |
+| Reports that should be held | 49 labelled, but dev and test have only `approve`. 30 synthetic hold probes cover the gap for now; the no-model candidates hold at most 0.35 of them | score the prompted classifiers on the probes (`python evals/eval_classifier.py --split probes`, gateway key); collect more real reports that should be held |
 | Report test split | held back on purpose; no decision depends on it yet | as above, then score it once |
 | Judge audit with failing examples | the held-out labels contain no FAIL; the second audit's result file wasn't saved | `python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample` (gateway key) |
 | Larger blind A/B | 6 pairs, tied 3–3 | more pairs (`python evals/ab.py prepare ...`) |

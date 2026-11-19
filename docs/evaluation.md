@@ -16,7 +16,9 @@ number in it is typed by hand, and `make check` fails if it is out of date. We w
   held-out ones, and 4 of 24 injected reports still got through the full pipeline with the live classifier.
 - **The risk score doesn't favour lit streets on real data.** The lower-risk pick barely changes the score and
   has a slightly lower lit share than the fastest route.
-- **We couldn't choose a report classifier on evidence,** because the dev split has no reports that should be held.
+- **No report classifier is good enough yet.** The dev split has no reports that should be held, so we added 30
+  synthetic probes that include them. On those, the no-model candidates hold at most 0.35 of the reports that
+  should be held (the target is 0.95). The prompted classifiers still need to be scored on them with the key.
 - **The data and the app pass their checks:** no data-quality failures, and 17 of 17 feature checks pass.
 
 All sets are small (tens of cases), so every rate comes with a 95% confidence interval, and most sets were written
@@ -61,6 +63,7 @@ outcome is not measured.
 | Model comparison drafts | real model output | choosing the explainer model | 3 models × 18 |
 | Street reports (`data/reports/`) | real: written by us and collected from others with consent | classifier train / dev / test | 49 |
 | Trace labels (`evals/labels/`) | human PASS/FAIL | judge dev / held-out | 36 |
+| Classifier hold probes (`evals/classifier/hold_probes_v1.jsonl`) | synthetic, AI-generated after the classifiers were written | held out | 30 |
 | Guard dev set (`evals/guard/injection.jsonl`) | 10 public (Meterless, Apache-2.0) + 16 ours | tuning the guard | 26 |
 | Guard held-out probes (`evals/guard/heldout_probes_v1.jsonl`) | synthetic, AI-generated after the guard was written | held out | 50 |
 | PII cases (`evals/privacy/pii_cases_v1.jsonl`) | synthetic, fictional people | regression set | 29 |
@@ -75,6 +78,7 @@ personal details), and each set says who wrote it.
 | --- | --- | --- |
 | Guard held-out probes | writing or changing the guard | written after the guard; frozen by sha256 in `evals/checksums.txt`, so `make check` fails if it changes |
 | Report test split (`data/reports/test.jsonl`) | training or choosing a classifier | split by street and by writer, so neither appears in two splits; frozen by sha256; `eval_classifier.py --split test` refuses to run without `--touch-test` (it has not been run) |
+| Classifier hold probes (`evals/classifier/hold_probes_v1.jsonl`) | training or tuning any classifier or prompt | written after the classifiers; trained candidates only ever see `data/reports/train.jsonl`; edits go in a new `v2` file |
 | Held-out trace labels (`evals/labels/heldout.json`) | tuning the judge prompt | trace ids assigned by a seeded shuffle before any labels existed; `judge.py` reads the labels only after all predictions are in |
 
 The guard dev set, the report train and dev splits, and the dev trace labels are the tuning sets. The real trips,
@@ -116,6 +120,7 @@ Each part is compared with something simpler on the same data:
 | Explanation usefulness | Do people prefer the LLM explanation to the fact-only one? | 6+ blind presentations from the trace run | human preference A/B/TIE (blind, then revealed) | fact-only explanation | LLM 3, fact-only 3, tie 0 | LLM preferred in a majority | **misses** | `python evals/ab.py prepare <run>; python evals/ab.py reveal --judge` → `ab.json` (2026-11-18 @ 7218628) |
 | Evidence critic rules | Do the deterministic rules catch unsupported claims? | 276 claims, synthetic by construction (5 corruption types) | precision / recall (positive = unsupported) | citation-only check recall 0.210; no critic 0.0 | precision 1.000, recall 1.000 [0.98, 1.00] | descriptive (rules tested on corruptions, not real drafts) | descriptive | `make eval` → `offline.json` (2026-11-18 @ 6517634) |
 | Report classifier | Which classifier holds harmful reports and admits real ones? | team-labelled reports, group split by street and writer; dev for choosing, test once (frozen) | TNR on hold, TPR on admit, category macro-F1, cost, latency | majority class, keyword rule | majority n/a/1.000; keyword n/a/1.000; tfidf-logreg n/a/1.000; tfidf-svm n/a/1.000; prompt-zero n/a/1.000; prompt-5shot n/a/1.000 | TNR ≥ 0.95, TPR ≥ 0.80 | **misses** | `python evals/label.py reports --as a (then b); make labels; python evals/eval_classifier.py` → `classifier_dev.json` (2026-11-18 @ 4d61668) |
+| Report classifier | Same, on reports that should be held (dev has none) | 30 synthetic probes: 10 reject, 10 review, 10 approve (evals/classifier/, held out) | TNR on hold, TPR on admit | majority class, keyword rule | majority 0.050/1.000; keyword 0.350/1.000; tfidf-logreg 0.200/1.000; tfidf-svm 0.250/1.000 | TNR ≥ 0.95, TPR ≥ 0.80 | **misses** | `python evals/eval_classifier.py --split probes [--offline]` → `classifier_probes.json` (2026-11-19 @ 65be2d4) |
 | Report guardrail (end to end) | Is an injected report ever admitted by the whole pipeline? | 24 held-out injection probes + 26 benign (synthetic) | injection admit rate (lower is better); benign hold rate | guard + keyword rule (no model) | baseline: guard + keyword rule (no model): 0.792 [0.60, 0.91]; benign held 0.077 | 0 admitted | baseline (reference) | `python evals/eval_injection_e2e.py [--live]` → `injection_e2e.json` (2026-11-18 @ 6517634) |
 | Report guardrail (end to end) | Is an injected report ever admitted by the whole pipeline? | 24 held-out injection probes + 26 benign (synthetic) | injection admit rate (lower is better); benign hold rate | guard + keyword rule (no model) | baseline: guard + offline stub moderator (SAMPLE_MODE, no model): 0.792 [0.60, 0.91]; benign held 0.077 | 0 admitted | baseline (reference) | `python evals/eval_injection_e2e.py [--live]` → `injection_e2e.json` (2026-11-18 @ 6517634) |
 | Report guardrail (end to end) | Is an injected report ever admitted by the whole pipeline? | 24 held-out injection probes + 26 benign (synthetic) | injection admit rate (lower is better); benign hold rate | guard + keyword rule (no model) | live: moderator-v1 on scx-gpt-oss-120b: 0.167 [0.07, 0.36]; benign held 0.077 | 0 admitted | **misses** | `python evals/eval_injection_e2e.py [--live]` → `injection_e2e.json` (2026-11-18 @ 0693b9c) |
@@ -128,7 +133,7 @@ Each part is compared with something simpler on the same data:
 | Operations | Is the deployed service fast and reliable enough? | 50 requests per endpoint, deployed URL | p50/p95 latency, error rate, cost per request | — | — | p95 ≤ 10 s, errors ≤ 1% | not run yet | `make load-test BASE_URL=...` → `ops.json` |
 | Completion | Does every demonstrated feature run from the instructions? | 17 end-to-end checks, processed data, offline | checks passing | — | 17 pass, 0 fail | all pass | **meets** | `python scripts/verify_demo.py` → `verify.json` (2026-11-18 @ bbcd17b) |
 
-**Summary:** 8 meet their target, 6 miss it, 1 not run yet, 4 descriptive (no target set in advance), 2 baseline reference rows.
+**Summary:** 8 meet their target, 7 miss it, 1 not run yet, 4 descriptive (no target set in advance), 2 baseline reference rows.
 
 <!-- eval:end -->
 
@@ -136,7 +141,7 @@ Each part is compared with something simpler on the same data:
 
 | Result | Why not | What would change that |
 | --- | --- | --- |
-| `classifier_test.json` (report test split) | A test split is used once, to confirm a decision. Dev and test only contain reports that should be approved, so the main metric (TNR on hold) can't be computed on either, and scoring test couldn't confirm or overturn anything. The app keeps the default `moderator-v1`; its handling of harmful reports is measured in `injection_e2e.json` and the reject tests. | more labelled reports that should be held, then choose on dev and score test once |
+| `classifier_test.json` (report test split) | A test split is used once, to confirm a decision. Dev and test only contain reports that should be approved, so the main metric (TNR on hold) can't be computed on either, and scoring test couldn't confirm or overturn anything. Hold cases are covered by the synthetic probes instead (`classifier_probes.json`). | more labelled reports that should be held, then choose on dev and score test once |
 | `ops.json` (load test) | The system runs locally and isn't deployed. A load test on `localhost` would only measure the laptop. `verify_demo.py --base-url` checks the running app over HTTP instead. | deploy the container, then `make load-test BASE_URL=...` |
 | `judge_audit_sample.json` | A second judge audit, on 12 traces that include FAIL labels (`evals/labels-sample/`), was run but its result file was overwritten and never saved, so we don't quote its numbers. | `python evals/judge.py audit evals/traces/2026-11-14-live-sample --labels evals/labels-sample` (needs the gateway key, 6 calls) |
 
@@ -170,6 +175,12 @@ to produce a new result on purpose, then run `make readme` and `python scripts/b
   trips, so "no failures found" is a weak result.
 - **The blind A/B was a tie,** 3 to 3 over 6 pairs. The pairwise judge returned unusable output on 3 of the 6 and
   agreed with people on only 1 of the other 3. With 6 pairs this is only indicative.
+- **Classifier probes:** on 30 synthetic reports (10 reject, 10 review, 10 approve), every no-model candidate
+  admits all the good reports but holds few of the bad ones: majority 0.05, keyword 0.35, TF-IDF 0.20–0.25. The
+  keyword rule catches only 2 of the 10 prejudiced reports and TF-IDF catches none, and those are the cases that
+  matter most.
+  So a rule or small trained model isn't enough here, which is why the app uses a prompted moderator. Its score on
+  these probes still needs the key: `python evals/eval_classifier.py --split probes`.
 - **Model stack:** `scx-Meta-Llama-3.3-70B-Instruct` kept returning gateway errors, so we switched the judge to
   `scx-GLM-5.3` (a different model family from the explainer); all 8 stack checks then passed
   (`stack_check.json`).
